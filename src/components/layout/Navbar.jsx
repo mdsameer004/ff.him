@@ -58,12 +58,12 @@ const Navbar = () => {
           {user ? (
             <>
               {user.role === 'admin' && (
-                <Link to="/admin" className="icon-btn">
+                <Link to="/admin" className="icon-btn desktop-only">
                   <User size={24} />
                   <span className="action-label">Admin</span>
                 </Link>
               )}
-              <div className="user-menu-wrapper">
+              <div className="user-menu-wrapper desktop-only">
                 <button onClick={logout} className="icon-btn" style={{background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0}}>
                   <User size={24} />
                   <span className="action-label">Logout</span>
@@ -71,7 +71,7 @@ const Navbar = () => {
               </div>
             </>
           ) : (
-            <Link to="/auth" className="icon-btn">
+            <Link to="/auth" className="icon-btn desktop-only">
               <User size={24} />
               <span className="action-label">Login / Register</span>
             </Link>
@@ -102,7 +102,7 @@ const Navbar = () => {
               </NavLink>
             </li>
           ))}
-          {user && (
+          {user ? (
             <>
               <li>
                 <NavLink 
@@ -117,14 +117,33 @@ const Navbar = () => {
                 <li>
                   <NavLink 
                     to="/admin" 
-                    className={({isActive}) => isActive ? 'active-link' : ''}
+                    className={({isActive}) => isActive ? 'active-link mobile-only-item' : 'mobile-only-item'}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Admin Panel
                   </NavLink>
                 </li>
               )}
+              <li>
+                <button 
+                  onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                  className="mobile-only-item logout-mobile-btn"
+                  style={{ background: 'none', border: 'none', width: '100%', textAlign: 'center', margin: 0, padding: '1rem', color: 'inherit', font: 'inherit', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.5px' }}
+                >
+                  Logout
+                </button>
+              </li>
             </>
+          ) : (
+            <li>
+              <NavLink 
+                to="/auth" 
+                className={({isActive}) => isActive ? 'active-link mobile-only-item' : 'mobile-only-item'}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login / Register
+              </NavLink>
+            </li>
           )}
         </ul>
       </nav>

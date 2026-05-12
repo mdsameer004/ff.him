@@ -184,6 +184,10 @@
   color: var(--primary);
 }
 
+.mobile-only-item {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .navbar-main {
     flex-wrap: wrap;
@@ -238,5 +242,13 @@
   
   .nav-links a::after {
     display: none;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only-item {
+    display: block !important;
   }
 }

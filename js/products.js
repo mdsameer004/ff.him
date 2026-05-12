@@ -126,11 +126,11 @@ function createModernProductCard(product) {
         <div class="modern-product-card" data-id="${product.id}" onclick="window.location.href='product.html?id=${product.id}'" style="cursor: pointer;">
             <div class="modern-image-container">
                 <img src="${imageUrl}" class="modern-product-image" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}';">
+                <div class="modern-product-rating-overlay">${stars} <span style="font-size: 0.75rem;">(${revCount})</span></div>
                 <button class="modern-quick-view-btn" onclick="event.stopPropagation(); quickView(${product.id})">Quick View</button>
             </div>
             <div class="modern-product-info">
                 <h3 class="modern-product-title">${product.name}</h3>
-                <div class="modern-product-rating">${stars} <span style="font-size: 0.8rem; color: #888;">(${revCount})</span></div>
                 <div class="modern-product-price">
                     <span class="price-original">₹${product.original_price.toLocaleString('en-IN')}</span>
                     <span class="price-sale">₹${product.price.toLocaleString('en-IN')}</span>
@@ -140,3 +140,5 @@ function createModernProductCard(product) {
         </div>
     `;
 }
+window.products = products;
+console.log('Products loaded:', window.products.length);

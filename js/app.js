@@ -15,14 +15,14 @@ const navbarHTML = `
             <a href="gallery.html">Gallery</a>
             <a href="contact.html">Contact</a>
             <a href="orders.html">My Orders</a>
+            <a href="auth.html" class="mobile-only-login">Login / Register</a>
         </div>
         <div class="nav-actions">
-            <div class="nav-search-btn" id="search-btn">
+            <div class="nav-search-btn" id="search-btn" title="Search">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <span class="search-label">Search</span>
             </div>
             <a href="auth.html" class="login-icon" title="Login / Register">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -52,7 +52,7 @@ const footerHTML = `
         <div class="footer-grid">
             <div class="footer-col">
                 <h4>Friends Florist</h4>
-                <p>Bringing nature's elegance to your doorstep since 2010. We specialize in premium floral arrangements for all occasions.</p>
+                <p>Bringing nature's elegance to your doorstep since 1999. We specialize in premium floral arrangements for all occasions.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
@@ -66,17 +66,18 @@ const footerHTML = `
             <div class="footer-col">
                 <h4>Customer Service</h4>
                 <ul>
-                    <li><a href="#">Delivery Info</a></li>
-                    <li><a href="#">Returns & Refunds</a></li>
-                    <li><a href="#">FAQs</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="delivery.html">Delivery Info</a></li>
+                    <li><a href="returns.html">Returns & Refunds</a></li>
+                    <li><a href="faq.html">FAQs</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Contact Info</h4>
-                <p>📍 123 Floral Avenue, Blossom City, FL 12345</p>
-                <p>📞 +1 (555) 123-4567</p>
-                <p>✉️ hello@friendsflorist.com</p>
+                <p>📍 Opp Lenscart,3-5, Main Rd,
+Himayatnagar, Hyderabad, Telangana 500029</p>
+                <p>📞 +91 97039 65734</p>
+                <p>✉️ friendsflorist@gmail.com</p>
             </div>
         </div>
         <div class="footer-bottom">
@@ -206,6 +207,34 @@ function initHomePage() {
             </div>
         `).join('');
     }
+
+    // Initialize Hero Slideshow
+    initHeroSlideshow();
+}
+
+function initHeroSlideshow() {
+    const slideshow = document.getElementById('hero-slideshow');
+    if (!slideshow || !products || products.length === 0) return;
+
+    // Clear existing content and populate with all product images
+    slideshow.innerHTML = products.map((product, index) => `
+        <img src="${product.image || fallbackImage}" 
+             alt="${product.name}" 
+             class="${index === 0 ? 'active' : ''}">
+    `).join('');
+
+    const images = slideshow.querySelectorAll('img');
+    let currentIndex = 0;
+
+    // Function to show next image
+    const nextImage = () => {
+        images[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % images.length;
+        images[currentIndex].classList.add('active');
+    };
+
+    // Change image every 2 seconds (2000ms) for a snappier feel
+    setInterval(nextImage, 2000);
 }
 
 // Stub for Quick View Modal

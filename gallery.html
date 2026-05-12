@@ -40,78 +40,80 @@
             color: white;
         }
         
-        /* Masonry Grid */
-        .gallery-grid {
-            columns: 3 300px;
-            column-gap: 20px;
+        /* Album Grid Layout */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
             padding-bottom: 80px;
         }
-        .gallery-item {
-            break-inside: avoid;
-            margin-bottom: 20px;
+        .album-item {
             position: relative;
             border-radius: var(--border-radius);
             overflow: hidden;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            aspect-ratio: 1/1;
         }
-        .gallery-item img {
+        .album-item img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
             border-radius: var(--border-radius);
             transition: transform 0.5s ease;
         }
-        .gallery-overlay {
+        .album-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(46, 139, 87, 0.7);
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%);
             color: white;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            justify-content: flex-end;
+            padding: 25px;
+            transition: background 0.3s ease;
+        }
+        .album-overlay h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            font-family: var(--font-heading);
+            transform: translateY(10px);
+            transition: transform 0.3s ease;
+        }
+        .album-overlay p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transform: translateY(10px);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
         }
-        .gallery-item:hover img {
-            transform: scale(1.05);
+        .album-item:hover img {
+            transform: scale(1.08);
         }
-        .gallery-item:hover .gallery-overlay {
+        .album-item:hover .album-overlay {
+            background: linear-gradient(to top, rgba(46,139,87,0.9) 0%, rgba(46,139,87,0.4) 100%);
+        }
+        .album-item:hover .album-overlay h3,
+        .album-item:hover .album-overlay p {
+            transform: translateY(0);
             opacity: 1;
         }
+
+        @media (max-width: 900px) {
+            .album-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+        }
         
-        /* Lightbox */
-        .lightbox {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        @media (max-width: 480px) {
+            .album-overlay h3 { font-size: 1.2rem; margin-bottom: 0; }
+            .album-overlay p { display: none; }
+            .album-overlay { padding: 15px; }
         }
-        .lightbox.active {
-            display: flex;
-        }
-        .lightbox-img {
-            max-width: 90%;
-            max-height: 80vh;
-            border-radius: 4px;
-        }
-        .lightbox-close {
-            position: absolute;
-            top: 20px; right: 30px;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-        }
-        .lightbox-caption {
-            color: white;
-            margin-top: 15px;
-            font-size: 1.2rem;
-            font-weight: 300;
-        }
+        
     </style>
+
 </head>
 <body>
     
@@ -126,97 +128,44 @@
         </header>
 
         <section class="container">
-            <div class="gallery-filter">
-                <button class="filter-btn active" onclick="filterGallery('All')">All</button>
-                <button class="filter-btn" onclick="filterGallery('Wedding')">Weddings</button>
-                <button class="filter-btn" onclick="filterGallery('Birthday')">Birthdays</button>
-                <button class="filter-btn" onclick="filterGallery('Event')">Events</button>
-            </div>
-
-            <div class="gallery-grid" id="gallery-grid">
-                <!-- Images dynamically inserted -->
+            <div class="album-grid" id="album-grid">
+                <!-- Albums dynamically inserted -->
             </div>
         </section>
     </main>
 
-    <!-- Lightbox -->
-    <div class="lightbox" id="lightbox">
-        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-        <img src="" alt="Gallery Image" class="lightbox-img" id="lightbox-img">
-        <div class="lightbox-caption" id="lightbox-caption"></div>
-    </div>
-
     <div id="footer-container"></div>
+
 
     <script src="js/cart.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/gallery-data.js"></script>
     <script>
-        const galleryItems = [
-            { src: 'https://images.unsplash.com/photo-1591203281954-23fa2ff8ef18?w=800', category: 'Wedding', caption: 'Elegant Wedding Centerpiece' },
-            { src: 'https://plus.unsplash.com/premium_photo-1661429475489-3f6932220757?w=800', category: 'Event', caption: 'Corporate Event Entrance' },
-            { src: 'https://images.unsplash.com/photo-1755704282977-340323fa52df?w=800', category: 'Birthday', caption: 'Pastel Birthday Setup' },
-            { src: 'https://images.unsplash.com/photo-1673001161631-198351b9b933?w=800', category: 'Wedding', caption: 'Bridal Bouquet' },
-            { src: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=800', category: 'Wedding', caption: 'Wedding Arch' },
-            { src: 'https://images.unsplash.com/photo-1653821355168-144695e5c0e6?w=800', category: 'Event', caption: 'Gala Dinner Tablescape' },
-            { src: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800', category: 'Birthday', caption: 'Sweet 16 Decoration' },
-            { src: 'https://images.unsplash.com/photo-1602959917275-788c6a3e37e3?w=800', category: 'Wedding', caption: 'Rustic Peony Setup' },
-        ];
-
-        function renderGallery(filter = 'All') {
-            const grid = document.getElementById('gallery-grid');
+        function renderAlbums() {
+            const grid = document.getElementById('album-grid');
             grid.innerHTML = '';
             
-            const filtered = filter === 'All' ? galleryItems : galleryItems.filter(i => i.category === filter);
-            
-            filtered.forEach((item, idx) => {
+            albumsData.forEach((album) => {
                 const div = document.createElement('div');
-                div.className = 'gallery-item';
+                div.className = 'album-item';
                 div.innerHTML = `
-                    <img src="${item.src}" loading="lazy" alt="${item.caption}">
-                    <div class="gallery-overlay">
-                        <h3>${item.caption}</h3>
-                        <p>${item.category}</p>
+                    <img src="${album.cover}" loading="lazy" alt="${album.title}">
+                    <div class="album-overlay">
+                        <h3>${album.title}</h3>
+                        <p>${album.images.length} Photos</p>
                     </div>
                 `;
-                div.onclick = () => openLightbox(item.src, item.caption);
+                div.onclick = () => openAlbum(album.id);
                 grid.appendChild(div);
             });
         }
 
-        function filterGallery(category) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if((category === 'All' && btn.textContent === 'All') || btn.textContent.includes(category)) {
-                    btn.classList.add('active');
-                }
-            });
-            renderGallery(category);
+        function openAlbum(albumId) {
+            window.location.href = `album.html?id=${albumId}`;
         }
-
-        // Lightbox functionality
-        const lightbox = document.getElementById('lightbox');
-        const lbImg = document.getElementById('lightbox-img');
-        const lbCap = document.getElementById('lightbox-caption');
-
-        function openLightbox(src, caption) {
-            lbImg.src = src;
-            lbCap.textContent = caption;
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden'; // prevent scrolling
-        }
-
-        function closeLightbox() {
-            lightbox.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close on background click
-        lightbox.addEventListener('click', (e) => {
-            if(e.target === lightbox) closeLightbox();
-        });
 
         // Init
-        document.addEventListener('DOMContentLoaded', () => renderGallery('All'));
+        document.addEventListener('DOMContentLoaded', renderAlbums);
     </script>
 </body>
 </html>

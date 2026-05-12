@@ -1,0 +1,382 @@
+/* ============================================================
+   FLORAL THEME — Friends Florist
+   Luxury botanical background system
+   All elements: pointer-events:none, z-index:0, low opacity
+   ============================================================ */
+
+/* ── Floral Palette Tokens ── */
+:root {
+    --floral-blush:      #FADADD;
+    --floral-sage:       #B2C9AD;
+    --floral-cream:      #FFF8F0;
+    --floral-lavender:   #E8D5F5;
+    --floral-peach:      #FFD1A4;
+    --floral-gold:       #F5E6C8;
+    --floral-dusty-rose: #D4A5A5;
+    --floral-mint:       #C8E6C9;
+}
+
+/* ── Body — Soft Cream Gradient ── */
+body {
+    background: linear-gradient(160deg, #FFFDF9 0%, #FFF5F7 45%, #F5FFF8 100%) fixed;
+}
+
+/* ============================================================
+   FLOATING PETALS  (elements injected by floral-effects.js)
+   ============================================================ */
+.floral-petal {
+    position: fixed;
+    top: -80px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    animation: floatPetal var(--petal-dur, 22s) linear var(--petal-delay, 0s) infinite;
+    will-change: transform, opacity;
+}
+
+@keyframes floatPetal {
+    0%   { transform: translateY(-80px) translateX(0) rotate(0deg);   opacity: 0; }
+    8%   { opacity: var(--petal-opacity, 0.09); }
+    88%  { opacity: var(--petal-opacity, 0.09); }
+    100% { transform: translateY(105vh) translateX(var(--petal-drift, 50px)) rotate(380deg); opacity: 0; }
+}
+
+/* ============================================================
+   HERO SECTION — Bouquet sketch + watercolour texture
+   ============================================================ */
+.hero-section {
+    position: relative;
+    background: linear-gradient(135deg, #FFF0F5 0%, #FFF8F0 55%, #F0FFF6 100%) !important;
+    overflow: hidden;
+}
+
+/* Large rose corner — top right */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 380px; height: 380px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23FADADD' stroke-width='1.2'%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(0 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(60 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(120 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(180 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(240 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(300 200 60)'/%3E%3Ccircle cx='200' cy='60' r='14' stroke='%23D4A5A5'/%3E%3Cpath d='M200,110 C196,145 192,180 188,220' stroke='%23B2C9AD' stroke-width='1.5'/%3E%3Cpath d='M196,150 C180,138 165,145 168,160 C171,175 192,172 196,150' stroke='%23B2C9AD'/%3E%3Cpath d='M192,185 C208,173 225,180 222,195 C219,210 196,207 192,185' stroke='%23B2C9AD'/%3E%3Ccircle cx='80' cy='30' r='5' stroke='%23E8D5F5'/%3E%3Ccircle cx='80' cy='30' r='12' stroke='%23E8D5F5' stroke-dasharray='3 4'/%3E%3Ccircle cx='40' cy='80' r='4' stroke='%23FADADD'/%3E%3Ccircle cx='40' cy='80' r='11' stroke='%23FADADD' stroke-dasharray='3 4'/%3E%3Cpath d='M10,200 C30,170 60,190 90,170 C120,150 140,175 170,160' stroke='%23B2C9AD' stroke-width='1'/%3E%3Cpath d='M25,182 C22,168 32,163 38,172 C44,181 32,188 25,182' stroke='%23B2C9AD'/%3E%3Cpath d='M75,174 C72,160 82,155 88,164 C94,173 82,180 75,174' stroke='%23B2C9AD'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top right;
+    opacity: 0.13;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Wave divider at bottom of hero */
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 100%; height: 70px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 70'%3E%3Cpath d='M0,35 C180,70 360,0 540,35 C720,70 900,0 1080,35 C1260,70 1380,20 1440,35 L1440,70 L0,70 Z' fill='%23FFFDF9'/%3E%3C/svg%3E");
+    background-size: cover;
+    background-repeat: no-repeat;
+    z-index: 4;
+    pointer-events: none;
+}
+
+/* ============================================================
+   CATEGORIES SECTION — Scattered floral doodles
+   ============================================================ */
+.categories-section {
+    position: relative;
+    background: linear-gradient(180deg, #FFFDF9 0%, #FFF8F0 100%) !important;
+}
+
+.categories-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23FADADD' stroke-width='0.7'%3E%3Cellipse cx='40' cy='18' rx='7' ry='13'/%3E%3Cellipse cx='40' cy='18' rx='7' ry='13' transform='rotate(60 40 40)'/%3E%3Cellipse cx='40' cy='18' rx='7' ry='13' transform='rotate(120 40 40)'/%3E%3Cellipse cx='40' cy='18' rx='7' ry='13' transform='rotate(180 40 40)'/%3E%3Cellipse cx='40' cy='18' rx='7' ry='13' transform='rotate(240 40 40)'/%3E%3Cellipse cx='40' cy='18' rx='7' ry='13' transform='rotate(300 40 40)'/%3E%3Ccircle cx='40' cy='40' r='5'/%3E%3C/g%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cg fill='none' stroke='%23B2C9AD' stroke-width='0.6'%3E%3Cpath d='M25,5 C28,15 35,18 30,25 C25,32 18,28 20,20 C22,12 25,5 25,5'/%3E%3Cpath d='M25,45 C22,35 15,32 20,25 C25,18 32,22 30,30 C28,38 25,45 25,45'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px, 80px 80px;
+    background-position: 0 0, 40px 40px;
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ============================================================
+   BEST SELLERS — Rose petal scatter
+   ============================================================ */
+.best-sellers-section {
+    position: relative;
+}
+
+.best-sellers-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23FADADD' stroke-width='0.8'%3E%3Cpath d='M30,8 C38,18 36,32 28,36 C20,40 12,30 16,20 C20,10 30,8 30,8Z'/%3E%3Cpath d='M30,8 C22,18 24,32 32,36 C40,40 48,30 44,20 C40,10 30,8 30,8Z'/%3E%3Cpath d='M8,30 C18,22 32,24 36,32 C40,40 30,48 20,44 C10,40 8,30 8,30Z'/%3E%3Cpath d='M52,30 C42,22 28,24 24,32 C20,40 30,48 40,44 C50,40 52,30 52,30Z'/%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 90px 90px;
+    opacity: 0.09;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ============================================================
+   DEALS SECTION — Gold botanical corner accents
+   ============================================================ */
+.deals-section {
+    position: relative;
+}
+
+.deals-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23F5E6C8' stroke-width='0.8'%3E%3Cpath d='M10,90 C20,70 40,75 50,60 C60,45 55,25 70,15'/%3E%3Cpath d='M22,78 C18,65 28,60 34,68 C40,76 34,84 22,78'/%3E%3Cpath d='M42,65 C38,52 48,47 54,55 C60,63 54,71 42,65'/%3E%3Cpath d='M56,45 C52,32 62,27 68,35 C74,43 68,51 56,45'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 160px 160px;
+    background-position: center;
+    opacity: 0.08;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.deals-banner {
+    position: relative;
+    overflow: hidden;
+}
+
+.deals-banner::before {
+    content: '';
+    position: absolute;
+    top: -30px; left: -30px;
+    width: 200px; height: 200px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%23F5E6C8' stroke-width='1'%3E%3Cpath d='M10,140 C30,110 60,120 80,100 C100,80 95,50 120,30'/%3E%3Cpath d='M28,128 C22,112 34,106 42,116 C50,126 42,134 28,128'/%3E%3Cpath d='M58,108 C52,92 64,86 72,96 C80,106 72,114 58,108'/%3E%3Cpath d='M88,84 C82,68 94,62 102,72 C110,82 102,90 88,84'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.deals-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; right: -30px;
+    width: 200px; height: 200px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 150'%3E%3Cg fill='none' stroke='%23F5E6C8' stroke-width='1'%3E%3Cpath d='M140,10 C120,40 90,30 70,50 C50,70 55,100 30,120'/%3E%3Cpath d='M122,22 C128,38 116,44 108,34 C100,24 108,16 122,22'/%3E%3Cpath d='M92,42 C98,58 86,64 78,54 C70,44 78,36 92,42'/%3E%3Cpath d='M62,66 C68,82 56,88 48,78 C40,68 48,60 62,66'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.deals-banner .deals-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   TESTIMONIALS — Soft leaf/vine lattice
+   ============================================================ */
+.testimonials-section {
+    position: relative;
+}
+
+.testimonials-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23B2C9AD' stroke-width='0.7'%3E%3Cpath d='M0,50 C15,30 35,40 50,25 C65,10 80,30 100,20'/%3E%3Cpath d='M0,75 C15,55 35,65 50,50 C65,35 80,55 100,45'/%3E%3Cpath d='M18,38 C14,26 22,21 28,29 C34,37 26,43 18,38'/%3E%3Cpath d='M68,17 C64,5 72,0 78,8 C84,16 76,22 68,17'/%3E%3Cpath d='M18,63 C14,51 22,46 28,54 C34,62 26,68 18,63'/%3E%3Cpath d='M68,42 C64,30 72,25 78,33 C84,41 76,47 68,42'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 160px 160px;
+    opacity: 0.07;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ============================================================
+   INSTAGRAM / GALLERY SECTION
+   ============================================================ */
+.insta-section {
+    position: relative;
+}
+
+.insta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 70'%3E%3Cg fill='none' stroke='%23E8D5F5' stroke-width='0.6'%3E%3Ccircle cx='35' cy='35' r='20'/%3E%3Ccircle cx='35' cy='35' r='28' stroke-dasharray='4 6'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(0 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(45 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(90 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(135 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(180 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(225 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(270 35 35)'/%3E%3Cellipse cx='35' cy='15' rx='6' ry='10' transform='rotate(315 35 35)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 140px 140px;
+    opacity: 0.06;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ============================================================
+   FOOTER — Botanical vine sketches
+   ============================================================ */
+.footer {
+    position: relative;
+    overflow: hidden;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 120px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cg fill='none' stroke='%23B2C9AD' stroke-width='1.2'%3E%3Cpath d='M0,80 C120,40 240,90 360,60 C480,30 600,75 720,50 C840,25 960,70 1080,45 C1200,20 1320,65 1440,40'/%3E%3Cpath d='M50,72 C46,58 56,52 63,61 C70,70 62,77 50,72'/%3E%3Cpath d='M160,55 C156,41 166,35 173,44 C180,53 172,60 160,55'/%3E%3Cpath d='M280,78 C276,64 286,58 293,67 C300,76 292,83 280,78'/%3E%3Cpath d='M400,52 C396,38 406,32 413,41 C420,50 412,57 400,52'/%3E%3Cpath d='M520,68 C516,54 526,48 533,57 C540,66 532,73 520,68'/%3E%3Cpath d='M640,45 C636,31 646,25 653,34 C660,43 652,50 640,45'/%3E%3Cpath d='M760,62 C756,48 766,42 773,51 C780,60 772,67 760,62'/%3E%3Cpath d='M880,40 C876,26 886,20 893,29 C900,38 892,45 880,40'/%3E%3Cpath d='M1000,58 C996,44 1006,38 1013,47 C1020,56 1012,63 1000,58'/%3E%3Cpath d='M1120,35 C1116,21 1126,15 1133,24 C1140,33 1132,40 1120,35'/%3E%3Cpath d='M1300,52 C1296,38 1306,32 1313,41 C1320,50 1312,57 1300,52'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: cover;
+    background-repeat: no-repeat;
+    opacity: 0.12;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.footer::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 320px; height: 220px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 150'%3E%3Cg fill='none' stroke='%23B2C9AD' stroke-width='1'%3E%3Cpath d='M200,150 C170,120 140,135 120,110 C100,85 110,55 80,35'/%3E%3Cpath d='M178,138 C184,122 172,116 164,126 C156,136 164,144 178,138'/%3E%3Cpath d='M148,118 C154,102 142,96 134,106 C126,116 134,124 148,118'/%3E%3Cpath d='M114,96 C120,80 108,74 100,84 C92,94 100,102 114,96'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    opacity: 0.10;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.footer .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   SECTION WAVE DIVIDERS  (class added between sections)
+   ============================================================ */
+.floral-divider {
+    position: relative;
+    height: 60px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.floral-divider svg {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 100%;
+}
+
+/* ============================================================
+   CATEGORY CARD — Hover Bloom Effect
+   ============================================================ */
+.category-card {
+    position: relative;
+    transition: transform 0.35s ease, filter 0.35s ease !important;
+    border-radius: 16px;
+}
+
+.category-card:hover {
+    transform: translateY(-6px) scale(1.02) !important;
+    filter: drop-shadow(0 8px 24px rgba(255, 182, 193, 0.45));
+}
+
+.category-card:hover div {
+    box-shadow: 0 0 0 6px rgba(255, 182, 193, 0.25), 0 0 0 14px rgba(255, 182, 193, 0.10) !important;
+}
+
+/* ============================================================
+   PRODUCT CARD — Hover Bloom / Glow
+   ============================================================ */
+.modern-product-card:hover {
+    box-shadow: 0 18px 48px rgba(212, 165, 165, 0.25), 0 0 0 1px rgba(250, 218, 221, 0.5) !important;
+    transform: translateY(-10px) !important;
+}
+
+/* ============================================================
+   SECTION TITLE — Tiny floral accent above underline
+   ============================================================ */
+.section-title {
+    position: relative;
+}
+
+.section-title::before {
+    content: '✿';
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    color: var(--floral-blush);
+    opacity: 0.6;
+    letter-spacing: 12px;
+}
+
+/* ============================================================
+   GENERIC HOME SECTION — ensure z-index stacking
+   ============================================================ */
+.home-section > .container {
+    position: relative;
+    z-index: 1;
+}
+
+.home-section {
+    position: relative;
+}
+
+/* ============================================================
+   SHOP / PRODUCT / OTHER PAGES — Subtle global overlay
+   ============================================================ */
+main {
+    position: relative;
+}
+
+main::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23FADADD' stroke-width='0.5'%3E%3Cellipse cx='100' cy='40' rx='10' ry='18'/%3E%3Cellipse cx='100' cy='40' rx='10' ry='18' transform='rotate(60 100 100)'/%3E%3Cellipse cx='100' cy='40' rx='10' ry='18' transform='rotate(120 100 100)'/%3E%3Cellipse cx='100' cy='40' rx='10' ry='18' transform='rotate(180 100 100)'/%3E%3Cellipse cx='100' cy='40' rx='10' ry='18' transform='rotate(240 100 100)'/%3E%3Cellipse cx='100' cy='40' rx='10' ry='18' transform='rotate(300 100 100)'/%3E%3Ccircle cx='100' cy='100' r='7'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 220px 220px;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 0;
+}
+
+main > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   SCROLL REVEAL — sections fade in elegantly
+   ============================================================ */
+.floral-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.floral-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ============================================================
+   RESPONSIVE — reduce / hide decoratives on mobile
+   ============================================================ */
+@media (max-width: 768px) {
+    .floral-petal { display: none; }
+
+    .hero-section::before { opacity: 0.07; width: 220px; height: 220px; }
+    .hero-section::after  { height: 40px; }
+
+    .footer::before { opacity: 0.06; }
+    .footer::after  { width: 160px; height: 110px; }
+
+    .section-title::before { display: none; }
+
+    main::before { opacity: 0.025; }
+
+    .deals-banner::before,
+    .deals-banner::after { width: 100px; height: 100px; opacity: 0.08; }
+}

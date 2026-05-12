@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Your Order - Friends Florist</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .page-header {
+            padding: 100px 0 60px;
+            text-align: center;
+            background-color: var(--color-light-pink);
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .custom-order-container {
+            max-width: 800px;
+            margin: 0 auto 80px;
+            padding: 40px;
+            background: var(--color-primary-white);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--color-border);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--color-dark-green);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-dark-green);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Image Upload Styles */
+        .upload-area {
+            border: 2px dashed var(--color-border);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--color-dark-green);
+            background: rgba(46, 139, 87, 0.02);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--color-text-light);
+            margin-bottom: 10px;
+        }
+
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--color-border);
+            position: relative;
+        }
+        
+        .preview-wrapper {
+            position: relative;
+        }
+        
+        .remove-img-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: white;
+            color: red;
+            border: 1px solid var(--color-border);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .custom-order-container {
+                padding: 20px;
+                margin: 0 15px 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="navbar-container"></div>
+
+    <main>
+        <header class="page-header">
+            <div class="container">
+                <h1>Customize Your Order</h1>
+                <p>Have a vision in mind? Let our florists bring it to life.</p>
+            </div>
+        </header>
+
+        <section class="container">
+            <div class="custom-order-container">
+                <div id="success-msg" class="success-message">
+                    <h3>🎉 Request Sent Successfully!</h3>
+                    <p>Your custom order request has been sent. We will review your details and contact you soon.</p>
+                </div>
+
+                <form id="custom-order-form">
+                    <div class="form-group">
+                        <label for="customerName">Full Name (Optional)</label>
+                        <input type="text" id="customerName" class="form-control" placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contactNumber">Contact Number *</label>
+                        <input type="tel" id="contactNumber" class="form-control" placeholder="+91 98765 43210" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Upload Reference Images</label>
+                        <div class="upload-area" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                            <div class="upload-icon">📸</div>
+                            <p>Click or drag images here to upload</p>
+                            <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">Supports multiple JPG/PNG files</p>
+                        </div>
+                        <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+                        <div class="image-preview-container" id="preview-container"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orderDescription">Describe Your Dream Arrangement *</label>
+                        <textarea id="orderDescription" class="form-control" placeholder="E.g., I'm looking for a large bridal bouquet featuring mostly white peonies, some pink roses, and eucalyptus accents..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-submit">Send Details</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const form = document.getElementById('custom-order-form');
+        const successMsg = document.getElementById('success-msg');
+        
+        let uploadedFiles = [];
+
+        // Drag and drop handlers
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    uploadedFiles.push(file);
+                    renderPreviews();
+                }
+            });
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderPreviews();
+            // Reset input so same file can be selected again if needed
+            fileInput.value = '';
+        }
+
+        function renderPreviews() {
+            previewContainer.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-wrapper';
+                    
+                    wrapper.innerHTML = `
+                        <img src="${e.target.result}" class="image-preview" alt="Preview">
+                        <button type="button" class="remove-img-btn" onclick="removeFile(${index})" title="Remove image">×</button>
+                    `;
+                    previewContainer.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Form submission simulation
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // In a real app, this is where we'd send FormData via fetch/XHR
+            const submitBtn = form.querySelector('.btn-submit');
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                form.style.display = 'none';
+                successMsg.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
