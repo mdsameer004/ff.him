@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/components.css">
@@ -18,63 +21,75 @@
             background-color: var(--color-light-pink);
             margin-bottom: 40px;
         }
+
         .contact-container {
             display: flex;
             gap: 60px;
             padding-bottom: 80px;
         }
+
         .contact-form-area {
             flex: 1;
             background: white;
             padding: 40px;
             border-radius: var(--border-radius);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         }
+
         .contact-info-area {
             flex: 1;
         }
+
         .info-card {
             background: var(--color-light-green);
             padding: 30px;
             border-radius: var(--border-radius);
             margin-bottom: 30px;
         }
+
         .info-card h3 {
             font-size: 1.3rem;
             margin-bottom: 20px;
         }
+
         .info-line {
             display: flex;
             align-items: flex-start;
             gap: 15px;
             margin-bottom: 15px;
         }
+
         .info-icon {
             font-size: 1.2rem;
         }
+
         .map-container {
             width: 100%;
             height: 300px;
             border-radius: var(--border-radius);
             overflow: hidden;
         }
+
         .map-container iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
-        
+
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
             margin-bottom: 20px;
         }
+
         .form-group label {
             font-size: 0.95rem;
             font-weight: 500;
         }
-        .form-group input, .form-group textarea {
+
+        .form-group input,
+        .form-group textarea {
             padding: 12px 15px;
             border: 1px solid var(--color-border);
             border-radius: 4px;
@@ -83,9 +98,12 @@
             outline: none;
             transition: border-color 0.3s;
         }
-        .form-group input:focus, .form-group textarea:focus {
+
+        .form-group input:focus,
+        .form-group textarea:focus {
             border-color: var(--color-dark-green);
         }
+
         .phone-input-wrapper {
             display: flex;
             align-items: center;
@@ -94,9 +112,11 @@
             overflow: hidden;
             transition: border-color 0.3s;
         }
+
         .phone-input-wrapper:focus-within {
             border-color: var(--color-dark-green);
         }
+
         .phone-prefix {
             padding: 12px 14px;
             background-color: var(--color-light-green);
@@ -108,12 +128,14 @@
             user-select: none;
             border-right: 1px solid var(--color-border);
         }
+
         .phone-input-wrapper input {
             border: none !important;
             border-radius: 0 !important;
             flex: 1;
             min-width: 0;
         }
+
         .phone-input-wrapper input:focus {
             border: none !important;
             box-shadow: none;
@@ -126,8 +148,9 @@
         }
     </style>
 </head>
+
 <body>
-    
+
     <div id="navbar-container"></div>
 
     <main>
@@ -141,8 +164,11 @@
         <section class="container contact-container">
             <!-- Contact Form -->
             <div class="contact-form-area">
-                <h3 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 30px; color: var(--color-dark-green);">Send us a Message</h3>
-                <form onsubmit="event.preventDefault(); alert('Thank you for contacting us! We will get back to you soon.'); this.reset();">
+                <h3
+                    style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 30px; color: var(--color-dark-green);">
+                    Send us a Message</h3>
+                <form
+                    onsubmit="event.preventDefault(); alert('Thank you for contacting us! We will get back to you soon.'); this.reset();">
                     <div class="form-group">
                         <label for="name">Your Name</label>
                         <input type="text" id="name" required placeholder="John Doe">
@@ -155,7 +181,9 @@
                         <label for="phone">Phone Number</label>
                         <div class="phone-input-wrapper">
                             <span class="phone-prefix">+91</span>
-                            <input type="tel" id="phone" required placeholder="98765 43210" pattern="[0-9]{10}" maxlength="10" title="Please enter a valid 10-digit phone number" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <input type="tel" id="phone" required placeholder="98765 43210" pattern="[0-9]{10}"
+                                maxlength="10" title="Please enter a valid 10-digit phone number"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                     </div>
                     <div class="form-group">
@@ -166,7 +194,8 @@
                         <label for="message">Message</label>
                         <textarea id="message" rows="6" required placeholder="How can we help you today?"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Send Message</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Send
+                        Message</button>
                 </form>
             </div>
 
@@ -178,8 +207,9 @@
                         <div class="info-icon">📍</div>
                         <div>
                             <strong>Visit Us</strong><br>
-                            Vasan Eye Care, 3-6-242/2, Main Rd, opp. Street Number 8, Sameer, Himayatnagar, Hyderabad, Telangana 500029<br>
-                            
+                            Vasan Eye Care, 3-6-242/2, Main Rd, opp. Street Number 8, Sameer, Himayatnagar, Hyderabad,
+                            Telangana 500029<br>
+
                         </div>
                     </div>
                     <div class="info-line">
@@ -193,7 +223,7 @@
                         <div class="info-icon">✉️</div>
                         <div>
                             <strong>Email Us</strong><br>
-                            friendsflorist@gmail.com 
+                            friendsflorist@gmail.com
                         </div>
                     </div>
                     <div class="info-line">
@@ -209,7 +239,8 @@
 
                 <div class="map-container">
                     <!-- Google Maps Embed Iframe -->
-                    <iframe src="https://maps.app.goo.gl/J99XPVUZE31rxQ9PA" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src="https://maps.app.goo.gl/J99XPVUZE31rxQ9PA" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </section>
@@ -220,4 +251,5 @@
     <script src="js/cart.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>
