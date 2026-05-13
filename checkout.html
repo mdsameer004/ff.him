@@ -392,8 +392,8 @@
         }
 
         async function calculateDelivery() {
-            const pincode = document.getElementById('pincode').value;
-            const landmark = document.getElementById('landmark').value;
+            const pincode = document.getElementById('pincode').value.trim();
+            const landmark = document.getElementById('landmark').value.trim();
             const statusContainer = document.getElementById('delivery-status-container');
             const statusText = document.getElementById('delivery-status-text');
             
@@ -403,11 +403,24 @@
             statusText.textContent = 'Calculating delivery distance...';
             statusText.style.color = '#666';
 
-            const query = landmark ? `${landmark}, ${pincode}` : pincode;
-            const coords = await geocodeAddress(query);
+            let coords = null;
+            let isHydPincode = pincode.startsWith('500') && pincode.length >= 6;
+            
+            // Geocode only if there is a landmark, or it's a non-Hyderabad pincode
+            if (!landmark && isHydPincode) {
+                coords = { lat: 17.3850, lng: 78.4867 };
+            } else {
+                const query = landmark ? `${landmark}, ${pincode}` : pincode;
+                coords = await geocodeAddress(query);
+                
+                // Fallback to Hyderabad center if geocoding fails but it's a Hyderabad pincode
+                if (!coords && isHydPincode) {
+                    coords = { lat: 17.3850, lng: 78.4867 };
+                }
+            }
 
             if (coords) {
-                processCoordinates(coords.lat, coords.lng);
+                processCoordinates(coords.lat, coords.lng, isHydPincode);
             } else {
                 statusText.textContent = 'Location not found. Please enter a valid Pincode or Landmark.';
                 statusText.style.color = '#d9534f';
@@ -428,7 +441,7 @@
 
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        processCoordinates(position.coords.latitude, position.coords.longitude);
+                        processCoordinates(position.coords.latitude, position.coords.longitude, false);
                     },
                     (error) => {
                         statusText.textContent = 'Unable to get your location. Please enter pincode manually.';
@@ -440,20 +453,21 @@
             }
         }
 
-        function processCoordinates(lat, lng) {
+        function processCoordinates(lat, lng, isHydPincode = false) {
             const statusText = document.getElementById('delivery-status-text');
             const distance = calculateDistance(SHOP_LAT, SHOP_LNG, lat, lng);
             const price = getDeliveryPricing(distance);
 
             locationCalculated = true;
+            let prefix = isHydPincode ? "Hyderabad service area detected. " : "";
 
             if (price === -1) {
-                statusText.textContent = `Distance: ${distance.toFixed(1)} km. Sorry, we do not deliver beyond 20 km.`;
+                statusText.textContent = `${prefix}Distance: ${distance.toFixed(1)} km. Sorry, we do not deliver beyond 20 km.`;
                 statusText.style.color = '#d9534f';
                 isDeliverable = false;
                 calculatedDeliveryCharge = 0;
             } else {
-                statusText.textContent = `Distance: ${distance.toFixed(1)} km. Delivery Charge: ₹${price}`;
+                statusText.textContent = `${prefix}Distance: ${distance.toFixed(1)} km. Delivery Charge: ₹${price}`;
                 statusText.style.color = '#28a745';
                 isDeliverable = true;
                 calculatedDeliveryCharge = price;
