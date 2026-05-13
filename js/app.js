@@ -59,7 +59,7 @@ const footerHTML = `
                 <ul>
                     <li><a href="shop.html">Shop All</a></li>
                     <li><a href="gallery.html">Event Gallery</a></li>
-                    <li><a href="#">About Us</a></li>
+                    <li><a href="about.html">About Us</a></li>
                     <li><a href="contact.html">Contact Us</a></li>
                 </ul>
             </div>
