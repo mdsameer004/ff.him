@@ -301,6 +301,19 @@
                     <span>Delivery</span><span id="chk-delivery">₹0</span>
                 </div>
                 
+                <!-- Coupon Section -->
+                <div class="coupon-section" style="margin: 20px 0; border-top: 1px solid var(--color-border); padding-top: 20px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="coupon-input" placeholder="Enter Coupon Code" style="flex: 1; padding: 10px; border: 1px solid var(--color-border); border-radius: 4px; text-transform: uppercase;">
+                        <button type="button" class="btn btn-secondary" id="coupon-btn" onclick="applyCoupon()" style="padding: 10px 20px;">Apply</button>
+                    </div>
+                    <div id="coupon-message" style="margin-top: 8px; font-size: 0.85rem;"></div>
+                </div>
+                
+                <div style="display:none; justify-content:space-between; margin-bottom: 10px; color: var(--color-dark-green);" id="discount-row">
+                    <span>Discount (<span id="applied-coupon-code"></span>)</span><span id="chk-discount">-₹0</span>
+                </div>
+                
                 <div style="display:flex; justify-content:space-between; font-size: 1.4rem; font-weight: bold; border-top: 2px solid var(--color-border); padding-top: 15px;">
                     <span>Total</span><span id="chk-total">₹0</span>
                 </div>
@@ -363,6 +376,62 @@
         let isDeliverable = false;
         let locationCalculated = false;
 
+        // Coupon Logic
+        let appliedCoupon = null;
+        let discountAmount = 0;
+        
+        const coupons = {
+            'SAVE10': { type: 'percent', value: 10 },
+            'FLOWER50': { type: 'fixed', value: 50 },
+            'WELCOME15': { type: 'percent', value: 15 }
+        };
+
+        function applyCoupon() {
+            const input = document.getElementById('coupon-input');
+            const code = input.value.trim().toUpperCase();
+            const msgEl = document.getElementById('coupon-message');
+            const btn = document.getElementById('coupon-btn');
+            
+            if (!code) return;
+
+            if (coupons[code]) {
+                appliedCoupon = { code: code, ...coupons[code] };
+                localStorage.setItem('friendsFloristCoupon', JSON.stringify(appliedCoupon));
+                
+                msgEl.innerHTML = '<span style="color: #27ae60; font-weight: 500;">✓ Coupon Applied</span>';
+                showToast(`Coupon ${code} applied successfully`, 'success', 'Coupon Applied');
+                
+                input.value = code;
+                input.disabled = true;
+                
+                btn.textContent = 'Remove';
+                btn.onclick = removeCoupon;
+                
+                updateCheckoutTotals();
+            } else {
+                msgEl.innerHTML = '<span style="color: #e74c3c; font-weight: 500;">✕ Invalid Coupon</span>';
+                showToast('Invalid coupon code', 'error', 'Coupon Error');
+            }
+        }
+        
+        function removeCoupon() {
+            appliedCoupon = null;
+            localStorage.removeItem('friendsFloristCoupon');
+            
+            const input = document.getElementById('coupon-input');
+            input.value = '';
+            input.disabled = false;
+            
+            const btn = document.getElementById('coupon-btn');
+            btn.textContent = 'Apply';
+            btn.onclick = applyCoupon;
+            
+            document.getElementById('coupon-message').innerHTML = '';
+            
+            updateCheckoutTotals();
+            showToast('Coupon removed', 'info', 'Coupon Removed');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (cart.length === 0) {
                 openModal({
@@ -377,6 +446,16 @@
 
             renderInitialCart();
             updateCheckoutTotals();
+
+            // Load saved coupon
+            const savedCoupon = JSON.parse(localStorage.getItem('friendsFloristCoupon'));
+            if (savedCoupon && coupons[savedCoupon.code]) {
+                const input = document.getElementById('coupon-input');
+                if (input) {
+                    input.value = savedCoupon.code;
+                    applyCoupon();
+                }
+            }
         });
 
         function renderInitialCart() {
@@ -542,8 +621,27 @@
             const tax = totals.tax;
             
             const deliveryFee = locationCalculated ? calculatedDeliveryCharge : 0;
-            const newTotal = subtotal + tax + deliveryFee;
-            finalTotalAmount = newTotal;
+            
+            discountAmount = 0;
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percent') {
+                    discountAmount = subtotal * (appliedCoupon.value / 100);
+                } else if (appliedCoupon.type === 'fixed') {
+                    discountAmount = appliedCoupon.value;
+                }
+                
+                // Ensure discount doesn't exceed subtotal
+                if (discountAmount > subtotal) discountAmount = subtotal;
+                
+                document.getElementById('discount-row').style.display = 'flex';
+                document.getElementById('applied-coupon-code').textContent = appliedCoupon.code;
+                document.getElementById('chk-discount').textContent = `-₹${discountAmount.toLocaleString('en-IN')}`;
+            } else {
+                document.getElementById('discount-row').style.display = 'none';
+            }
+
+            const newTotal = subtotal + tax + deliveryFee - discountAmount;
+            finalTotalAmount = newTotal > 0 ? newTotal : 0;
 
             document.getElementById('chk-subtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
             document.getElementById('chk-tax').textContent = `₹${tax.toLocaleString('en-IN')}`;
@@ -554,7 +652,7 @@
                 document.getElementById('chk-delivery').textContent = isDeliverable ? `₹${deliveryFee.toLocaleString('en-IN')}` : 'Not Deliverable';
             }
             
-            document.getElementById('chk-total').textContent = `₹${newTotal.toLocaleString('en-IN')}`;
+            document.getElementById('chk-total').textContent = `₹${finalTotalAmount.toLocaleString('en-IN')}`;
 
             const payBtn = document.querySelector('button[type="submit"]');
             const codBtn = document.querySelector('p[onclick="processCOD()"]');
@@ -603,6 +701,8 @@
                 date: orderDate,
                 items: cart,
                 total: finalTotalAmount,
+                discount: discountAmount,
+                coupon: appliedCoupon ? appliedCoupon.code : null,
                 deliveryCharge: calculatedDeliveryCharge,
                 method: method,
                 status: 'Processing'
@@ -610,6 +710,7 @@
             
             orders.unshift(order);
             localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
+            localStorage.removeItem('friendsFloristCoupon');
             
             localStorage.removeItem('friendsFloristCart');
             
