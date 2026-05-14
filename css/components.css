@@ -530,7 +530,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.mobile-only-login {
+.mobile-only-login, .mobile-only-wishlist {
     display: none;
 }
 
@@ -680,11 +680,11 @@
         display: flex;
     }
     
-    .mobile-only-login {
+    .mobile-only-login, .mobile-only-wishlist {
         display: block; /* Show only on mobile dropdown */
     }
     
-    .nav-actions .login-icon {
+    .nav-actions .login-icon, .nav-actions .wishlist-nav-icon {
         display: none; /* Hide top icon on mobile */
     }
 

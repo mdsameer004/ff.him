@@ -15,6 +15,7 @@ const navbarHTML = `
             <a href="gallery.html">Gallery</a>
             <a href="contact.html">Contact</a>
             <a href="orders.html">My Orders</a>
+            <a href="wishlist.html" class="mobile-only-wishlist">❤️ Wishlist</a>
             <a href="auth.html" class="mobile-only-login">Login / Register</a>
         </div>
         <div class="nav-actions">
