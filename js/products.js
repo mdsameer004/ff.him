@@ -135,7 +135,6 @@ function createModernProductCard(product) {
                 <div class="modern-product-rating-overlay">${stars} <span style="font-size: 0.75rem;">(${revCount})</span></div>
                 ${discountBadge}
                 ${typeof heartButtonHTML === 'function' ? heartButtonHTML(product.id) : ''}
-                <button class="modern-quick-view-btn" onclick="event.stopPropagation(); quickView(${product.id})">Quick View</button>
             </div>
             <div class="modern-product-info">
                 <h3 class="modern-product-title">${product.name}</h3>
