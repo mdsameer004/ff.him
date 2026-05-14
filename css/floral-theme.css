@@ -18,9 +18,9 @@
 
 body {
     background-color: #fafafa !important;
-    background-image: url("../images/floral-pattern.svg") !important;
+    background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat !important;
-    background-size: 400px 400px !important;
+    background-size: 600px auto !important;
 }
 
 /* ============================================================
@@ -49,9 +49,9 @@ body {
 .hero-section {
     position: relative;
     background-color: #f8e6ea !important;
-    background-image: url("../images/floral-pattern-pink.svg") !important;
+    background-image: url("../images/floral-bg-pink.png") !important;
     background-repeat: repeat !important;
-    background-size: 400px 400px !important;
+    background-size: 600px auto !important;
     overflow: hidden;
 }
 

@@ -31,10 +31,10 @@
 body {
     font-family: var(--font-body);
     color: var(--color-text-main);
-    background-color: var(--color-bg-gray);
-    background-image: url("../images/floral-pattern.svg");
+    background-color: #fafafa;
+    background-image: url("../images/floral-bg.png");
     background-repeat: repeat;
-    background-size: 400px 400px;
+    background-size: 600px auto;
     line-height: 1.6;
     overflow-x: hidden;
 }
@@ -209,9 +209,9 @@ img {
 .hero-section {
     padding: 120px 0 80px;
     background-color: #f8e6ea;
-    background-image: url("../images/floral-pattern-pink.svg");
+    background-image: url("../images/floral-bg-pink.png");
     background-repeat: repeat;
-    background-size: 400px 400px;
+    background-size: 600px auto;
     overflow: hidden;
     position: relative;
     z-index: 1;
