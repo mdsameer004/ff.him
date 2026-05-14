@@ -171,11 +171,11 @@ function initHomePage() {
         
         Array.from(categoriesSet).slice(0, 4).forEach((category, idx) => {
             catHTML += `
-                <a href="shop.html?category=${encodeURIComponent(category)}" class="category-card" style="text-align: center; display: block; group">
-                    <div style="width: 200px; height: 200px; border-radius: 50%; overflow: hidden; margin: 0 auto 15px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <a href="shop.html?category=${encodeURIComponent(category)}" class="category-card" style="text-align: center; display: block; text-decoration: none;">
+                    <div style="width: 100%; max-width: 200px; aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; margin: 0 auto 15px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                         <img src="${images[idx] || products[0].image}" alt="${category}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
                     </div>
-                    <h3 style="font-size: 1.1rem; color: var(--color-dark-green);">${category}</h3>
+                    <h3 style="font-size: 1.1rem; color: var(--color-dark-green); margin: 0;">${category}</h3>
                 </a>
             `;
         });
