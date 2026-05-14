@@ -18,9 +18,54 @@
 
 body {
     background-color: #fafafa !important;
+    position: relative;
+    z-index: 0;
+}
+
+/* Global floral sketch for the whole body */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
     background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat !important;
     background-size: 600px auto !important;
+    opacity: 0.35;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* ============================================================
+   BACKGROUND UTILITY OVERLAYS (For opaque sections)
+   ============================================================ */
+.bg-light-pink, .bg-light-green, .bg-white {
+    position: relative;
+    z-index: 1;
+}
+
+/* If a section has an opaque background, give it its own floral overlay */
+.bg-light-green::before, .bg-white::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("../images/floral-bg.png") !important;
+    background-repeat: repeat;
+    background-size: 600px auto;
+    opacity: 0.35;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.bg-light-pink::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("../images/floral-bg-pink.png") !important;
+    background-repeat: repeat;
+    background-size: 600px auto;
+    opacity: 0.35;
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* ============================================================
@@ -62,7 +107,7 @@ body {
     background-repeat: repeat;
     background-size: 600px auto;
     opacity: 0.35;
-    z-index: 1;   /* above pink bg color, below floating images */
+    z-index: -1;   /* above pink bg color, below floating images */
     pointer-events: none;
 }
 
