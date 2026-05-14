@@ -30,7 +30,7 @@ body::before {
     background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat !important;
     background-size: 600px auto !important;
-    opacity: 0.35;
+    opacity: 0.40;
     z-index: -1;
     pointer-events: none;
 }
@@ -51,7 +51,7 @@ body::before {
     background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat;
     background-size: 600px auto;
-    opacity: 0.35;
+    opacity: 0.40;
     z-index: -1;
     pointer-events: none;
 }
@@ -63,7 +63,7 @@ body::before {
     background-image: url("../images/floral-bg-pink.png") !important;
     background-repeat: repeat;
     background-size: 600px auto;
-    opacity: 0.35;
+    opacity: 0.40;
     z-index: -1;
     pointer-events: none;
 }
