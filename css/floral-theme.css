@@ -49,23 +49,19 @@ body {
 .hero-section {
     position: relative;
     background-color: #f8e6ea !important;
-    background-image: url("../images/floral-bg-pink.png") !important;
-    background-repeat: repeat !important;
-    background-size: 600px auto !important;
+    background-image: none !important;
     overflow: hidden;
 }
 
-/* Large rose corner — top right */
+/* Floral wallpaper — sits at the VERY BACK, z-index 0 */
 .hero-section::before {
     content: '';
     position: absolute;
-    top: -20px; right: -20px;
-    width: 380px; height: 380px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%23FADADD' stroke-width='1.2'%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(0 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(60 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(120 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(180 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(240 200 60)'/%3E%3Cellipse cx='200' cy='60' rx='28' ry='50' transform='rotate(300 200 60)'/%3E%3Ccircle cx='200' cy='60' r='14' stroke='%23D4A5A5'/%3E%3Cpath d='M200,110 C196,145 192,180 188,220' stroke='%23B2C9AD' stroke-width='1.5'/%3E%3Cpath d='M196,150 C180,138 165,145 168,160 C171,175 192,172 196,150' stroke='%23B2C9AD'/%3E%3Cpath d='M192,185 C208,173 225,180 222,195 C219,210 196,207 192,185' stroke='%23B2C9AD'/%3E%3Ccircle cx='80' cy='30' r='5' stroke='%23E8D5F5'/%3E%3Ccircle cx='80' cy='30' r='12' stroke='%23E8D5F5' stroke-dasharray='3 4'/%3E%3Ccircle cx='40' cy='80' r='4' stroke='%23FADADD'/%3E%3Ccircle cx='40' cy='80' r='11' stroke='%23FADADD' stroke-dasharray='3 4'/%3E%3Cpath d='M10,200 C30,170 60,190 90,170 C120,150 140,175 170,160' stroke='%23B2C9AD' stroke-width='1'/%3E%3Cpath d='M25,182 C22,168 32,163 38,172 C44,181 32,188 25,182' stroke='%23B2C9AD'/%3E%3Cpath d='M75,174 C72,160 82,155 88,164 C94,173 82,180 75,174' stroke='%23B2C9AD'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: top right;
-    opacity: 0.13;
+    inset: 0;
+    background-image: url("../images/floral-bg-pink.png") !important;
+    background-repeat: repeat;
+    background-size: 600px auto;
+    opacity: 0.35;
     z-index: 0;
     pointer-events: none;
 }
