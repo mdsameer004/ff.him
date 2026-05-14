@@ -137,8 +137,8 @@
 }
 
 .wishlist-heart.wishlisted .heart-svg {
-    fill: var(--color-soft-pink);
-    stroke: var(--color-soft-pink);
+    fill: #e74c3c;
+    stroke: #e74c3c;
 }
 
 /* Navbar wishlist icon */
@@ -263,7 +263,7 @@
     font-size: 1rem; /* Smaller */
     color: var(--color-dark-green) !important;
     font-weight: 700;
-    font-family: var(--font-heading);
+    font-family: var(--font-body); /* Standard font */
 }
 
 .modern-add-to-cart-btn {
