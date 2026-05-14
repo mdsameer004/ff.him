@@ -1,79 +1,179 @@
-import os, math
+import os
 
 base = r"c:\Users\mohds\.gemini\antigravity\scratch\friends-florist\images"
 
-def flower(cx, cy, size, stagger=0):
-    """Circular multi-ring peony/ranunculus flower viewed from above"""
-    out = []
-    # rings: (radius_from_center, num_petals, petal_rx, petal_ry, angle_offset)
-    rings = [
-        (size*0.88, 14, size*0.11, size*0.24, stagger),
-        (size*0.70, 12, size*0.10, size*0.20, stagger+15),
-        (size*0.53, 10, size*0.09, size*0.17, stagger+8),
-        (size*0.38, 8,  size*0.08, size*0.14, stagger+22),
-        (size*0.24, 6,  size*0.07, size*0.11, stagger+5),
-        (size*0.12, 5,  size*0.05, size*0.08, stagger+18),
-    ]
-    for r, n, rx, ry, off in rings:
-        for i in range(n):
-            a = i * (360/n) + off
-            # petal center before rotation
-            px = round(cx, 1)
-            py = round(cy - r, 1)
-            out.append(
-                f'<ellipse cx="{px}" cy="{py:.1f}" rx="{rx:.1f}" ry="{ry:.1f}" '
-                f'transform="rotate({a:.1f},{cx},{cy})" stroke-width="0.9"/>'
-            )
-    # center
-    out.append(f'<circle cx="{cx}" cy="{cy}" r="{size*0.09:.1f}" stroke-width="0.9"/>')
-    out.append(f'<circle cx="{cx}" cy="{cy}" r="{size*0.04:.1f}" stroke-width="0.7"/>')
-    return '\n'.join(out)
+def make_rose_svg(stroke, opacity, path):
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+<g fill="none" stroke="{stroke}" stroke-linecap="round" stroke-linejoin="round" opacity="{opacity}">
 
-def leaf_sprig(cx, cy, angle):
-    return (
-        f'<g transform="translate({cx},{cy}) rotate({angle})">'
-        '<path d="M0,0 Q0,-22 0,-44" stroke-width="0.8"/>'
-        '<path d="M0,-44 C-14,-46 -19,-34 -14,-24 C-9,-14 0,-18 0,-44 Z" stroke-width="0.8"/>'
-        '<path d="M0,-44 C12,-46 17,-34 12,-24 C7,-14 0,-18 0,-44 Z" stroke-width="0.8"/>'
-        '<path d="M0,-22 C-10,-18 -14,-8 -9,-2 C-4,4 0,-6 0,-22 Z" stroke-width="0.75"/>'
-        '<path d="M0,-22 C10,-18 14,-8 9,-2 C4,4 0,-6 0,-22 Z" stroke-width="0.75"/>'
-        '</g>'
-    )
+<!-- ====== LARGE ROSE (centre 130,155) full bloom 3/4 view ====== -->
+<g transform="translate(130,155)">
+  <!-- outer petals -->
+  <path d="M-6,6 C-28,-4 -38,-42 -22,-62 C-12,-74 4,-74 14,-62 C28,-44 22,-10 8,4 Z" stroke-width="1.2"/>
+  <path d="M-6,6 C-26,10 -54,0 -62,-22 C-68,-42 -54,-62 -36,-60 C-18,-58 -6,-32 -6,6 Z" stroke-width="1.2"/>
+  <path d="M8,4 C24,10 52,2 60,-22 C66,-42 52,-62 34,-60 C16,-58 6,-30 8,4 Z" stroke-width="1.2"/>
+  <path d="M-4,8 C-8,28 2,56 20,60 C38,64 52,46 48,26 C44,6 22,0 -4,8 Z" stroke-width="1.2"/>
+  <path d="M4,8 C8,28 -2,56 -20,60 C-38,64 -52,46 -48,26 C-44,6 -22,0 4,8 Z" stroke-width="1.2"/>
+  <!-- petal midrib lines -->
+  <path d="M-6,6 C-14,-24 -12,-52 -8,-62" stroke-width="0.45"/>
+  <path d="M-6,6 C-28,-6 -50,-14 -56,-36" stroke-width="0.45"/>
+  <path d="M8,4 C26,-4 48,-12 54,-36" stroke-width="0.45"/>
+  <path d="M-4,8 C2,30 14,48 20,58" stroke-width="0.45"/>
+  <path d="M4,8 C-2,30 -14,48 -20,58" stroke-width="0.45"/>
+  <!-- mid petals -->
+  <path d="M-4,0 C-18,-8 -22,-34 -12,-46 C-4,-54 8,-52 12,-40 C18,-24 10,-6 -4,0 Z" stroke-width="1.1"/>
+  <path d="M4,0 C22,-4 32,-26 24,-42 C16,-56 0,-56 -6,-44 C-12,-30 -4,-6 4,0 Z" stroke-width="1.1"/>
+  <path d="M0,4 C-14,10 -20,32 -10,44 C-2,52 10,48 14,36 C18,22 8,6 0,4 Z" stroke-width="1.1"/>
+  <path d="M0,4 C14,10 20,32 10,44 C2,52 -10,48 -14,36 C-18,22 -8,6 0,4 Z" stroke-width="1.1"/>
+  <!-- inner cup petals -->
+  <path d="M-2,-4 C-12,-10 -14,-28 -6,-36 C2,-44 12,-38 14,-26 C16,-14 8,-4 -2,-4 Z" stroke-width="1.0"/>
+  <path d="M2,-4 C14,-8 20,-24 14,-34 C8,-44 -2,-42 -6,-30 C-10,-18 -4,-6 2,-4 Z" stroke-width="1.0"/>
+  <path d="M0,-2 C-8,4 -10,18 -4,26 C4,32 12,26 12,14 C12,4 6,-4 0,-2 Z" stroke-width="1.0"/>
+  <!-- center spiral (classic rose heart) -->
+  <path d="M0,-8 C4,-10 8,-7 7,-2 C6,3 2,6 -2,5 C-6,4 -8,0 -7,-5 C-6,-10 -2,-13 3,-12 C9,-11 13,-5 12,2 C11,10 5,16 0,16" stroke-width="0.9"/>
+  <path d="M1,-4 C3,-5 5,-3 4,0 C3,3 0,4 -1,3 C-3,2 -3,-1 -1,-3" stroke-width="0.6"/>
+  <!-- sepals -->
+  <path d="M-8,66 C-14,52 -8,40 0,50 C8,40 14,52 8,66" stroke-width="0.9"/>
+  <path d="M-14,62 C-24,50 -18,36 -10,46" stroke-width="0.9"/>
+  <path d="M14,62 C24,50 18,36 10,46" stroke-width="0.9"/>
+  <path d="M-4,70 C-14,58 -10,44 -2,54" stroke-width="0.8"/>
+  <path d="M4,70 C14,58 10,44 2,54" stroke-width="0.8"/>
+  <!-- stem with curve -->
+  <path d="M0,70 C6,96 4,130 6,162" stroke-width="1.3"/>
+  <!-- thorn 1 -->
+  <path d="M3,95 C10,90 14,93 9,100" stroke-width="0.8"/>
+  <!-- thorn 2 -->
+  <path d="M5,128 C-3,123 -6,127 -2,134" stroke-width="0.8"/>
+  <!-- compound leaf LEFT (3 leaflets, serrated feel) -->
+  <g transform="translate(4,100) rotate(-38)">
+    <path d="M0,0 Q-1,-20 -1,-42" stroke-width="0.85"/>
+    <path d="M-1,-42 C-14,-44 -20,-32 -16,-22 C-12,-12 -1,-16 -1,-42 Z" stroke-width="0.85"/>
+    <path d="M-1,-24 C-14,-20 -18,-10 -12,-4 C-6,2 -1,-6 -1,-24 Z" stroke-width="0.85"/>
+    <path d="M-1,-24 C10,-20 14,-10 10,-4 C6,2 -1,-6 -1,-24 Z" stroke-width="0.85"/>
+    <path d="M-1,-42 C-9,-34 -14,-28 -14,-22" stroke-width="0.4"/>
+  </g>
+  <!-- compound leaf RIGHT -->
+  <g transform="translate(5,130) rotate(32)">
+    <path d="M0,0 Q1,-18 1,-38" stroke-width="0.85"/>
+    <path d="M1,-38 C13,-40 19,-28 15,-18 C11,-8 1,-12 1,-38 Z" stroke-width="0.85"/>
+    <path d="M1,-20 C13,-16 17,-6 12,0 C7,6 1,-2 1,-20 Z" stroke-width="0.85"/>
+    <path d="M1,-20 C-10,-16 -14,-6 -10,0 C-6,6 1,-2 1,-20 Z" stroke-width="0.85"/>
+    <path d="M1,-38 C8,-30 12,-24 12,-18" stroke-width="0.4"/>
+  </g>
+</g>
 
-def make_svg(stroke, opacity, path):
-    W, H = 400, 400
-    lines = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">',
-        f'<g fill="none" stroke="{stroke}" stroke-linecap="round" stroke-linejoin="round" opacity="{opacity}">',
-    ]
+<!-- ====== MEDIUM ROSE (centre 358,170) slightly different angle ====== -->
+<g transform="translate(358,170)">
+  <path d="M-5,5 C-24,-2 -34,-38 -20,-58 C-10,-70 6,-70 16,-58 C30,-40 22,-8 8,3 Z" stroke-width="1.2"/>
+  <path d="M-5,5 C-22,12 -48,4 -56,-18 C-62,-38 -46,-56 -30,-54 C-14,-52 -5,-28 -5,5 Z" stroke-width="1.2"/>
+  <path d="M8,3 C22,12 46,6 54,-16 C62,-36 46,-56 30,-54 C14,-52 6,-28 8,3 Z" stroke-width="1.2"/>
+  <path d="M-3,8 C-8,26 0,52 18,56 C36,60 48,42 44,22 C40,4 18,-2 -3,8 Z" stroke-width="1.2"/>
+  <path d="M-6,6 C-14,-24 -10,-52 -6,-62" stroke-width="0.45"/>
+  <path d="M8,3 C24,-2 46,-10 52,-32" stroke-width="0.45"/>
+  <path d="M-3,8 C2,28 12,46 18,54" stroke-width="0.45"/>
+  <path d="M-3,0 C-16,-8 -20,-32 -10,-44 C-2,-52 10,-50 14,-38 C18,-22 8,-4 -3,0 Z" stroke-width="1.05"/>
+  <path d="M3,0 C18,-4 28,-26 20,-42 C12,-54 -2,-52 -8,-40 C-14,-26 -4,-4 3,0 Z" stroke-width="1.05"/>
+  <path d="M0,4 C-14,10 -18,30 -8,42 C0,50 12,44 14,30 C16,18 6,4 0,4 Z" stroke-width="1.05"/>
+  <path d="M-1,-4 C-11,-10 -13,-26 -5,-34 C3,-42 13,-36 14,-24 C15,-12 6,-4 -1,-4 Z" stroke-width="0.95"/>
+  <path d="M1,-4 C13,-8 18,-22 12,-32 C6,-40 -4,-38 -8,-26 C-11,-14 -4,-4 1,-4 Z" stroke-width="0.95"/>
+  <path d="M0,-8 C4,-10 8,-7 7,-2 C6,3 2,6 -2,5 C-6,4 -8,0 -7,-5 C-5,-10 -1,-12 3,-11 C8,-10 11,-4 10,2 C9,9 4,14 0,14" stroke-width="0.85"/>
+  <!-- sepals -->
+  <path d="M-7,60 C-12,46 -7,36 0,46 C7,36 12,46 7,60" stroke-width="0.9"/>
+  <path d="M-12,56 C-22,44 -16,32 -8,42" stroke-width="0.85"/>
+  <path d="M12,56 C22,44 16,32 8,42" stroke-width="0.85"/>
+  <!-- stem -->
+  <path d="M0,62 C-4,86 -2,118 -2,148" stroke-width="1.25"/>
+  <path d="M-1,88 C6,84 10,87 6,94" stroke-width="0.8"/>
+  <!-- leaf left -->
+  <g transform="translate(-1,92) rotate(-34)">
+    <path d="M0,0 Q0,-18 0,-36" stroke-width="0.82"/>
+    <path d="M0,-36 C-12,-38 -17,-27 -13,-18 C-9,-9 0,-13 0,-36 Z" stroke-width="0.82"/>
+    <path d="M0,-20 C-12,-16 -15,-7 -10,0 C-5,6 0,-4 0,-20 Z" stroke-width="0.82"/>
+    <path d="M0,-20 C10,-16 13,-7 9,0 C5,6 0,-4 0,-20 Z" stroke-width="0.82"/>
+  </g>
+  <!-- leaf right -->
+  <g transform="translate(-2,122) rotate(28)">
+    <path d="M0,0 Q1,-16 1,-32" stroke-width="0.82"/>
+    <path d="M1,-32 C12,-34 17,-23 13,-14 C9,-5 1,-9 1,-32 Z" stroke-width="0.82"/>
+    <path d="M1,-16 C12,-12 15,-3 10,4 C5,10 1,-2 1,-16 Z" stroke-width="0.82"/>
+    <path d="M1,-16 C-9,-12 -12,-3 -8,4 C-4,10 1,-2 1,-16 Z" stroke-width="0.82"/>
+  </g>
+</g>
 
-    # Main flowers placed so they tile seamlessly
-    # Centre flower
-    lines.append(flower(200, 200, 78, stagger=0))
-    # Corner flowers (partially visible — tile edges)
-    lines.append(flower(0,   0,   78, stagger=10))
-    lines.append(flower(400, 0,   78, stagger=10))
-    lines.append(flower(0,   400, 78, stagger=10))
-    lines.append(flower(400, 400, 78, stagger=10))
-    # Mid-edge flowers
-    lines.append(flower(200, 0,   52, stagger=5))
-    lines.append(flower(200, 400, 52, stagger=5))
-    lines.append(flower(0,   200, 52, stagger=5))
-    lines.append(flower(400, 200, 52, stagger=5))
+<!-- ====== ROSEBUD top-right (centre 420,52) ====== -->
+<g transform="translate(420,52)">
+  <path d="M0,-32 C-10,-24 -14,-8 -10,2 C-4,14 4,14 10,2 C14,-8 10,-24 0,-32 Z" stroke-width="1.1"/>
+  <path d="M0,-32 C10,-20 14,-4 10,6 C6,18 0,16 0,12" stroke-width="1.0"/>
+  <path d="M0,-32 C-10,-20 -14,-4 -10,6 C-6,18 0,16 0,12" stroke-width="1.0"/>
+  <path d="M-6,18 C-12,10 -8,4 0,12 C8,4 12,10 6,18" stroke-width="0.85"/>
+  <path d="M0,20 Q2,36 2,54" stroke-width="1.1"/>
+  <path d="M1,34 C10,28 14,32 9,40" stroke-width="0.75"/>
+  <g transform="translate(1,42) rotate(-30)">
+    <path d="M0,0 Q0,-14 0,-28" stroke-width="0.78"/>
+    <path d="M0,-28 C-10,-30 -14,-20 -10,-12 C-6,-4 0,-8 0,-28 Z" stroke-width="0.78"/>
+    <path d="M0,-14 C-10,-10 -12,-2 -8,4 C-4,8 0,-2 0,-14 Z" stroke-width="0.78"/>
+    <path d="M0,-14 C8,-10 10,-2 6,4 C3,8 0,-2 0,-14 Z" stroke-width="0.78"/>
+  </g>
+</g>
 
-    # Leaf sprigs between flowers
-    for (x, y, a) in [(110,110,-20),(290,110,20),(110,290,200),(290,290,160),
-                       (200,105,0),(200,295,180),(105,200,-90),(295,200,90)]:
-        lines.append(leaf_sprig(x, y, a))
+<!-- ====== ROSEBUD bottom-left (centre 62,418) ====== -->
+<g transform="translate(62,418)">
+  <path d="M0,-28 C-9,-20 -12,-6 -8,4 C-3,14 3,14 8,4 C12,-6 9,-20 0,-28 Z" stroke-width="1.1"/>
+  <path d="M0,-28 C9,-18 12,-4 8,6 C4,16 0,14 0,10" stroke-width="1.0"/>
+  <path d="M0,-28 C-9,-18 -12,-4 -8,6 C-4,16 0,14 0,10" stroke-width="1.0"/>
+  <path d="M-5,16 C-10,8 -6,3 0,10 C6,3 10,8 5,16" stroke-width="0.85"/>
+  <path d="M0,18 Q-2,32 -2,50" stroke-width="1.1"/>
+  <path d="M-1,30 C-10,25 -13,28 -9,36" stroke-width="0.75"/>
+  <g transform="translate(-2,38) rotate(32)">
+    <path d="M0,0 Q0,-13 0,-26" stroke-width="0.78"/>
+    <path d="M0,-26 C10,-28 14,-18 10,-10 C6,-2 0,-6 0,-26 Z" stroke-width="0.78"/>
+    <path d="M0,-14 C10,-10 12,-2 8,4 C4,8 0,-2 0,-14 Z" stroke-width="0.78"/>
+    <path d="M0,-14 C-8,-10 -10,-2 -6,4 C-3,8 0,-2 0,-14 Z" stroke-width="0.78"/>
+  </g>
+</g>
 
-    lines.append('</g></svg>')
-    svg = '\n'.join(lines)
+<!-- ====== SCATTERED LEAF SPRIGS ====== -->
+<!-- centre-left sprig -->
+<g transform="translate(42,230) rotate(-18)">
+  <path d="M0,0 Q-1,-25 -1,-52" stroke-width="0.9"/>
+  <path d="M-1,-52 C-16,-54 -22,-40 -17,-28 C-12,-16 -1,-20 -1,-52 Z" stroke-width="0.85"/>
+  <path d="M-1,-30 C-16,-26 -20,-14 -14,-6 C-8,2 -1,-8 -1,-30 Z" stroke-width="0.85"/>
+  <path d="M-1,-30 C12,-26 16,-14 11,-6 C6,2 -1,-8 -1,-30 Z" stroke-width="0.85"/>
+</g>
+<!-- centre-right sprig -->
+<g transform="translate(448,308) rotate(22)">
+  <path d="M0,0 Q1,-22 1,-46" stroke-width="0.9"/>
+  <path d="M1,-46 C14,-48 20,-36 15,-24 C10,-12 1,-18 1,-46 Z" stroke-width="0.85"/>
+  <path d="M1,-26 C14,-22 18,-10 12,-3 C7,4 1,-6 1,-26 Z" stroke-width="0.85"/>
+  <path d="M1,-26 C-10,-22 -14,-10 -9,-3 C-5,4 1,-6 1,-26 Z" stroke-width="0.85"/>
+</g>
+<!-- bottom-centre sprig -->
+<g transform="translate(238,450) rotate(-8)">
+  <path d="M0,0 Q0,-18 0,-36" stroke-width="0.9"/>
+  <path d="M0,-36 C-12,-38 -17,-26 -12,-16 C-7,-6 0,-10 0,-36 Z" stroke-width="0.82"/>
+  <path d="M0,-36 C12,-38 17,-26 12,-16 C7,-6 0,-10 0,-36 Z" stroke-width="0.82"/>
+</g>
+<!-- top-centre sprig -->
+<g transform="translate(246,28) rotate(5)">
+  <path d="M0,0 Q0,-16 0,-32" stroke-width="0.9"/>
+  <path d="M0,-32 C-10,-34 -15,-22 -10,-12 C-5,-2 0,-8 0,-32 Z" stroke-width="0.82"/>
+  <path d="M0,-32 C10,-34 15,-22 10,-12 C5,-2 0,-8 0,-32 Z" stroke-width="0.82"/>
+</g>
+
+<!-- small dot buds -->
+<circle cx="244" cy="295" r="3.5" stroke-width="0.9"/>
+<path d="M244,291 Q244,282 244,274" stroke-width="0.8"/>
+<circle cx="108" cy="342" r="3" stroke-width="0.9"/>
+<path d="M108,339 Q106,330 106,322" stroke-width="0.8"/>
+<circle cx="380" cy="338" r="3" stroke-width="0.9"/>
+<path d="M380,335 Q382,326 382,318" stroke-width="0.8"/>
+
+</g>
+</svg>'''
     with open(path, 'w', encoding='utf-8') as f:
         f.write(svg)
     print(f"Written: {path}")
 
-# Pink section  — warm rose-pink strokes on #f8e6ea
-make_svg("#c98fa0", "0.38", os.path.join(base, "floral-pattern-pink.svg"))
-# White section — sage-green strokes on #fafafa
-make_svg("#8aac8a", "0.32", os.path.join(base, "floral-pattern.svg"))
+make_rose_svg("#c47a90", "0.40", os.path.join(base, "floral-pattern-pink.svg"))
+make_rose_svg("#7a9e7e", "0.40", os.path.join(base, "floral-pattern.svg"))
 print("Done!")
