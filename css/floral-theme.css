@@ -30,7 +30,7 @@ body::before {
     background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat !important;
     background-size: 600px auto !important;
-    opacity: 0.70;
+    opacity: 0.90;
     z-index: -1;
     pointer-events: none;
 }
@@ -38,32 +38,32 @@ body::before {
 /* ============================================================
    BACKGROUND UTILITY OVERLAYS (For opaque sections)
    ============================================================ */
-.bg-light-pink, .bg-light-green, .bg-white {
+.bg-light-pink, .bg-light-green, .bg-white, .page-header, .info-page-header, .auth-wrapper {
     position: relative;
     z-index: 1;
 }
 
 /* If a section has an opaque background, give it its own floral overlay */
-.bg-light-green::before, .bg-white::before {
+.bg-light-green::before, .bg-white::before, .auth-wrapper::before {
     content: '';
     position: absolute;
     inset: 0;
     background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat;
     background-size: 600px auto;
-    opacity: 0.70;
+    opacity: 0.90;
     z-index: -1;
     pointer-events: none;
 }
 
-.bg-light-pink::before {
+.bg-light-pink::before, .page-header::before, .info-page-header::before {
     content: '';
     position: absolute;
     inset: 0;
     background-image: url("../images/floral-bg-pink.png") !important;
     background-repeat: repeat;
     background-size: 600px auto;
-    opacity: 0.70;
+    opacity: 0.90;
     z-index: -1;
     pointer-events: none;
 }
@@ -106,7 +106,7 @@ body::before {
     background-image: url("../images/floral-bg-pink.png") !important;
     background-repeat: repeat;
     background-size: 600px auto;
-    opacity: 0.35;
+    opacity: 0.90;
     z-index: -1;   /* above pink bg color, below floating images */
     pointer-events: none;
 }
