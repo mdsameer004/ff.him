@@ -365,8 +365,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             if (cart.length === 0) {
-                alert("Your cart is empty. Diverting to shop.");
-                window.location.href = 'shop.html';
+                openModal({
+                    title: 'Empty Cart',
+                    message: 'Your cart is empty. Redirecting to shop.',
+                    type: 'info',
+                    onConfirm: () => { window.location.href = 'shop.html'; },
+                    onCancel: () => { window.location.href = 'shop.html'; }
+                });
                 return;
             }
 
@@ -504,7 +509,7 @@
                     }
                 );
             } else {
-                alert("Geolocation is not supported by this browser.");
+                showToast("Geolocation is not supported by this browser.", "error", "Error");
             }
         }
 
@@ -577,7 +582,7 @@
                 return;
             }
             if(!locationCalculated || !isDeliverable) {
-                alert("Please provide a valid delivery location within 20km.");
+                showToast("Please provide a valid delivery location within 20km.", "error", "Location Error");
                 return;
             }
             document.getElementById('rp-amount').textContent = `₹${finalTotalAmount.toLocaleString('en-IN')}`;
@@ -631,12 +636,12 @@
                 return;
             }
             if(!locationCalculated || !isDeliverable) {
-                alert("Please provide a valid delivery location within 20km.");
+                showToast("Please provide a valid delivery location within 20km.", "error", "Location Error");
                 return;
             }
-            if(confirm("Place order via Cash on Delivery?")) {
+            customConfirm("Place order via Cash on Delivery?", () => {
                 saveOrder('Cash on Delivery');
-            }
+            });
         }
     </script>
 </body>

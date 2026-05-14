@@ -259,8 +259,13 @@
                 document.getElementById('login-email').value : 
                 document.getElementById('reg-email').value;
             
-            alert(`${type === 'login' ? 'Logging in' : 'Registering'} with: ${email}\n\nThis will be connected to our backend soon!`);
-            window.location.href = 'index.html';
+            openModal({
+                title: type === 'login' ? 'Login Successful' : 'Registration Successful',
+                message: `${type === 'login' ? 'Logging in' : 'Registering'} with: <strong>${email}</strong><br><br>This will be connected to our backend soon!`,
+                type: 'success',
+                onConfirm: () => { window.location.href = 'index.html'; },
+                onCancel: () => { window.location.href = 'index.html'; }
+            });
         }
     </script>
 </body>

@@ -239,7 +239,7 @@
                                 `).join('')}
                             </ul>
                             <div style="text-align: right;">
-                                <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 20px;" onclick="alert('Viewing receipt for ${order.id}')">View Receipt</button>
+                                <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 20px;" onclick="showToast('Viewing receipt for ${order.id}', 'info', 'Receipt')">View Receipt</button>
                             </div>
                         </div>
                     </div>
@@ -291,11 +291,11 @@
             const text = document.getElementById('review-text').value;
             
             if (rating === 0) {
-                alert('Please select a rating');
+                showToast('Please select a rating', 'error', 'Incomplete Review');
                 return;
             }
             if (text.trim().length < 5) {
-                alert('Please write a slightly longer review');
+                showToast('Please write a slightly longer review', 'error', 'Incomplete Review');
                 return;
             }
 
@@ -316,9 +316,14 @@
             });
 
             localStorage.setItem('friendsFloristReviews', JSON.stringify(allReviews));
-            alert('Thank you for your review!');
             closeReviewModal();
-            location.reload();
+            openModal({
+                title: 'Review Submitted',
+                message: 'Thank you for your review!',
+                type: 'success',
+                onConfirm: () => { location.reload(); },
+                onCancel: () => { location.reload(); }
+            });
         }
     </script>
 </body>

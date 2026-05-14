@@ -22,7 +22,7 @@ function addToCart(productId, quantity = 1) {
     saveCart();
     
     // Optional: Show toast notification
-    alert(`${product.name} added to cart!`);
+    showToast(`${product.name} added to cart!`, 'success', 'Added to Cart');
 }
 
 // Remove from Cart

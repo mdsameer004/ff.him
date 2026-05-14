@@ -241,7 +241,170 @@ function initHeroSlideshow() {
 window.quickView = function(id) {
     const product = products.find(p => p.id === id);
     if(product) {
-        alert(`Quick View: \n${product.name}\n₹${product.price.toLocaleString('en-IN')}\n\n${product.description}`);
-        // In a full implementation, this opens a modal dialog.
+        openModal({
+            title: 'Quick View',
+            message: `${product.name}<br>₹${product.price.toLocaleString('en-IN')}<br><br>${product.description}`,
+            type: 'info'
+        });
     }
 }
+
+// Global Notification System
+
+// Create and append toast container if not exists
+function getToastContainer() {
+    let container = document.getElementById('custom-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'custom-toast-container';
+        container.className = 'custom-toast-container';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+/**
+ * Show a custom toast notification
+ * @param {string} message - The message to display
+ * @param {string} type - 'success', 'error', 'info'
+ * @param {string} title - Optional title
+ */
+window.showToast = function(message, type = 'success', title = '') {
+    const container = getToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `custom-toast ${type}`;
+    
+    let icon = '✅';
+    if (type === 'error') icon = '❌';
+    if (type === 'info') icon = 'ℹ️';
+
+    let titleHtml = title ? `<div class="custom-toast-title">${title}</div>` : '';
+    let defaultTitle = type === 'success' ? 'Success' : (type === 'error' ? 'Error' : 'Notification');
+    if (!title && type !== 'info') {
+        titleHtml = `<div class="custom-toast-title">${defaultTitle}</div>`;
+    }
+
+    toast.innerHTML = `
+        <div class="custom-toast-icon">${icon}</div>
+        <div class="custom-toast-content">
+            ${titleHtml}
+            <div class="custom-toast-message">${message}</div>
+        </div>
+        <div class="custom-toast-close" onclick="this.parentElement.remove()">&times;</div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 300);
+        }
+    }, 3000);
+};
+
+// Create and append modal container if not exists
+function getModalContainer() {
+    let container = document.getElementById('custom-modal-overlay');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'custom-modal-overlay';
+        container.className = 'custom-modal-overlay';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+/**
+ * Show a custom modal dialog
+ * @param {Object} options - { title, message, type, onConfirm, onCancel, confirmText, cancelText }
+ */
+window.openModal = function({ title, message, type = 'info', onConfirm, onCancel, confirmText = 'OK', cancelText = 'Cancel' }) {
+    const container = getModalContainer();
+    
+    let icon = '';
+    if (type === 'success') icon = '✅ ';
+    if (type === 'error') icon = '❌ ';
+
+    let footerHtml = '';
+    if (onConfirm || onCancel) {
+        if (onCancel) {
+            footerHtml += `<button class="btn btn-secondary" id="custom-modal-btn-cancel">${cancelText}</button>`;
+        }
+        footerHtml += `<button class="btn btn-primary" id="custom-modal-btn-confirm">${confirmText}</button>`;
+    } else {
+        footerHtml += `<button class="btn btn-primary" id="custom-modal-btn-ok">Close</button>`;
+    }
+
+    container.innerHTML = `
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title">${icon}${title || 'Notification'}</h3>
+                <div class="custom-modal-close" id="custom-modal-btn-close">&times;</div>
+            </div>
+            <div class="custom-modal-body">
+                ${message}
+            </div>
+            <div class="custom-modal-footer">
+                ${footerHtml}
+            </div>
+        </div>
+    `;
+
+    // Add event listeners
+    const closeModal = () => {
+        container.classList.remove('active');
+        setTimeout(() => container.remove(), 300);
+    };
+
+    const closeBtn = document.getElementById('custom-modal-btn-close');
+    if (closeBtn) closeBtn.onclick = () => {
+        if (onCancel) onCancel();
+        closeModal();
+    };
+
+    const okBtn = document.getElementById('custom-modal-btn-ok');
+    if (okBtn) okBtn.onclick = closeModal;
+
+    const cancelBtn = document.getElementById('custom-modal-btn-cancel');
+    if (cancelBtn) cancelBtn.onclick = () => {
+        if (onCancel) onCancel();
+        closeModal();
+    };
+
+    const confirmBtn = document.getElementById('custom-modal-btn-confirm');
+    if (confirmBtn) confirmBtn.onclick = () => {
+        if (onConfirm) onConfirm();
+        closeModal();
+    };
+
+    // Close on overlay click
+    container.onclick = (e) => {
+        if (e.target === container) {
+            if (onCancel) onCancel();
+            closeModal();
+        }
+    };
+
+    // Show modal
+    // small delay to ensure DOM update before adding class for transition
+    setTimeout(() => {
+        container.classList.add('active');
+    }, 10);
+};
+
+// Global confirm override
+window.customConfirm = function(message, onConfirm, onCancel) {
+    openModal({
+        title: 'Please Confirm',
+        message: message,
+        type: 'info',
+        onConfirm: onConfirm,
+        onCancel: onCancel || function() {},
+        confirmText: 'Yes',
+        cancelText: 'No'
+    });
+};

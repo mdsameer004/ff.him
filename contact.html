@@ -168,7 +168,7 @@
                     style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 30px; color: var(--color-dark-green);">
                     Send us a Message</h3>
                 <form
-                    onsubmit="event.preventDefault(); alert('Thank you for contacting us! We will get back to you soon.'); this.reset();">
+                    onsubmit="event.preventDefault(); showToast('Thank you for contacting us! We will get back to you soon.', 'success', 'Message Sent'); this.reset();">
                     <div class="form-group">
                         <label for="name">Your Name</label>
                         <input type="text" id="name" required placeholder="John Doe">
