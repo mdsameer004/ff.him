@@ -142,7 +142,7 @@ img {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    z-index: 1;  /* above ::before floral wallpaper */
+    z-index: 2;  /* above floral sketch (z-index 1) */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -219,7 +219,7 @@ img {
     align-items: center;
     gap: 50px;
     position: relative;
-    z-index: 2;
+    z-index: 3;  /* above floral sketch (1) and floating images (2) */
 }
 
 .hero-text {
