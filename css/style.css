@@ -208,7 +208,7 @@ img {
 
 .hero-section {
     padding: 120px 0 80px;
-    background-color: var(--color-light-pink);
+    background-color: #f8e6ea;
     background-image: url("../images/floral-pattern-pink.svg");
     background-repeat: repeat;
     background-size: 400px 400px;
