@@ -211,7 +211,7 @@
 }
 
 .modern-product-info {
-    padding: 15px;
+    padding: 10px; /* Reduced padding */
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -252,14 +252,17 @@
 }
 
 .modern-product-title {
-    font-size: 1.1rem;
-    margin-bottom: 10px;
-    color: #000000 !important; /* Pure Black */
+    font-size: 0.85rem; /* Smaller font */
+    margin-bottom: 4px; /* Reduced margin */
+    color: #000000 !important;
     font-weight: 600;
     font-family: var(--font-heading);
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     text-transform: uppercase;
-    font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .modern-product-price {
@@ -267,23 +270,23 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 10px; /* Reduced margin */
     margin-top: auto;
 }
 
 .price-original {
-    font-size: 0.95rem;
+    font-size: 0.75rem; /* Smaller */
     color: #b5b5b5;
     text-decoration: line-through;
     font-weight: 400;
 }
 
 .price-sale {
-    font-size: 1.25rem;
-    color: var(--color-dark-green) !important; /* Green Price */
+    font-size: 1rem; /* Smaller */
+    color: var(--color-dark-green) !important;
     font-weight: 700;
-    font-family: var(--font-heading); /* Serif for luxury */
+    font-family: var(--font-heading);
 }
 
 .modern-add-to-cart-btn {
@@ -292,19 +295,19 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 14px 20px;
-    border-radius: 4px; /* Matching Square Card */
+    padding: 8px 12px; /* Much more compact button */
+    border-radius: 2px;
     font-weight: 600;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 0.75rem;
+    letter-spacing: 1px;
+    font-size: 0.65rem; /* Tiny text for luxury look */
     transition: all 0.3s ease;
     border: none;
     outline: none;
     text-align: center;
     font-family: var(--font-cta);
-    background: #000; /* Luxury Black Button */
+    background: #000;
     color: var(--color-primary-white);
 }
 
