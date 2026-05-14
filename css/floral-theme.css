@@ -25,7 +25,7 @@ body {
 /* Global floral sketch for the whole body */
 body::before {
     content: '';
-    position: fixed;
+    position: absolute; /* Changed from fixed so it scrolls with the page */
     inset: 0;
     background-image: url("../images/floral-bg.png") !important;
     background-repeat: repeat !important;
