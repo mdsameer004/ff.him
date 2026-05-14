@@ -284,6 +284,29 @@ body::before {
 }
 
 /* ============================================================
+   CATEGORY GRID FIXES
+   ============================================================ */
+.category-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 30px !important;
+    margin-top: 30px !important;
+}
+
+@media (max-width: 768px) {
+    .category-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 15px !important;
+    }
+    .category-grid .category-card > div {
+        width: 100% !important;
+        max-width: 160px !important;
+        height: auto !important;
+        aspect-ratio: 1/1 !important;
+    }
+}
+
+/* ============================================================
    SECTION WAVE DIVIDERS  (class added between sections)
    ============================================================ */
 .floral-divider {
