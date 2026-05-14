@@ -106,8 +106,8 @@
 /* Wishlist Heart Button */
 .wishlist-heart {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 12px;
+    left: 12px; /* Moved to Left */
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -137,8 +137,8 @@
 }
 
 .wishlist-heart.wishlisted .heart-svg {
-    fill: #e74c3c;
-    stroke: #e74c3c;
+    fill: var(--color-soft-pink);
+    stroke: var(--color-soft-pink);
 }
 
 /* Navbar wishlist icon */
@@ -212,8 +212,8 @@
 
 .modern-product-rating-overlay {
     position: absolute;
-    top: 15px;
-    right: 55px; /* Spaced from heart */
+    top: 12px;
+    right: 12px; /* Moved to Right */
     background: rgba(255, 255, 255, 0.95);
     padding: 4px 10px;
     border-radius: 30px;
