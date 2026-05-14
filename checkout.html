@@ -381,7 +381,8 @@
         let discountAmount = 0;
         
         const coupons = {
-            'SAVE10': { type: 'percent', value: 10 },
+            'SAVE10': { type: 'percent', value: 10, minOrder: 1000, errorMsg: 'SAVE10 is valid only on orders above ₹999' },
+            'BIGSAVE': { type: 'fixed', value: 150, minOrder: 2000, errorMsg: 'BIGSAVE is valid only on orders above ₹2000' },
             'FLOWER50': { type: 'fixed', value: 50 },
             'WELCOME15': { type: 'percent', value: 15 }
         };
@@ -395,6 +396,13 @@
             if (!code) return;
 
             if (coupons[code]) {
+                const subtotal = getCartTotal().subtotal;
+                if (coupons[code].minOrder && subtotal < coupons[code].minOrder) {
+                    msgEl.innerHTML = `<span style="color: #e74c3c; font-weight: 500;">✕ ${coupons[code].errorMsg}</span>`;
+                    showToast(coupons[code].errorMsg, 'error', 'Minimum Order Requirement');
+                    return;
+                }
+
                 appliedCoupon = { code: code, ...coupons[code] };
                 localStorage.setItem('friendsFloristCoupon', JSON.stringify(appliedCoupon));
                 
