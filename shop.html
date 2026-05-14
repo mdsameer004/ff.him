@@ -136,6 +136,7 @@
 
     <script src="js/products.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/wishlist.js"></script>
     <script src="js/app.js"></script>
     <script>
         let currentProducts = [...products];
@@ -146,6 +147,7 @@
             
             grid.innerHTML = currentProducts.map(p => createModernProductCard(p)).join('');
             count.textContent = `Showing ${currentProducts.length} results`;
+            if (typeof initHeartIcons === 'function') initHeartIcons();
         }
 
         function filterProducts(category) {

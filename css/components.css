@@ -99,6 +99,89 @@
     transform: scale(1.05); /* Smooth hover */
 }
 
+/* Wishlist Heart Button */
+.wishlist-heart {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    z-index: 10;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.wishlist-heart:hover {
+    transform: scale(1.15);
+    background: #fff0f5;
+}
+
+.wishlist-heart .heart-svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #e74c3c;
+    stroke-width: 1.5;
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.wishlist-heart.wishlisted .heart-svg {
+    fill: #e74c3c;
+    stroke: #e74c3c;
+}
+
+/* Navbar wishlist icon */
+.wishlist-nav-icon {
+    position: relative;
+    font-size: 1.2rem;
+    color: var(--color-text-main);
+    cursor: pointer;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.wishlist-nav-icon:hover {
+    color: #e74c3c;
+}
+
+.wishlist-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Empty Wishlist */
+.empty-wishlist {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: var(--border-radius);
+    grid-column: 1 / -1;
+}
+
+.empty-wishlist .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
 .modern-quick-view-btn {
     position: absolute;
     bottom: -50px;

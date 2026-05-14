@@ -127,6 +127,7 @@ function createModernProductCard(product) {
             <div class="modern-image-container">
                 <img src="${imageUrl}" class="modern-product-image" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}';">
                 <div class="modern-product-rating-overlay">${stars} <span style="font-size: 0.75rem;">(${revCount})</span></div>
+                ${typeof heartButtonHTML === 'function' ? heartButtonHTML(product.id) : ''}
                 <button class="modern-quick-view-btn" onclick="event.stopPropagation(); quickView(${product.id})">Quick View</button>
             </div>
             <div class="modern-product-info">

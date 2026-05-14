@@ -199,7 +199,14 @@
                     <a href="index.html">Home</a> &gt; <a href="shop.html">Shop</a> &gt; <span id="bread-cat">Category</span>
                 </div>
                 
-                <h1 class="product-title-large" id="detail-title">Loading...</h1>
+                <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+                    <h1 class="product-title-large" id="detail-title">Loading...</h1>
+                    <button id="detail-wishlist-btn" class="wishlist-heart" style="position:static; width:44px; height:44px; flex-shrink:0;" title="Add to Wishlist" onclick="toggleWishlist(currentProduct ? currentProduct.id : 0, event); updateDetailHeart();">
+                        <svg class="heart-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="product-rating" id="detail-rating" style="font-size: 1.1rem; color: #f39c12;">★★★★★</div>
                 <div class="price-large" id="detail-price-block">
                     <span id="detail-price-original" style="text-decoration: line-through; color: #888; font-size: 1.2rem; margin-right: 10px;">₹0</span>
@@ -259,6 +266,7 @@
 
     <script src="js/products.js"></script>
     <script src="js/cart.js"></script>
+    <script src="js/wishlist.js"></script>
     <script src="js/app.js"></script>
     <script>
         let currentProduct = null;
@@ -331,9 +339,27 @@
                 window.location.href = 'checkout.html';
             };
 
+            // Sync detail page heart state
+            updateDetailHeart();
+
             // WhatsApp Button
             updateWhatsAppLink();
         });
+
+        function updateDetailHeart() {
+            if (!currentProduct) return;
+            const btn = document.getElementById('detail-wishlist-btn');
+            if (!btn) return;
+            const filled = isWishlisted(currentProduct.id);
+            const svg = btn.querySelector('.heart-svg');
+            if (svg) {
+                svg.innerHTML = filled
+                    ? '<path fill="#e74c3c" stroke="#e74c3c" d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>'
+                    : '<path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>';
+                btn.classList.toggle('wishlisted', filled);
+            }
+        }
+        window.updateDetailHeart = updateDetailHeart;
 
         function updateWhatsAppLink() {
             const phoneNumber = "919703965734"; // From contact info

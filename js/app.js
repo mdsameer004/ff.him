@@ -30,6 +30,12 @@ const navbarHTML = `
                     <circle cx="12" cy="7" r="4"></circle>
                 </svg>
             </a>
+            <a href="wishlist.html" class="wishlist-nav-icon" title="Wishlist">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
+                </svg>
+                <span class="wishlist-badge">0</span>
+            </a>
             <a href="cart.html" class="nav-icon">
                 🛒
                 <span class="cart-badge">0</span>
@@ -188,6 +194,7 @@ function initHomePage() {
         const topProducts = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
         bestSellersGrid.className = 'modern-shop-grid';
         bestSellersGrid.innerHTML = topProducts.map(p => createModernProductCard(p)).join('');
+        if (typeof initHeartIcons === 'function') initHeartIcons();
     }
 
     // Populate Testimonials
