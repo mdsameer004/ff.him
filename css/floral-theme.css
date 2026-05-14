@@ -341,13 +341,6 @@ body::before {
     box-shadow: 0 0 0 6px rgba(255, 182, 193, 0.25), 0 0 0 14px rgba(255, 182, 193, 0.10) !important;
 }
 
-/* ============================================================
-   PRODUCT CARD — Hover Bloom / Glow
-   ============================================================ */
-.modern-product-card:hover {
-    box-shadow: 0 18px 48px rgba(212, 165, 165, 0.25), 0 0 0 1px rgba(250, 218, 221, 0.5) !important;
-    transform: translateY(-10px) !important;
-}
 
 /* ============================================================
    SECTION TITLE — Tiny floral accent above underline

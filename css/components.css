@@ -64,20 +64,26 @@
 }
 
 /* Modern Product Cards */
+/* Modern Product Cards - Aesthetic Overhaul */
 .modern-product-card {
-    background-color: var(--color-primary-white);
-    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 35px rgba(212, 165, 165, 0.15);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     display: flex;
     flex-direction: column;
+    border: 1px solid rgba(250, 218, 221, 0.6);
+    height: 100%;
 }
 
 .modern-product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    transform: translateY(-12px) scale(1.01);
+    box-shadow: 0 20px 45px rgba(212, 165, 165, 0.25);
+    border-color: var(--color-soft-pink);
 }
 
 .modern-image-container {
@@ -92,11 +98,11 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 0.5s ease;
+    transition: transform 1.2s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
 .modern-product-card:hover .modern-product-image {
-    transform: scale(1.05); /* Smooth hover */
+    transform: scale(1.12);
 }
 
 /* Wishlist Heart Button */
@@ -221,71 +227,102 @@
     font-weight: 500;
 }
 
+.modern-discount-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #e74c3c;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+}
+
 .modern-product-rating-overlay {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    top: 15px;
+    right: 55px; /* Spaced from heart */
+    background: rgba(255, 255, 255, 0.95);
+    padding: 4px 10px;
+    border-radius: 30px;
+    font-size: 0.7rem;
     color: #f39c12;
     font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     z-index: 5;
     display: flex;
     align-items: center;
     gap: 4px;
+    backdrop-filter: blur(4px);
+}
+
+.modern-product-title {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    color: var(--color-dark-green);
+    font-weight: 600;
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
 }
 
 .modern-product-price {
     display: flex;
     flex-direction: row;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: 12px;
+    margin-bottom: 20px;
     margin-top: auto;
 }
 
 .price-original {
-    font-size: 0.9rem;
-    color: #aaa;
+    font-size: 0.95rem;
+    color: #b5b5b5;
     text-decoration: line-through;
     font-weight: 400;
-    letter-spacing: 0.3px;
 }
 
 .price-sale {
-    font-size: 1.2rem;
-    color: var(--color-dark-green);
+    font-size: 1.3rem;
+    color: #d4a5a5; /* Matching dusty rose */
     font-weight: 700;
-    letter-spacing: 0.3px;
+    font-family: var(--font-body);
 }
 
 .modern-add-to-cart-btn {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
-    padding: 10px 15px;
-    border-radius: 30px;
+    padding: 12px 20px;
+    border-radius: 50px;
     font-weight: 600;
     cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
+    letter-spacing: 1.5px;
+    font-size: 0.75rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: none;
     outline: none;
     text-align: center;
     font-family: var(--font-cta);
-    background-color: var(--color-dark-green);
+    background: linear-gradient(135deg, var(--color-dark-green), #4a9d70);
     color: var(--color-primary-white);
+    box-shadow: 0 4px 15px rgba(46, 139, 87, 0.2);
 }
 
 .modern-add-to-cart-btn:hover {
-    background-color: #1a5635;
-    transform: translateY(-2px) scale(1.04);
-    box-shadow: 0 6px 18px rgba(46, 139, 87, 0.35);
+    background: linear-gradient(135deg, #1a5635, var(--color-dark-green));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(46, 139, 87, 0.4);
+}
+
+.modern-add-to-cart-btn:active {
+    transform: translateY(-1px);
 }
 
 /* Review System Styles */

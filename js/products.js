@@ -121,12 +121,19 @@ function createModernProductCard(product) {
     const revCount = getProductReviews(product.id).length;
     const stars = '★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating));
     const imageUrl = product.image ? product.image : fallbackImage;
+    const discount = product.original_price > product.price 
+        ? Math.round(((product.original_price - product.price) / product.original_price) * 100) 
+        : 0;
+    const discountBadge = discount > 0 
+        ? `<div class="modern-discount-badge">-${discount}%</div>` 
+        : '';
     
     return `
         <div class="modern-product-card" data-id="${product.id}" onclick="window.location.href='product.html?id=${product.id}'" style="cursor: pointer;">
             <div class="modern-image-container">
                 <img src="${imageUrl}" class="modern-product-image" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackImage}';">
                 <div class="modern-product-rating-overlay">${stars} <span style="font-size: 0.75rem;">(${revCount})</span></div>
+                ${discountBadge}
                 ${typeof heartButtonHTML === 'function' ? heartButtonHTML(product.id) : ''}
                 <button class="modern-quick-view-btn" onclick="event.stopPropagation(); quickView(${product.id})">Quick View</button>
             </div>
