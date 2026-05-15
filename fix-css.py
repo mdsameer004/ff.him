@@ -61,3 +61,4 @@ def clean_css(path):
 clean_css('css/style.css')
 clean_css('css/floral-theme.css')
 print("\nAll done!")
+
