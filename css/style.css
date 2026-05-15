@@ -65,6 +65,7 @@ img {
     max-width: 100%;
     height: auto;
     display: block;
+    image-orientation: from-image; /* Respect EXIF rotation data */
 }
 
 .container {
