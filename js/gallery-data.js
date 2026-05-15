@@ -1,22 +1,15 @@
 window.albumsData = [
     {
         id: 'hall-decorations',
-        title: 'Hall Decorations',
-        cover: 'images/gallery/hall-decorations/IMG-20250419-WA0024.jpg',
+        title: 'Hall Decoration',
+        cover: 'images/gallery/hall-decorations/IMG-20250419-WA0027.jpg',
         images: [
-            'images/gallery/hall-decorations/IMG-20250419-WA0024.jpg',
-            'images/gallery/hall-decorations/IMG-20250419-WA0026.jpg',
             'images/gallery/hall-decorations/IMG-20250419-WA0027.jpg',
+            'images/gallery/hall-decorations/IMG-20250419-WA0026.jpg',
+            'images/gallery/hall-decorations/IMG-20250419-WA0024.jpg',
             'images/gallery/hall-decorations/IMG-20250409-WA0032.jpg',
             'images/gallery/hall-decorations/IMG-20250404-WA0122.jpg',
             'images/gallery/hall-decorations/IMG-20240216-WA0011.jpg',
-            'images/gallery/hall-decorations/IMG_20260414_191035.jpg',
-            'images/gallery/hall-decorations/IMG_20260414_191252.jpg',
-            'images/gallery/hall-decorations/IMG_20220517_113135.jpg',
-            'images/gallery/hall-decorations/IMG_20220502_195439.jpg',
-            'images/gallery/hall-decorations/IMG_20220502_211555.jpg',
-            'images/gallery/hall-decorations/IMG_20220422_181744.jpg',
-            'images/gallery/hall-decorations/IMG_20220403_051431.jpg',
             'images/gallery/hall-decorations/IMG-20220308-WA0059.jpg',
             'images/gallery/hall-decorations/IMG-20220308-WA0058.jpg',
             'images/gallery/hall-decorations/IMG-20220228-WA0103.jpg',
@@ -24,21 +17,23 @@ window.albumsData = [
             'images/gallery/hall-decorations/IMG-20210823-WA0023.jpg',
             'images/gallery/hall-decorations/IMG-20210810-WA0003.jpg',
             'images/gallery/hall-decorations/IMG-20210226-WA0018.jpg',
-            'images/gallery/hall-decorations/IMG-20210226-WA0017.jpg'
+            'images/gallery/hall-decorations/IMG-20210226-WA0017.jpg',
+            'images/gallery/hall-decorations/IMG_20260414_191252.jpg',
+            'images/gallery/hall-decorations/IMG_20260414_191035.jpg',
+            'images/gallery/hall-decorations/IMG_20220517_113135.jpg',
+            'images/gallery/hall-decorations/IMG_20220502_211555.jpg',
+            'images/gallery/hall-decorations/IMG_20220502_195439.jpg',
+            'images/gallery/hall-decorations/IMG_20220422_181744.jpg',
+            'images/gallery/hall-decorations/IMG_20220403_051431.jpg'
         ]
     },
-
     {
         id: 'anniversary',
-        title: 'Anniversary Events',
-        cover: 'images/gallery/anniversary/IMG-20260424-WA0016.jpg',
+        title: 'Anniversary',
+        cover: 'images/gallery/anniversary/Snapchat-685573533.jpg',
         images: [
+            'images/gallery/anniversary/Snapchat-685573533.jpg',
             'images/gallery/anniversary/IMG-20260424-WA0016.jpg',
-            'images/gallery/anniversary/IMG_20260427_195419.jpg',
-            'images/gallery/anniversary/IMG_20260427_195431.jpg',
-            'images/gallery/anniversary/IMG_20250716_004944.jpg',
-            'images/gallery/anniversary/IMG_20250707_230500.jpg',
-            'images/gallery/anniversary/IMG_20250703_213015.jpg',
             'images/gallery/anniversary/IMG-20250619-WA0012.jpg',
             'images/gallery/anniversary/IMG-20250503-WA0029.jpg',
             'images/gallery/anniversary/IMG-20250502-WA0009.jpg',
@@ -65,70 +60,22 @@ window.albumsData = [
             'images/gallery/anniversary/IMG-20220511-WA0002.jpg',
             'images/gallery/anniversary/IMG-20220315-WA0049.jpg',
             'images/gallery/anniversary/IMG-20220310-WA0093.jpg',
-            'images/gallery/anniversary/IMG_20220525_020834.jpg',
-            'images/gallery/anniversary/IMG_20220305_120312.jpg',
             'images/gallery/anniversary/IMG-20211230-WA0099.jpg',
             'images/gallery/anniversary/IMG-20211229-WA0100.jpg',
             'images/gallery/anniversary/IMG-20211027-WA0032.jpg',
             'images/gallery/anniversary/IMG-20211027-WA0030.jpg',
             'images/gallery/anniversary/IMG-20210610-WA0013.jpg',
+            'images/gallery/anniversary/IMG_20260427_195431.jpg',
+            'images/gallery/anniversary/IMG_20260427_195419.jpg',
+            'images/gallery/anniversary/IMG_20250716_004944.jpg',
+            'images/gallery/anniversary/IMG_20250707_230500.jpg',
+            'images/gallery/anniversary/IMG_20250703_213015.jpg',
+            'images/gallery/anniversary/IMG_20220525_020834.jpg',
+            'images/gallery/anniversary/IMG_20220305_120312.jpg',
             'images/gallery/anniversary/FB_IMG_1751972861064.jpg',
             'images/gallery/anniversary/FB_IMG_1751637838467.jpg',
             'images/gallery/anniversary/FB_IMG_1751143431337.jpg',
-            'images/gallery/anniversary/f8adc8fa79794a528223341f3971d94b.jpg',
-            'images/gallery/anniversary/Snapchat-685573533.jpg'
-        ]
-    },
-    {
-        id: 'birthday',
-        title: 'Birthday Events',
-        cover: 'https://images.unsplash.com/photo-1530103862676-de8892bc952f?w=800',
-        images: [
-            'https://images.unsplash.com/photo-1530103862676-de8892bc952f?w=1200',
-            'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=1200',
-            'https://images.unsplash.com/photo-1464349095431-fe0a5c1bc2fe?w=1200',
-            'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=1200',
-            'https://images.unsplash.com/photo-1533227260811-6b801a61ad3d?w=1200',
-            'https://images.unsplash.com/photo-1562762261-ba1b92015df3?w=1200'
-        ]
-    },
-    {
-        id: 'party',
-        title: 'Party Events',
-        cover: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
-        images: [
-            'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200',
-            'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1200',
-            'https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=1200',
-            'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1200',
-            'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=1200',
-            'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200'
-        ]
-    },
-    {
-        id: 'naming',
-        title: 'Naming Ceremonies',
-        cover: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800',
-        images: [
-            'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1200',
-            'https://images.unsplash.com/photo-1447069387366-2a6d45dc7ddb?w=1200',
-            'https://images.unsplash.com/photo-1519689582264-b816ba157c91?w=1200',
-            'https://images.unsplash.com/photo-1513885535751-8b9f71c4ac44?w=1200',
-            'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1200',
-            'https://images.unsplash.com/photo-1616212579177-3e50669d2d0b?w=1200'
-        ]
-    },
-    {
-        id: 'it',
-        title: 'IT Events',
-        cover: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-        images: [
-            'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200',
-            'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200',
-            'https://images.unsplash.com/photo-1561489422-45de3d015e3e?w=1200',
-            'https://images.unsplash.com/photo-1559136555-908076046e33?w=1200',
-            'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=1200',
-            'https://images.unsplash.com/photo-1556761175-5973dc0f32b7?w=1200'
+            'images/gallery/anniversary/f8adc8fa79794a528223341f3971d94b.jpg'
         ]
     }
 ];

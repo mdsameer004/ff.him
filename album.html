@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,6 +55,28 @@
         }
         .image-item:hover img {
             transform: scale(1.05);
+        }
+
+        /* Hall Decorations — rotate images 45deg left */
+        body.album-hall-decorations .image-item img {
+            transform: rotate(-45deg) scale(1.3);
+        }
+        body.album-hall-decorations .image-item:hover img {
+            transform: rotate(-45deg) scale(1.4);
+        }
+        body.album-hall-decorations .lightbox-img {
+            transform: rotate(-45deg);
+        }
+
+        /* Anniversary — rotate images 45deg left */
+        body.album-anniversary .image-item img {
+            transform: rotate(-45deg) scale(1.3);
+        }
+        body.album-anniversary .image-item:hover img {
+            transform: rotate(-45deg) scale(1.4);
+        }
+        body.album-anniversary .lightbox-img {
+            transform: rotate(-45deg);
         }
 
         @media (max-width: 1024px) {
@@ -184,6 +206,9 @@
 
             document.title = `${currentAlbum.title} - Friends Florist`;
             document.getElementById('album-title').textContent = currentAlbum.title;
+
+            // Add album-specific class to body for targeted CSS
+            document.body.classList.add(`album-${albumId}`);
             
             renderImages();
         }
