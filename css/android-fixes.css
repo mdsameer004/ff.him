@@ -1,0 +1,330 @@
+/* ============================================================
+   ANDROID MOBILE LAYOUT FIXES — Friends Florist
+   Targets Android Chrome (360px–480px viewport width)
+   Resolves: overflow, hero sizing, navbar crowding,
+             scroll-track bleed, touch targets, font scaling
+   ============================================================ */
+
+/* ── 1. Base: prevent horizontal scroll on all Android browsers ── */
+html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%; /* Prevent Android font inflation */
+    text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* Smooth momentum scroll on Android */
+    touch-action: pan-y;              /* Allow vertical scroll, block horizontal drift */
+}
+
+/* ── 2. Navbar — tighten for Android screens ── */
+@media screen and (max-width: 480px) {
+    .navbar-container {
+        padding: 14px 16px; /* Tighter horizontal padding */
+    }
+
+    .logo {
+        font-size: 1.4rem; /* Reduced from 1.8rem to fit Android viewport */
+        gap: 6px;
+    }
+
+    .nav-actions {
+        gap: 14px; /* Tighter gap between icons */
+    }
+
+    .nav-icon,
+    .login-icon {
+        font-size: 1rem; /* Slightly smaller icons */
+    }
+
+    .mobile-menu-btn {
+        font-size: 1.3rem; /* Slightly smaller hamburger */
+    }
+
+    /* Ensure body offset matches reduced navbar */
+    body {
+        padding-top: 62px;
+    }
+}
+
+/* ── 3. Hero Section — fix overflow from scroll track on Android ── */
+@media screen and (max-width: 480px) {
+    .hero-section {
+        padding: 80px 0 50px; /* Reduced top/bottom padding */
+        overflow: hidden !important;
+        isolation: isolate; /* Create new stacking context */
+    }
+
+    /* The scrolling image track causes overflow on Android.
+       Scale down image size and reduce negative margin bleed */
+    .scroll-track img {
+        height: 200px;    /* Reduced from 320px */
+        width: 110px;     /* Reduced from 180px */
+        margin: -35px 40px; /* Tighter negative margin to reduce bleed */
+        opacity: 0.3;
+    }
+
+    /* Hero content: stack vertically with smaller gap */
+    .hero-container {
+        flex-direction: column !important;
+        gap: 24px !important;       /* Reduced from 50px */
+        text-align: center !important;
+        padding: 0 16px;
+    }
+
+    .hero-text h1 {
+        font-size: 2.2rem !important; /* Reduced from 4rem / 3rem */
+        line-height: 1.15;
+        letter-spacing: -0.3px;
+    }
+
+    .hero-text p {
+        font-size: 0.95rem !important;
+        margin-bottom: 20px;
+        max-width: 100% !important;
+    }
+
+    /* Slideshow — full width on Android */
+    .hero-image {
+        width: 100%;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .slideshow-container {
+        border-radius: 16px;
+    }
+}
+
+/* ── 4. Category Grid — ensure cards don't overflow on 360px screens ── */
+@media screen and (max-width: 480px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        padding: 0 4px;
+    }
+
+    /* Force category card circles to scale proportionally */
+    .category-grid .category-card > div {
+        max-width: 130px !important;
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 1/1 !important;
+    }
+
+    /* Category card text */
+    .category-card p,
+    .category-card span {
+        font-size: 0.8rem;
+    }
+}
+
+/* ── 5. Product Cards — 2-column tight grid for Android ── */
+@media screen and (max-width: 480px) {
+    .modern-shop-grid,
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .modern-product-card {
+        border-radius: 8px; /* Softer on small screens */
+    }
+
+    .modern-product-info {
+        padding: 8px 6px;
+    }
+
+    .modern-product-title {
+        font-size: 0.75rem;
+        letter-spacing: 0;
+    }
+
+    .price-sale {
+        font-size: 0.9rem;
+    }
+
+    .modern-add-to-cart-btn {
+        font-size: 0.65rem;
+        padding: 8px 6px;
+        letter-spacing: 0.3px;
+    }
+
+    /* Wishlist heart — keep touchable */
+    .wishlist-heart {
+        width: 30px;
+        height: 30px;
+        top: 8px;
+        left: 8px;
+    }
+
+    .wishlist-heart .heart-svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Rating overlay — avoid overlap */
+    .modern-product-rating-overlay {
+        top: 8px;
+        right: 8px;
+        font-size: 0.62rem;
+        padding: 3px 6px;
+    }
+}
+
+/* ── 6. Section spacing — reduce padding on Android ── */
+@media screen and (max-width: 480px) {
+    .home-section {
+        padding: 50px 0; /* Reduced from 80px */
+    }
+
+    .section-title {
+        font-size: 1.7rem !important; /* Reduced from 2.5rem */
+        margin-bottom: 1.5rem;
+    }
+
+    .container {
+        padding: 0 14px; /* Slightly tighter than 20px */
+    }
+}
+
+/* ── 7. Deals Banner — fix text overflow on Android ── */
+@media screen and (max-width: 480px) {
+    .deals-banner {
+        padding: 36px 20px;
+        border-radius: 12px;
+    }
+
+    .deals-banner h3 {
+        font-size: 1.5rem;
+    }
+
+    .deals-banner p {
+        font-size: 0.9rem;
+    }
+}
+
+/* ── 8. Footer grid — single column on narrow Android ── */
+@media screen and (max-width: 480px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .footer {
+        padding: 40px 0 16px;
+    }
+}
+
+/* ── 9. Touch target sizes — Android accessibility standard 48×48dp ── */
+@media screen and (max-width: 480px) {
+    .btn {
+        min-height: 44px;
+        padding: 10px 24px;
+        font-size: 0.8rem;
+    }
+
+    .nav-icon,
+    .mobile-menu-btn,
+    .login-icon {
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* ── 10. Mobile nav dropdown — full-width on Android ── */
+@media screen and (max-width: 480px) {
+    .nav-links {
+        width: 100%;
+        left: 0;
+        right: 0;
+        padding: 16px 20px;
+    }
+
+    .nav-links a {
+        font-size: 0.9rem;
+        padding: 10px 0; /* Larger touch area between nav items */
+        display: block;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .nav-links a:last-child {
+        border-bottom: none;
+    }
+}
+
+/* ── 11. Testimonials grid — single column on Android ── */
+@media screen and (max-width: 480px) {
+    .testimonials-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+}
+
+/* ── 12. Instagram grid — 2 columns on Android ── */
+@media screen and (max-width: 480px) {
+    .insta-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px;
+    }
+}
+
+/* ── 13. Scroll track — reduce height on Android to prevent clipping ── */
+@media screen and (max-width: 480px) {
+    .hero-photo-scroll {
+        gap: 12px; /* Tighter gap between rows */
+    }
+
+    .scroll-track {
+        gap: 12px;
+    }
+}
+
+/* ── 14. Fix for "double scroll" issue on Android Chrome ── */
+@media screen and (max-width: 480px) {
+    .hero-section {
+        -webkit-transform: translateZ(0); /* Force GPU compositing */
+        transform: translateZ(0);
+    }
+
+    .hero-photo-scroll {
+        will-change: auto; /* Reduce GPU memory on low-end Android */
+    }
+}
+
+/* ── 15. Very small Android screens (e.g. Galaxy A series at 360px) ── */
+@media screen and (max-width: 360px) {
+    .hero-text h1 {
+        font-size: 1.9rem !important;
+    }
+
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    .scroll-track img {
+        height: 160px;
+        width: 90px;
+        margin: -28px 28px;
+    }
+
+    .section-title {
+        font-size: 1.5rem !important;
+    }
+
+    .modern-product-title {
+        font-size: 0.7rem;
+    }
+
+    .price-sale {
+        font-size: 0.85rem;
+    }
+
+    .category-grid .category-card > div {
+        max-width: 110px !important;
+    }
+}
