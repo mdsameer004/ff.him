@@ -80,7 +80,7 @@ const products = [
     {
         id: 6,
         name: "Elegant Mixed Flower Bouquet",
-        category: "Event Decorations",
+        category: "Premium Bouquets",
         original_price: 849,
         price: 599,
         stock: 20,
@@ -92,7 +92,7 @@ const products = [
     {
         id: 7,
         name: "Premium Rose Basket",
-        category: "Event Decorations",
+        category: "Premium Bouquets",
         original_price: 1299,
         price: 949,
         stock: 6,

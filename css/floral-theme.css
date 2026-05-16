@@ -291,6 +291,7 @@ body::before {
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 30px !important;
     margin-top: 30px !important;
+    align-items: start !important;
 }
 
 @media (max-width: 768px) {

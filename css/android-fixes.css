@@ -103,6 +103,7 @@ body {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 12px !important;
         padding: 0 4px;
+        align-items: start !important;
     }
 
     /* Force category card circles to scale proportionally */
@@ -322,6 +323,10 @@ body {
 
     .price-sale {
         font-size: 0.85rem;
+    }
+
+    .category-card-title {
+        font-size: 0.75rem;
     }
 
     .category-grid .category-card > div {
