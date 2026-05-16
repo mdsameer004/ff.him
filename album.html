@@ -79,6 +79,17 @@
             transform: rotate(-45deg);
         }
 
+        /* Birthday — rotate images 45deg left */
+        body.album-birthday .image-item img {
+            transform: rotate(-45deg) scale(1.3);
+        }
+        body.album-birthday .image-item:hover img {
+            transform: rotate(-45deg) scale(1.4);
+        }
+        body.album-birthday .lightbox-img {
+            transform: rotate(-45deg);
+        }
+
         @media (max-width: 1024px) {
             .image-grid {
                 grid-template-columns: repeat(3, 1fr);
