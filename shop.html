@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -24,45 +24,27 @@
             margin-bottom: 10px;
         }
         .shop-container {
-            display: flex;
-            gap: 40px;
             padding-bottom: 80px;
         }
-        .sidebar {
-            width: 250px;
-            flex-shrink: 0;
-        }
-        .filter-group {
-            margin-bottom: 30px;
-        }
-        .filter-group h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            border-bottom: 2px solid var(--color-soft-pink);
-            padding-bottom: 10px;
-            display: inline-block;
-        }
-        .filter-list li {
-            margin-bottom: 10px;
-        }
-        .filter-list a {
-            cursor: pointer;
-            color: var(--color-text-light);
-        }
-        .filter-list a:hover, .filter-list a.active {
-            color: var(--color-dark-green);
-            font-weight: 500;
-        }
-        .products-area {
-            flex: 1;
-        }
         .products-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--color-border);
+        }
+        .header-top-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .header-count-row {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         .sort-select {
             padding: 8px 15px;
@@ -70,19 +52,76 @@
             border-radius: var(--border-radius);
             font-family: var(--font-body);
             outline: none;
+            cursor: pointer;
         }
-        @media (max-width: 900px) {
-            .shop-container {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-            }
-            .filter-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 15px;
-            }
+        /* Category Dropdown */
+        .category-dropdown {
+            position: relative;
+        }
+        .category-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            background: white;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: var(--color-text);
+            transition: all 0.2s ease;
+        }
+        .category-btn:hover {
+            border-color: var(--color-dark-green);
+            color: var(--color-dark-green);
+        }
+        .category-btn svg {
+            transition: transform 0.25s ease;
+        }
+        .category-btn.open svg {
+            transform: rotate(180deg);
+        }
+        .category-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            min-width: 200px;
+            z-index: 100;
+            overflow: hidden;
+            animation: dropIn 0.2s ease;
+        }
+        .category-menu.open {
+            display: block;
+        }
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .category-menu a {
+            display: block;
+            padding: 11px 18px;
+            font-family: var(--font-body);
+            font-size: 0.93rem;
+            color: var(--color-text-light);
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            border-bottom: 1px solid #f3f3f3;
+        }
+        .category-menu a:last-child { border-bottom: none; }
+        .category-menu a:hover {
+            background: var(--color-light-pink);
+            color: var(--color-dark-green);
+        }
+        .category-menu a.active {
+            color: var(--color-dark-green);
+            font-weight: 600;
+            background: var(--color-light-pink);
         }
     </style>
     <link rel="stylesheet" href="css/android-fixes.css">
@@ -101,30 +140,38 @@
         </header>
 
         <section class="container shop-container">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <div class="filter-group">
-                    <h3>Categories</h3>
-                    <ul class="filter-list" id="category-filters">
-                        <li><a onclick="filterProducts('All')" class="active">All Arrangements</a></li>
-                        <li><a onclick="filterProducts('Anniversary Flowers')">Anniversary Flowers</a></li>
-                        <li><a onclick="filterProducts('Birthday Bouquets')">Birthday Bouquets</a></li>
-                        <li><a onclick="filterProducts('Event Decorations')">Event Decorations</a></li>
-                        <li><a onclick="filterProducts('Wedding Decorations')">Wedding Decorations</a></li>
-                    </ul>
-                </div>
-            </aside>
 
             <!-- Products Grid -->
             <div class="products-area">
                 <div class="products-header">
-                    <p id="product-count">Showing 0 results</p>
-                    <select class="sort-select" id="sort-select" onchange="sortProducts()">
-                        <option value="featured">Featured</option>
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                        <option value="rating">Highest Rated</option>
-                    </select>
+                    <div class="header-top-row">
+                        <div class="header-controls">
+                            <!-- Category Dropdown -->
+                            <div class="category-dropdown" id="category-dropdown">
+                                <button class="category-btn" id="category-btn" onclick="toggleCategoryMenu()">
+                                    <span id="category-label">Categories</span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                                <div class="category-menu" id="category-menu">
+                                    <a onclick="filterProducts('All')" class="active" id="cat-all">All Arrangements</a>
+                                    <a onclick="filterProducts('Anniversary Flowers')" id="cat-anniversary">Anniversary Flowers</a>
+                                    <a onclick="filterProducts('Birthday Bouquets')" id="cat-birthday">Birthday Bouquets</a>
+                                    <a onclick="filterProducts('Event Decorations')" id="cat-event">Event Decorations</a>
+                                    <a onclick="filterProducts('Wedding Decorations')" id="cat-wedding">Wedding Decorations</a>
+                                </div>
+                            </div>
+                            <!-- Sort -->
+                            <select class="sort-select" id="sort-select" onchange="sortProducts()">
+                                <option value="featured">Sort: Featured</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="rating">Highest Rated</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="header-count-row">
+                        <p id="product-count">Showing 0 results</p>
+                    </div>
                 </div>
                 
                 <div class="modern-shop-grid" id="modern-shop-grid">
@@ -152,20 +199,48 @@
             if (typeof initHeartIcons === 'function') initHeartIcons();
         }
 
+        function toggleCategoryMenu() {
+            const btn = document.getElementById('category-btn');
+            const menu = document.getElementById('category-menu');
+            btn.classList.toggle('open');
+            menu.classList.toggle('open');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('category-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                document.getElementById('category-btn').classList.remove('open');
+                document.getElementById('category-menu').classList.remove('open');
+            }
+        });
+
         function filterProducts(category) {
-            // Update active link
-            document.querySelectorAll('#category-filters a').forEach(a => {
-                a.classList.remove('active');
-                if(category === "All" && a.textContent === 'All Arrangements') a.classList.add('active');
-                else if(a.textContent === category) a.classList.add('active');
+            // Update active state in dropdown
+            document.querySelectorAll('#category-menu a').forEach(a => a.classList.remove('active'));
+            const labelMap = {
+                'All': 'All Arrangements',
+                'Anniversary Flowers': 'Anniversary Flowers',
+                'Birthday Bouquets': 'Birthday Bouquets',
+                'Event Decorations': 'Event Decorations',
+                'Wedding Decorations': 'Wedding Decorations'
+            };
+            const label = labelMap[category] || category;
+            document.querySelectorAll('#category-menu a').forEach(a => {
+                if (a.textContent === label) a.classList.add('active');
             });
+            // Update button label
+            document.getElementById('category-label').textContent = category === 'All' ? 'Categories' : label;
+            // Close menu
+            document.getElementById('category-btn').classList.remove('open');
+            document.getElementById('category-menu').classList.remove('open');
 
             if (category === 'All') {
                 currentProducts = [...products];
             } else {
                 currentProducts = products.filter(p => p.category === category);
             }
-            sortProducts(); // Re-apply sorting
+            sortProducts();
         }
 
         function sortProducts() {
