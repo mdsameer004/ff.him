@@ -185,4 +185,22 @@ try {
 }
 
 window.products = products;
-console.log('Products loaded:', window.products.length);
+console.log('Products loaded synchronously:', window.products.length);
+
+window.loadProducts = async function() {
+    if (window.apiClient) {
+        try {
+            window.products = await window.apiClient.getProducts();
+            console.log('Products loaded asynchronously via API:', window.products.length);
+            return window.products;
+        } catch (e) {
+            console.warn('API getProducts failed, using localStorage fallback:', e);
+        }
+    }
+    return window.products;
+};
+
+// Auto-run if apiClient is available on the window
+if (window.apiClient) {
+    window.loadProducts().catch(err => console.error("Error auto-loading products:", err));
+}

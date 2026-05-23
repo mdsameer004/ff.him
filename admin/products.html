@@ -182,6 +182,7 @@
     </div>
 
     <!-- Admin Helper Logic and Common script -->
+    <script src="../js/api-client.js"></script>
     <script src="js/admin-common.js"></script>
     <script>
         const fallbackImage = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&h=800&auto=format&fit=crop";
@@ -191,31 +192,35 @@
         });
 
         // Renders product items dynamically
-        function renderProductsTable() {
-            const products = getProducts();
-            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
-            const catFilter = document.getElementById('category-filter').value;
+        async function renderProductsTable() {
             const tableBody = document.getElementById('products-table-body');
             const emptyState = document.getElementById('empty-state');
             const countBadge = document.getElementById('products-count-badge');
 
-            tableBody.innerHTML = '';
-            
-            // Filters products
-            const filtered = products.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(searchVal);
-                const matchesCat = catFilter === '' || p.category === catFilter;
-                return matchesSearch && matchesCat;
-            });
+            tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">Loading products...</td></tr>`;
 
-            countBadge.textContent = `${products.length} products total (${filtered.length} filtered)`;
+            try {
+                const products = await getProducts();
+                const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+                const catFilter = document.getElementById('category-filter').value;
 
-            if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            }
+                tableBody.innerHTML = '';
+                
+                // Filters products
+                const filtered = products.filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(searchVal);
+                    const matchesCat = catFilter === '' || p.category === catFilter;
+                    return matchesSearch && matchesCat;
+                });
 
-            emptyState.classList.add('hidden');
+                countBadge.textContent = `${products.length} products total (${filtered.length} filtered)`;
+
+                if (filtered.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
 
             filtered.forEach(p => {
                 const tr = document.createElement('tr');
@@ -247,6 +252,10 @@
                 `;
                 tableBody.appendChild(tr);
             });
+            } catch (err) {
+                console.error("Error loading products table:", err);
+                tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-550 font-semibold">⚠️ Failed to load products. Please check your backend connection.</td></tr>`;
+            }
         }
 
         let tempUploadedImages = [];
@@ -387,7 +396,7 @@
         }
 
         // Form Submit
-        document.getElementById('product-form').addEventListener('submit', function(e) {
+        document.getElementById('product-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             // Validate image count
@@ -404,68 +413,81 @@
             const original_price = parseFloat(document.getElementById('p-orig-price').value);
             const description = document.getElementById('p-desc').value.trim();
 
-            const products = getProducts();
+            const productData = {
+                name,
+                category,
+                stock,
+                price,
+                original_price,
+                images: tempUploadedImages,
+                image: tempUploadedImages[0], // fallback main image URL or Base64
+                description
+            };
 
-            if (editId) {
-                // Edit existing
-                const idx = products.findIndex(p => p.id === parseInt(editId));
-                if (idx !== -1) {
-                    products[idx] = {
-                        ...products[idx],
-                        name,
-                        category,
-                        stock,
-                        price,
-                        original_price,
-                        images: tempUploadedImages,
-                        image: tempUploadedImages[0], // fallback main image URL or Base64
-                        description
-                    };
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                if (window.apiClient) {
+                    if (editId) {
+                        await window.apiClient.updateProduct(parseInt(editId), productData);
+                    } else {
+                        await window.apiClient.createProduct(productData);
+                    }
+                } else {
+                    // Fallback to static check if apiClient is completely missing
+                    const products = await getProducts();
+                    if (editId) {
+                        const idx = products.findIndex(p => p.id === parseInt(editId));
+                        if (idx !== -1) {
+                            products[idx] = { ...products[idx], ...productData };
+                        }
+                    } else {
+                        products.push({ id: Date.now(), ...productData });
+                    }
+                    await saveProducts(products);
                 }
-            } else {
-                // Add new
-                const newProduct = {
-                    id: Date.now(),
-                    name,
-                    category,
-                    stock,
-                    price,
-                    original_price,
-                    images: tempUploadedImages,
-                    image: tempUploadedImages[0], // fallback main image URL or Base64
-                    description
-                };
-                products.push(newProduct);
-            }
 
-            if (saveProducts(products)) {
                 closeProductModal();
                 renderProductsTable();
-            } else {
-                alert('An error occurred while saving the product details. Please try again.');
+            } catch (err) {
+                alert('An error occurred while saving the product details: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
             }
         });
 
         // Edit triggers
-        function editProduct(id) {
-            const products = getProducts();
-            const p = products.find(prod => prod.id === id);
-            if (p) {
-                openProductModal("Edit Product Details", p);
+        async function editProduct(id) {
+            try {
+                const products = await getProducts();
+                const p = products.find(prod => prod.id === id);
+                if (p) {
+                    openProductModal("Edit Product Details", p);
+                }
+            } catch (err) {
+                console.error("Error editing product:", err);
             }
         }
 
         // Delete triggers
-        function deleteProduct(id) {
-            const products = getProducts();
-            const p = products.find(prod => prod.id === id);
-            if (p && confirm(`Are you absolutely sure you want to delete the product "${p.name}"? This operation cannot be undone.`)) {
-                const filtered = products.filter(prod => prod.id !== id);
-                if (saveProducts(filtered)) {
+        async function deleteProduct(id) {
+            try {
+                const products = await getProducts();
+                const p = products.find(prod => prod.id === id);
+                if (p && confirm(`Are you absolutely sure you want to delete the product "${p.name}"? This operation cannot be undone.`)) {
+                    if (window.apiClient) {
+                        await window.apiClient.deleteProduct(id);
+                    } else {
+                        const filtered = products.filter(prod => prod.id !== id);
+                        await saveProducts(filtered);
+                    }
                     renderProductsTable();
-                } else {
-                    alert('Error deleting product.');
                 }
+            } catch (err) {
+                alert('Error deleting product: ' + err.message);
             }
         }
     </script>

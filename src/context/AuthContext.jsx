@@ -19,36 +19,49 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    // Mocking an API call
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
+    const API_BASE_URL = window.API_BASE_URL || '/api';
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Invalid email or password');
+      }
+      const data = await response.json();
+      const userData = data.user || { email, role: 'admin', name: 'Admin User' };
+      setUser(userData);
+      localStorage.setItem('ff_jwt_token', data.token);
+      localStorage.setItem('friends-florist-user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
+      if (window.API_FALLBACK || isNetworkError) {
+        // Fallback to local storage mock user credentials
+        console.info('[Auth Context Backend Fallback] Verifying credentials via simulated fallback auth database.');
         if (email === mockUser.email && password === 'password') {
           setUser(mockUser);
+          localStorage.setItem('ff_jwt_token', 'mock-jwt-token-for-admin-friends-florist');
           localStorage.setItem('friends-florist-user', JSON.stringify(mockUser));
-          resolve(mockUser);
-        } else if (email === 'editor' && password === 'editor') {
-          // Allow simplified login with just 'editor' for username or editor@admin.com
-          import('../data/mockData').then(({ mockAdmin }) => {
-            setUser(mockAdmin);
-            localStorage.setItem('friends-florist-user', JSON.stringify(mockAdmin));
-            resolve(mockAdmin);
-          });
-        } else if (email === 'editor@admin.com' && password === 'editor') {
-          import('../data/mockData').then(({ mockAdmin }) => {
-            setUser(mockAdmin);
-            localStorage.setItem('friends-florist-user', JSON.stringify(mockAdmin));
-            resolve(mockAdmin);
-          });
-        } else {
-          reject(new Error('Invalid email or password'));
+          return mockUser;
+        } else if ((email === 'editor' || email === 'editor@admin.com') && password === 'editor') {
+          const { mockAdmin } = await import('../data/mockData');
+          setUser(mockAdmin);
+          localStorage.setItem('ff_jwt_token', 'mock-jwt-token-for-editor');
+          localStorage.setItem('friends-florist-user', JSON.stringify(mockAdmin));
+          return mockAdmin;
         }
-      }, 800);
-    });
+      }
+      throw error;
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('friends-florist-user');
+    localStorage.removeItem('ff_jwt_token');
   };
 
   return (

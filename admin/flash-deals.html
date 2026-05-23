@@ -131,6 +131,7 @@
     </div>
 
     <!-- Admin Helper Logic and Common script -->
+    <script src="../js/api-client.js"></script>
     <script src="js/admin-common.js"></script>
     <script>
         const fallbackBanner = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop";
@@ -140,43 +141,50 @@
         });
 
         // Renders active deals
-        function renderDealsTable() {
-            const deals = getDeals();
+        async function renderDealsTable() {
             const tableBody = document.getElementById('deals-table-body');
             const emptyState = document.getElementById('empty-state');
 
-            tableBody.innerHTML = '';
+            tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Loading promotions...</td></tr>`;
 
-            if (deals.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
+            try {
+                const deals = await getDeals();
+                tableBody.innerHTML = '';
+
+                if (deals.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+
+                deals.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
+                    tr.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="w-24 h-12 rounded-lg overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-rose-100/30 flex items-center justify-center font-bold text-xs text-rose-500">
+                                ${d.image ? `<img src="${d.image}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🌹 Patterns'">` : '🌹 Elegant Pattern'}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-bold text-gray-800 dark:text-white text-sm">${d.title}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 max-w-xs truncate">${d.discount}</td>
+                        <td class="px-6 py-4 font-mono text-2xs text-gray-400 select-all">${d.cta || 'shop.html'}</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="editDeal(${d.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
+                                <button onclick="deleteDeal(${d.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error loading deals:", err);
+                tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-550 font-semibold">⚠️ Failed to load deals.</td></tr>`;
             }
-
-            emptyState.classList.add('hidden');
-
-            deals.forEach(d => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
-                tr.innerHTML = `
-                    <td class="px-6 py-4">
-                        <div class="w-24 h-12 rounded-lg overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-rose-100/30 flex items-center justify-center font-bold text-xs text-rose-500">
-                            ${d.image ? `<img src="${d.image}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='🌹 Patterns'">` : '🌹 Elegant Pattern'}
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="font-bold text-gray-800 dark:text-white text-sm">${d.title}</span>
-                    </td>
-                    <td class="px-6 py-4 text-xs font-semibold text-gray-600 dark:text-gray-300 max-w-xs truncate">${d.discount}</td>
-                    <td class="px-6 py-4 font-mono text-2xs text-gray-400 select-all">${d.cta || 'shop.html'}</td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="editDeal(${d.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
-                            <button onclick="deleteDeal(${d.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
         }
 
         // Deal Modal handlers
@@ -201,7 +209,7 @@
         }
 
         // Form Submit
-        document.getElementById('deal-form').addEventListener('submit', function(e) {
+        document.getElementById('deal-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-id').value;
             const title = document.getElementById('d-title').value.trim();
@@ -209,61 +217,73 @@
             const image = document.getElementById('d-image').value.trim();
             const cta = document.getElementById('d-cta').value.trim();
 
-            const deals = getDeals();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
 
-            if (editId) {
-                // Edit
-                const idx = deals.findIndex(d => d.id === parseInt(editId));
-                if (idx !== -1) {
-                    deals[idx] = {
-                        ...deals[idx],
+            try {
+                const deals = await getDeals();
+
+                if (editId) {
+                    // Edit
+                    const idx = deals.findIndex(d => d.id === parseInt(editId));
+                    if (idx !== -1) {
+                        deals[idx] = {
+                            ...deals[idx],
+                            title,
+                            discount,
+                            image,
+                            cta
+                        };
+                    }
+                } else {
+                    // Add new
+                    const newDeal = {
+                        id: Date.now(),
                         title,
                         discount,
                         image,
                         cta
                     };
+                    deals.push(newDeal);
                 }
-            } else {
-                // Add new
-                const newDeal = {
-                    id: Date.now(),
-                    title,
-                    discount,
-                    image,
-                    cta
-                };
-                deals.push(newDeal);
-            }
 
-            // Maintain order (primary deal at Index 0)
-            if (saveDeals(deals)) {
+                await saveDeals(deals);
                 closeDealModal();
                 renderDealsTable();
-            } else {
-                alert('Error saving promotions.');
+            } catch (err) {
+                alert('Error saving promotions: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Deal';
             }
         });
 
         // Edit trigger
-        function editDeal(id) {
-            const deals = getDeals();
-            const d = deals.find(dl => dl.id === id);
-            if (d) {
-                openDealModal("Edit Flash Deal Info", d);
+        async function editDeal(id) {
+            try {
+                const deals = await getDeals();
+                const d = deals.find(dl => dl.id === id);
+                if (d) {
+                    openDealModal("Edit Flash Deal Info", d);
+                }
+            } catch (err) {
+                console.error(err);
             }
         }
 
         // Delete trigger
-        function deleteDeal(id) {
-            const deals = getDeals();
-            const d = deals.find(dl => dl.id === id);
-            if (d && confirm(`Are you sure you want to delete the deal "${d.title}"? The home banner will immediately revert to its original default promotion.`)) {
-                const filtered = deals.filter(dl => dl.id !== id);
-                if (saveDeals(filtered)) {
+        async function deleteDeal(id) {
+            try {
+                const deals = await getDeals();
+                const d = deals.find(dl => dl.id === id);
+                if (d && confirm(`Are you sure you want to delete the deal "${d.title}"? The home banner will immediately revert to its original default promotion.`)) {
+                    const filtered = deals.filter(dl => dl.id !== id);
+                    await saveDeals(filtered);
                     renderDealsTable();
-                } else {
-                    alert('Error deleting promotion.');
                 }
+            } catch (err) {
+                alert('Error deleting promotion: ' + err.message);
             }
         }
     </script>

@@ -126,6 +126,7 @@
     </div>
 
     <!-- Admin Helper Logic and Common script -->
+    <script src="../js/api-client.js"></script>
     <script src="js/admin-common.js"></script>
     <script>
         const fallbackCover = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&h=800&auto=format&fit=crop";
@@ -136,34 +137,41 @@
         });
 
         // Renders gallery albums cards
-        function renderAlbums() {
-            const albums = getAlbums();
+        async function renderAlbums() {
             const grid = document.getElementById('albums-grid');
-            grid.innerHTML = '';
+            grid.innerHTML = `<div class="col-span-full py-8 text-center text-gray-400">Loading albums...</div>`;
 
-            albums.forEach(album => {
-                const div = document.createElement('div');
-                div.className = 'bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-rose-100/40 dark:border-gray-700 flex flex-col group hover:shadow-md hover:scale-[1.01] transition-all duration-200';
-                div.innerHTML = `
-                    <div class="h-48 relative overflow-hidden bg-gray-100">
-                        <img src="${album.cover || fallbackCover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='${fallbackCover}'">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                            <span class="text-white text-xs font-semibold px-2 py-0.5 rounded-md bg-rose-500/80">${album.images ? album.images.length : 0} photos</span>
+            try {
+                const albums = await getAlbums();
+                grid.innerHTML = '';
+
+                albums.forEach(album => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-rose-100/40 dark:border-gray-700 flex flex-col group hover:shadow-md hover:scale-[1.01] transition-all duration-200';
+                    div.innerHTML = `
+                        <div class="h-48 relative overflow-hidden bg-gray-100">
+                            <img src="${album.cover || fallbackCover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='${fallbackCover}'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                                <span class="text-white text-xs font-semibold px-2 py-0.5 rounded-md bg-rose-500/80">${album.images ? album.images.length : 0} photos</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 class="font-bold text-gray-800 dark:text-white text-base">${album.title}</h3>
-                            <p class="text-3xs text-gray-400 mt-1 select-all font-mono">ID: ${album.id}</p>
+                        <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                            <div>
+                                <h3 class="font-bold text-gray-800 dark:text-white text-base">${album.title}</h3>
+                                <p class="text-3xs text-gray-400 mt-1 select-all font-mono">ID: ${album.id}</p>
+                            </div>
+                            <div class="flex items-center gap-2 border-t border-rose-50/50 dark:border-gray-700 pt-4">
+                                <button onclick="managePhotos('${album.id}')" class="flex-1 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-bold text-2xs rounded-xl transition-colors">Manage Photos</button>
+                                <button onclick="deleteAlbum('${album.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-xl transition-colors" title="Delete Album">✕</button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2 border-t border-rose-50/50 dark:border-gray-700 pt-4">
-                            <button onclick="managePhotos('${album.id}')" class="flex-1 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-bold text-2xs rounded-xl transition-colors">Manage Photos</button>
-                            <button onclick="deleteAlbum('${album.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-xl transition-colors" title="Delete Album">✕</button>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(div);
-            });
+                    `;
+                    grid.appendChild(div);
+                });
+            } catch (err) {
+                console.error("Error loading albums:", err);
+                grid.innerHTML = `<div class="col-span-full py-8 text-center text-red-550 font-semibold">⚠️ Failed to load albums.</div>`;
+            }
         }
 
         // Create Album Modal triggers
@@ -177,63 +185,75 @@
         }
 
         // Submit album creation
-        document.getElementById('album-form').addEventListener('submit', function(e) {
+        document.getElementById('album-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const title = document.getElementById('a-title').value.trim();
             const cover = document.getElementById('a-cover').value.trim();
             const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-            const albums = getAlbums();
-            
-            if (albums.some(a => a.id === id)) {
-                alert('An album with a similar name already exists. Please choose a different title.');
-                return;
-            }
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
 
-            const newAlbum = {
-                id,
-                title,
-                cover,
-                images: [cover] // Set cover photo as first image
-            };
+            try {
+                const albums = await getAlbums();
+                
+                if (albums.some(a => a.id === id)) {
+                    alert('An album with a similar name already exists. Please choose a different title.');
+                    return;
+                }
 
-            albums.push(newAlbum);
+                const newAlbum = {
+                    id,
+                    title,
+                    cover,
+                    images: [cover] // Set cover photo as first image
+                };
 
-            if (saveAlbums(albums)) {
+                albums.push(newAlbum);
+                await saveAlbums(albums);
                 closeAlbumModal();
                 renderAlbums();
-            } else {
-                alert('Error creating album.');
+            } catch (err) {
+                alert('Error creating album: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Album';
             }
         });
 
         // Delete entire album
-        function deleteAlbum(id) {
-            const albums = getAlbums();
-            const a = albums.find(alb => alb.id === id);
-            if (a && confirm(`Are you absolutely sure you want to delete the album "${a.title}"? All internal photo listings will be deleted from the database.`)) {
-                const filtered = albums.filter(alb => alb.id !== id);
-                if (saveAlbums(filtered)) {
+        async function deleteAlbum(id) {
+            try {
+                const albums = await getAlbums();
+                const a = albums.find(alb => alb.id === id);
+                if (a && confirm(`Are you absolutely sure you want to delete the album "${a.title}"? All internal photo listings will be deleted from the database.`)) {
+                    const filtered = albums.filter(alb => alb.id !== id);
+                    await saveAlbums(filtered);
                     renderAlbums();
-                } else {
-                    alert('Error deleting album.');
                 }
+            } catch (err) {
+                alert('Error deleting album: ' + err.message);
             }
         }
 
         // Manage Photos slide-over modal triggers
-        function managePhotos(albumId) {
+        async function managePhotos(albumId) {
             activeAlbumId = albumId;
-            const albums = getAlbums();
-            const a = albums.find(alb => alb.id === albumId);
-            if (!a) return;
+            try {
+                const albums = await getAlbums();
+                const a = albums.find(alb => alb.id === albumId);
+                if (!a) return;
 
-            document.getElementById('photos-modal-title').textContent = `${a.title} Photos`;
-            document.getElementById('photos-modal-subtitle').textContent = `Catalog of images currently uploaded in this album.`;
-            document.getElementById('photo-add-form').reset();
+                document.getElementById('photos-modal-title').textContent = `${a.title} Photos`;
+                document.getElementById('photos-modal-subtitle').textContent = `Catalog of images currently uploaded in this album.`;
+                document.getElementById('photo-add-form').reset();
 
-            renderPhotosGrid(a);
-            document.getElementById('photos-modal').classList.remove('hidden');
+                renderPhotosGrid(a);
+                document.getElementById('photos-modal').classList.remove('hidden');
+            } catch (err) {
+                console.error(err);
+            }
         }
 
         function closePhotosModal() {
@@ -271,52 +291,61 @@
         }
 
         // Submit photo addition
-        document.getElementById('photo-add-form').addEventListener('submit', function(e) {
+        document.getElementById('photo-add-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const url = document.getElementById('new-photo-url').value.trim();
             if (!activeAlbumId || !url) return;
 
-            const albums = getAlbums();
-            const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
-            if (aIdx === -1) return;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
 
-            if (!albums[aIdx].images) albums[aIdx].images = [];
-            
-            // Append URL
-            albums[aIdx].images.push(url);
+            try {
+                const albums = await getAlbums();
+                const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
+                if (aIdx === -1) return;
 
-            if (saveAlbums(albums)) {
+                if (!albums[aIdx].images) albums[aIdx].images = [];
+                
+                // Append URL
+                albums[aIdx].images.push(url);
+
+                await saveAlbums(albums);
                 document.getElementById('photo-add-form').reset();
                 renderPhotosGrid(albums[aIdx]);
                 renderAlbums();
-            } else {
-                alert('Error adding photo to database.');
+            } catch (err) {
+                alert('Error adding photo: ' + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '➕ Add Photo';
             }
         });
 
         // Delete photo within album
-        window.deletePhoto = function(index) {
+        window.deletePhoto = async function(index) {
             if (!activeAlbumId) return;
-            const albums = getAlbums();
-            const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
-            if (aIdx === -1) return;
+            try {
+                const albums = await getAlbums();
+                const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
+                if (aIdx === -1) return;
 
-            const a = albums[aIdx];
-            if (a.images && confirm(`Are you sure you want to remove this photo from the album?`)) {
-                // Delete photo URL at index
-                a.images.splice(index, 1);
-                
-                // Keep cover updated if deleting cover or cover was first photo
-                if (index === 0 && a.images.length > 0) {
-                    a.cover = a.images[0];
-                }
+                const a = albums[aIdx];
+                if (a.images && confirm(`Are you sure you want to remove this photo from the album?`)) {
+                    // Delete photo URL at index
+                    a.images.splice(index, 1);
+                    
+                    // Keep cover updated if deleting cover or cover was first photo
+                    if (index === 0 && a.images.length > 0) {
+                        a.cover = a.images[0];
+                    }
 
-                if (saveAlbums(albums)) {
+                    await saveAlbums(albums);
                     renderPhotosGrid(a);
                     renderAlbums();
-                } else {
-                    alert('Error deleting photo.');
                 }
+            } catch (err) {
+                alert('Error deleting photo: ' + err.message);
             }
         };
     </script>

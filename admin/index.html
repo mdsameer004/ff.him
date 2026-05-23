@@ -89,27 +89,43 @@
     </div>
 
     <!-- Login Controller -->
+    <script src="../js/api-client.js"></script>
     <script src="js/admin-common.js"></script>
     <script>
         // Redirect to dashboard immediately if already authenticated
-        if (localStorage.getItem('ff_admin_auth') === 'true') {
+        if (localStorage.getItem('ff_jwt_token') || localStorage.getItem('ff_admin_auth') === 'true') {
             window.location.href = 'dashboard.html';
         }
 
-        document.getElementById('login-form').addEventListener('submit', function(e) {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const alertBox = document.getElementById('error-alert');
+            const submitBtn = this.querySelector('button[type="submit"]');
 
             alertBox.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `⏳ <span>Verifying...</span>`;
 
-            if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
-                localStorage.setItem('ff_admin_auth', 'true');
-                window.location.href = 'dashboard.html';
-            } else {
-                alertBox.textContent = 'Invalid email address or password. Please try again.';
+            try {
+                if (window.apiClient) {
+                    await window.apiClient.login(email, password);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Fallback to static check if apiClient is completely missing
+                    if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
+                        localStorage.setItem('ff_admin_auth', 'true');
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        throw new Error('Invalid email address or password.');
+                    }
+                }
+            } catch (err) {
+                alertBox.textContent = err.message || 'Invalid email address or password. Please try again.';
                 alertBox.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `🔒 <span>Sign In</span>`;
             }
         });
     </script>

@@ -232,7 +232,7 @@
 })();
 
 // 1. Authentication Guard
-const isAuthenticated = localStorage.getItem('ff_admin_auth') === 'true';
+const isAuthenticated = !!localStorage.getItem('ff_jwt_token') || localStorage.getItem('ff_admin_auth') === 'true';
 const isLoginPage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/admin/');
 
 if (!isAuthenticated && !isLoginPage) {
@@ -327,7 +327,14 @@ const defaultProducts = [
     }
 ];
 
-function getProducts() {
+async function getProducts() {
+    if (window.apiClient) {
+        try {
+            return await window.apiClient.getProducts();
+        } catch (e) {
+            console.error("Failed to load products from API client:", e);
+        }
+    }
     try {
         const stored = localStorage.getItem('products');
         if (!stored) {
@@ -342,7 +349,11 @@ function getProducts() {
     }
 }
 
-function saveProducts(products) {
+async function saveProducts(products) {
+    if (window.apiClient && !window.API_FALLBACK) {
+        // Under full backend mode, direct CRUD is used, so bulk saving isn't needed or is a no-op
+        return true;
+    }
     try {
         localStorage.setItem('products', JSON.stringify(products));
         return true;
@@ -352,7 +363,14 @@ function saveProducts(products) {
     }
 }
 
-function getDeals() {
+async function getDeals() {
+    if (window.apiClient) {
+        try {
+            return await window.apiClient.getDeals();
+        } catch (e) {
+            console.error(e);
+        }
+    }
     try {
         return JSON.parse(localStorage.getItem('flash_deals')) || [];
     } catch (e) {
@@ -361,7 +379,15 @@ function getDeals() {
     }
 }
 
-function saveDeals(deals) {
+async function saveDeals(deals) {
+    if (window.apiClient) {
+        try {
+            await window.apiClient.saveDeals(deals);
+            return true;
+        } catch (e) {
+            console.error(e);
+        }
+    }
     try {
         localStorage.setItem('flash_deals', JSON.stringify(deals));
         return true;
@@ -371,7 +397,14 @@ function saveDeals(deals) {
     }
 }
 
-function getAlbums() {
+async function getAlbums() {
+    if (window.apiClient) {
+        try {
+            return await window.apiClient.getAlbums();
+        } catch (e) {
+            console.error(e);
+        }
+    }
     try {
         return JSON.parse(localStorage.getItem('albumsData')) || [];
     } catch (e) {
@@ -380,7 +413,15 @@ function getAlbums() {
     }
 }
 
-function saveAlbums(albums) {
+async function saveAlbums(albums) {
+    if (window.apiClient) {
+        try {
+            await window.apiClient.saveAlbums(albums);
+            return true;
+        } catch (e) {
+            console.error(e);
+        }
+    }
     try {
         localStorage.setItem('albumsData', JSON.stringify(albums));
         return true;
@@ -501,7 +542,12 @@ function toggleMobileSidebar() {
 // Log out handler
 function handleLogout() {
     if (confirm("Are you sure you want to log out of the admin panel?")) {
-        localStorage.removeItem('ff_admin_auth');
+        if (window.apiClient) {
+            window.apiClient.logout();
+        } else {
+            localStorage.removeItem('ff_jwt_token');
+            localStorage.removeItem('ff_admin_auth');
+        }
         window.location.href = 'index.html';
     }
 }
