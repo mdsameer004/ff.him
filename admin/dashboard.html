@@ -43,6 +43,10 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
+        /* Custom dynamic bar transition */
+        .revenue-bar {
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -54,48 +58,131 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Here is a quick overview of Friends Florist performance today.</p>
         </div>
 
-        <!-- Dynamic Statistics Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Extended Dynamic Statistics Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
             <!-- Products Card -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-14 h-14 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center text-3xl">🌹</div>
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center text-2xl">🌹</div>
                 <div>
-                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Products</span>
-                    <span id="stat-products-count" class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0</span>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total Products</span>
+                    <span id="stat-products-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Deals Card -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-14 h-14 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-3xl">⚡</div>
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-2xl">⚡</div>
                 <div>
-                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Deals</span>
-                    <span id="stat-deals-count" class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0</span>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Active Deals</span>
+                    <span id="stat-deals-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Albums Card -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-3xl">🖼️</div>
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-2xl">🖼️</div>
                 <div>
-                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Gallery Albums</span>
-                    <span id="stat-albums-count" class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0</span>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Gallery Albums</span>
+                    <span id="stat-albums-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                </div>
+            </div>
+
+            <!-- Total Orders Received Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/30 rounded-full flex items-center justify-center text-2xl">📦</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total Orders</span>
+                    <span id="stat-orders-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                </div>
+            </div>
+
+            <!-- Total Revenue Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center text-2xl">💰</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total Revenue</span>
+                    <span id="stat-revenue-total" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">₹0</span>
                 </div>
             </div>
 
             <!-- Status Card -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-14 h-14 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-3xl">🌐</div>
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">🌐</div>
                 <div>
-                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Website Status</span>
-                    <button onclick="toggleWebsiteStatus()" id="website-status-btn" class="mt-1 px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors">
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Website Status</span>
+                    <button onclick="toggleWebsiteStatus()" id="website-status-btn" class="mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors">
                         Online
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Main Body Grid: Recent Activity & Quick Actions -->
+        <!-- Interactive Revenue Analytics Panel -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-rose-50 dark:border-gray-700 pb-4 gap-4">
+                <div>
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Revenue Distribution & Analysis</h3>
+                    <p class="text-xs text-gray-400 mt-1">Interactive overview of cash receipts filtered across multiple scopes.</p>
+                </div>
+                <!-- Filter Tabs -->
+                <div class="flex bg-rose-50/40 dark:bg-gray-750 p-1 rounded-xl border border-rose-100/30">
+                    <button onclick="changeRevenueFilter('day')" id="filter-day" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-rose-500 text-white shadow-sm">Daily</button>
+                    <button onclick="changeRevenueFilter('month')" id="filter-month" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500">Monthly</button>
+                    <button onclick="changeRevenueFilter('year')" id="filter-year" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500">Yearly</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Visual CSS Bar Graph (2 Cols) -->
+                <div class="lg:col-span-2 bg-rose-50/5 dark:bg-gray-750/10 border border-rose-50/30 dark:border-gray-750 rounded-2xl p-6 flex flex-col justify-between">
+                    <!-- Graph Plot Area -->
+                    <div class="flex items-end justify-between gap-3 h-56 pt-6 px-2" id="revenue-chart-bars">
+                        <!-- Plotted dynamically by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Numerical Data Listing (1 Col) -->
+                <div class="bg-rose-50/5 dark:bg-gray-750/10 border border-rose-50/30 dark:border-gray-750 rounded-2xl p-5 flex flex-col">
+                    <h4 class="text-xs font-bold uppercase text-gray-450 tracking-wider mb-4 border-b border-rose-50/20 pb-2">Metrics Summary</h4>
+                    <div class="flex-1 overflow-y-auto max-h-56 divide-y divide-rose-50/20 dark:divide-gray-750" id="revenue-summary-table">
+                        <!-- Summary table populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Customer Orders Panel -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+            <div class="border-b border-rose-50 dark:border-gray-700 pb-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Customer Orders & Fulfillment</h3>
+                    <p class="text-xs text-gray-400 mt-1">Track purchase records and dynamically manage fulfillment pipeline statuses.</p>
+                </div>
+                <span class="px-2.5 py-1 text-2xs font-bold bg-rose-50 text-rose-600 dark:bg-gray-700 dark:text-rose-400 rounded-lg" id="orders-count-badge">0 orders</span>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="overflow-x-auto border border-rose-50/30 dark:border-gray-700 rounded-2xl">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-rose-50/20 dark:bg-gray-750/40 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase border-b border-rose-50 dark:border-gray-700">
+                            <th class="px-6 py-4">Order ID</th>
+                            <th class="px-6 py-4">Customer</th>
+                            <th class="px-6 py-4">Date Placed</th>
+                            <th class="px-6 py-4">Delivery Items</th>
+                            <th class="px-6 py-4">Total Price</th>
+                            <th class="px-6 py-4">Fulfillment Status</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body" class="divide-y divide-rose-50/30 dark:divide-gray-750">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Side-by-Side: Recent Activity & Shortcuts -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Side: Recent Activity Feed (2 Cols) -->
             <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 lg:col-span-2 space-y-6">
@@ -143,48 +230,312 @@
         </div>
     </div>
 
+    <!-- Dynamic Success Toast container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
     <!-- Admin Helper Logic and Common script -->
+    <script src="../js/api-client.js"></script>
     <script src="js/admin-common.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Read Dynamic Counts
-            const products = getProducts();
-            const deals = getDeals();
-            const albums = getAlbums();
+        let globalOrders = [];
+        let activeRevenueFilter = 'day'; // Default granularity
 
-            document.getElementById('stat-products-count').textContent = products.length;
-            document.getElementById('stat-deals-count').textContent = deals.length;
-            document.getElementById('stat-albums-count').textContent = albums.length;
-
-            // Load Maintenance status
-            const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
-            const statusBtn = document.getElementById('website-status-btn');
-            if (isMaintenance) {
-                statusBtn.textContent = 'Maintenance';
-                statusBtn.className = 'mt-1 px-3 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
-            }
-
-            // Populate Recent Activity logs
-            const activityLog = document.getElementById('activity-log');
-            const defaultLogs = [
-                { text: "Successfully synchronized database with storefront.", icon: "🔧", time: "Just now" },
-                { text: `Loaded product catalog containing ${products.length} active bouquets.`, icon: "💐", time: "2 minutes ago" },
-                { text: `Successfully loaded ${albums.length} photo gallery albums.`, icon: "📂", time: "15 minutes ago" },
-                { text: "Admin portal session established.", icon: "🔐", time: "1 hour ago" }
-            ];
-
-            activityLog.innerHTML = defaultLogs.map(log => `
-                <div class="flex items-start gap-4 p-3 bg-gray-50/50 dark:bg-gray-750/30 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-750/60 transition-colors">
-                    <div class="text-lg">${log.icon}</div>
-                    <div class="flex-1">
-                        <p class="text-xs font-medium text-gray-700 dark:text-gray-300">${log.text}</p>
-                        <span class="text-3xs text-gray-400 block mt-1">${log.time}</span>
-                    </div>
-                </div>
-            `).join('');
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load all metric cards
+            await reloadDashboardData();
         });
 
-        // Toggle status
+        // Fetches and reloads all core dashboard states asynchronously
+        async function reloadDashboardData() {
+            try {
+                // 1. Read Dynamic Counts
+                const products = await getProducts();
+                const deals = await getDeals();
+                const albums = await getAlbums();
+                
+                // Fetch Orders via apiClient
+                if (window.apiClient) {
+                    globalOrders = await window.apiClient.getOrders();
+                } else {
+                    globalOrders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
+                }
+
+                document.getElementById('stat-products-count').textContent = products.length;
+                document.getElementById('stat-deals-count').textContent = deals.length;
+                document.getElementById('stat-albums-count').textContent = albums.length;
+                document.getElementById('stat-orders-count').textContent = globalOrders.length;
+                document.getElementById('orders-count-badge').textContent = `${globalOrders.length} orders total`;
+
+                // Calculate total revenue from all orders
+                const allTimeRevenue = globalOrders.reduce((acc, order) => acc + (parseFloat(order.total) || 0), 0);
+                document.getElementById('stat-revenue-total').textContent = `₹${allTimeRevenue.toLocaleString('en-IN')}`;
+
+                // 2. Render Revenue Charts & Data Summary
+                renderRevenueAnalytics();
+
+                // 3. Render Orders Table
+                renderOrdersTable();
+
+                // 4. Load Maintenance status
+                const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
+                const statusBtn = document.getElementById('website-status-btn');
+                if (isMaintenance) {
+                    statusBtn.textContent = 'Maintenance';
+                    statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
+                }
+
+                // 5. Populate Recent Activity logs
+                const activityLog = document.getElementById('activity-log');
+                const defaultLogs = [
+                    { text: "Successfully synchronized database with storefront.", icon: "🔧", time: "Just now" },
+                    { text: `Loaded product catalog containing ${products.length} active bouquets.`, icon: "💐", time: "2 minutes ago" },
+                    { text: `Loaded ${globalOrders.length} customer order transaction receipts.`, icon: "📦", time: "5 minutes ago" },
+                    { text: `Successfully loaded ${albums.length} photo gallery albums.`, icon: "📂", time: "15 minutes ago" }
+                ];
+
+                activityLog.innerHTML = defaultLogs.map(log => `
+                    <div class="flex items-start gap-4 p-3 bg-gray-50/50 dark:bg-gray-750/30 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-750/60 transition-colors">
+                        <div class="text-lg">${log.icon}</div>
+                        <div class="flex-1">
+                            <p class="text-xs font-medium text-gray-700 dark:text-gray-300">${log.text}</p>
+                            <span class="text-3xs text-gray-400 block mt-1">${log.time}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Dashboard reload failed:", err);
+                showToast("Failed to sync dashboard metrics.", "error");
+            }
+        }
+
+        // Handles Day-wise, Month-wise, and Year-wise Revenue Analytics calculations & drawing
+        function renderRevenueAnalytics() {
+            const barContainer = document.getElementById('revenue-chart-bars');
+            const summaryTable = document.getElementById('revenue-summary-table');
+            
+            barContainer.innerHTML = '';
+            summaryTable.innerHTML = '';
+
+            if (globalOrders.length === 0) {
+                barContainer.innerHTML = `<div class="w-full text-center text-xs text-gray-400 pb-16">No sales transactions available to plot.</div>`;
+                summaryTable.innerHTML = `<div class="py-4 text-center text-xs text-gray-400">No data records found.</div>`;
+                return;
+            }
+
+            // Grouping container
+            const groups = {};
+
+            globalOrders.forEach(order => {
+                const orderDateStr = order.date || new Date().toISOString().split('T')[0];
+                const dateObj = new Date(orderDateStr);
+                
+                let groupKey = '';
+                let label = '';
+
+                if (activeRevenueFilter === 'day') {
+                    // Day-wise grouping (e.g. "2026-05-23")
+                    groupKey = orderDateStr;
+                    // Format label as "May 23"
+                    label = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                } else if (activeRevenueFilter === 'month') {
+                    // Month-wise grouping (e.g. "2026-05")
+                    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                    groupKey = `${dateObj.getFullYear()}-${month}`;
+                    label = dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                } else if (activeRevenueFilter === 'year') {
+                    // Year-wise grouping (e.g. "2026")
+                    groupKey = dateObj.getFullYear().toString();
+                    label = groupKey;
+                }
+
+                if (!groups[groupKey]) {
+                    groups[groupKey] = { label, total: 0, count: 0, key: groupKey };
+                }
+                groups[groupKey].total += (parseFloat(order.total) || 0);
+                groups[groupKey].count += 1;
+            });
+
+            // Sort grouped arrays chronologically
+            const sortedGroups = Object.values(groups).sort((a, b) => a.key.localeCompare(b.key));
+            
+            // Find max revenue value for flex height drawing calculation
+            const maxRevenue = Math.max(...sortedGroups.map(g => g.total), 1);
+
+            // Draw flex graphical bars
+            sortedGroups.forEach(g => {
+                const heightPercent = Math.max((g.total / maxRevenue) * 100, 4); // minimum 4% so even small values show a micro bar
+                const barCol = document.createElement('div');
+                barCol.className = 'flex-1 flex flex-col items-center group relative min-w-[30px] h-full justify-end';
+                barCol.innerHTML = `
+                    <!-- Interactive Hover Tooltip -->
+                    <div class="absolute -top-10 opacity-0 group-hover:opacity-100 bg-gray-900/90 text-white text-3xs px-2.5 py-1.5 rounded-lg shadow-lg transition-opacity duration-200 z-10 pointer-events-none whitespace-nowrap font-semibold border border-rose-100/10">
+                        ₹${g.total.toLocaleString('en-IN')} (${g.count} orders)
+                    </div>
+                    <!-- Styled Bar Column -->
+                    <div class="w-full bg-[#B2C9AD] hover:bg-[#1e3f2d] dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-t-md cursor-pointer transition-all duration-300 revenue-bar" style="height: ${heightPercent}%"></div>
+                    <!-- Granular Label below -->
+                    <span class="text-3xs text-gray-400 mt-2 font-medium truncate max-w-full" title="${g.label}">${g.label}</span>
+                `;
+                barContainer.appendChild(barCol);
+            });
+
+            // Render right hand Summary list
+            // Sort summary details with latest at top
+            const summaryGroups = [...sortedGroups].reverse();
+            summaryTable.innerHTML = summaryGroups.map(g => `
+                <div class="py-3 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-gray-700 dark:text-gray-200 block">${g.label}</span>
+                        <span class="text-3xs text-gray-450">${g.count} orders received</span>
+                    </div>
+                    <span class="font-bold text-[#1e3f2d] dark:text-emerald-400 text-sm">₹${g.total.toLocaleString('en-IN')}</span>
+                </div>
+            `).join('');
+        }
+
+        // Swaps granular revenue chart filter scopes
+        function changeRevenueFilter(type) {
+            activeRevenueFilter = type;
+            
+            // Toggle active style triggers
+            ['day', 'month', 'year'].forEach(filter => {
+                const btn = document.getElementById(`filter-${filter}`);
+                if (filter === type) {
+                    btn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-[#1e3f2d] text-white shadow-sm dark:bg-emerald-600';
+                } else {
+                    btn.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500';
+                }
+            });
+
+            renderRevenueAnalytics();
+        }
+
+        // Renders active e-commerce orders dynamic list
+        function renderOrdersTable() {
+            const tableBody = document.getElementById('orders-table-body');
+            tableBody.innerHTML = '';
+
+            if (globalOrders.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-xs">No orders have been received yet.</td></tr>`;
+                return;
+            }
+
+            // Sort orders with latest at top
+            const sortedOrders = [...globalOrders].sort((a, b) => b.date.localeCompare(a.date));
+
+            sortedOrders.forEach(o => {
+                const badgeColor = getStatusBadgeStyle(o.status);
+                
+                // Construct ordered items summary
+                let itemsSummary = '';
+                if (Array.isArray(o.items)) {
+                    itemsSummary = o.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
+                } else {
+                    itemsSummary = 'Custom order';
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-mono font-bold text-xs text-rose-500 dark:text-rose-400">#${o.id}</td>
+                    <td class="px-6 py-4">
+                        <span class="block font-bold text-gray-800 dark:text-white text-xs">${o.customer || o.deliveryDetails?.name || 'Storefront Guest'}</span>
+                        <span class="block text-3xs text-gray-400 max-w-[150px] truncate">${o.deliveryDetails?.email || 'Guest checkout'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-2xs text-gray-500 dark:text-gray-400">${o.date}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-2xs text-gray-600 dark:text-gray-300 max-w-[200px] truncate font-medium" title="${itemsSummary}">${itemsSummary}</div>
+                    </td>
+                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white text-xs">₹${Number(o.total || 0).toLocaleString('en-IN')}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-0.5 text-3xs font-extrabold rounded-full tracking-wider uppercase ${badgeColor}">${o.status}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <!-- Sages dropdown change selector -->
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="text-xs bg-transparent border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 font-semibold cursor-pointer">
+                            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        </select>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Returns styled CSS tags based on status value
+        function getStatusBadgeStyle(status) {
+            switch (status) {
+                case 'Pending':
+                    return 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-250';
+                case 'Processing':
+                    return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-250';
+                case 'Shipped':
+                    return 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-250';
+                case 'Delivered':
+                    return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-250';
+                default:
+                    return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
+            }
+        }
+
+        // Triggers API Client order status updates asynchronously and syncs charts
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                if (window.apiClient) {
+                    await window.apiClient.updateOrder(orderId, { status: newStatus });
+                } else {
+                    // Fail-safe fallback if apiClient isn't active
+                    let orders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
+                    const index = orders.findIndex(o => o.id === orderId);
+                    if (index !== -1) {
+                        orders[index].status = newStatus;
+                        localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
+                    }
+                }
+                
+                // Show dynamic premium toast
+                showToast(`Order #${orderId} successfully transitioned to [${newStatus}]!`, 'success');
+                
+                // Reload dashboard data instantly
+                await reloadDashboardData();
+            } catch (err) {
+                console.error("Order status update failed:", err);
+                showToast("Failed to transition order status: " + err.message, "error");
+            }
+        }
+
+        // Displays animated HSL micro notifications in lower-right corner
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-2xl shadow-xl border text-xs font-semibold translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto bg-white dark:bg-gray-800 ${
+                type === 'success' 
+                    ? 'border-emerald-200 dark:border-emerald-900/60 text-[#1e3f2d] dark:text-emerald-400' 
+                    : 'border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-450'
+            }`;
+            
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✨' : '⚠️'}</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Animate out and delete
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Toggle maintenance status
         function toggleWebsiteStatus() {
             const statusBtn = document.getElementById('website-status-btn');
             const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
@@ -193,10 +544,12 @@
                 localStorage.setItem('ff_maintenance_mode', (!isMaintenance).toString());
                 if (!isMaintenance) {
                     statusBtn.textContent = 'Maintenance';
-                    statusBtn.className = 'mt-1 px-3 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
+                    statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
+                    showToast("Website shifted to Maintenance Mode.", "success");
                 } else {
                     statusBtn.textContent = 'Online';
-                    statusBtn.className = 'mt-1 px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors';
+                    statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors';
+                    showToast("Website shifted to Online Mode.", "success");
                 }
             }
         }

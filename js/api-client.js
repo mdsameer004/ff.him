@@ -175,21 +175,55 @@ class ApiClient {
 
                     // 5. ORDERS FALLBACK
                     if (path.startsWith('/orders')) {
-                        const storedOrders = localStorage.getItem('friends-florist-orders') || localStorage.getItem('orders');
-                        let orders = storedOrders ? JSON.parse(storedOrders) : [];
-                        
-                        if (method === 'GET') {
-                            resolve(orders);
-                        } else if (method === 'POST') {
-                            const newOrder = {
-                                id: 'FF-' + Math.floor(1000 + Math.random() * 9000),
-                                date: new Date().toISOString().split('T')[0],
-                                status: 'Pending',
-                                ...body
-                            };
-                            orders.push(newOrder);
-                            localStorage.setItem('friends-florist-orders', JSON.stringify(orders));
-                            resolve(newOrder);
+                        const storedOrders = localStorage.getItem('friendsFloristOrders');
+                        let orders = storedOrders ? JSON.parse(storedOrders) : [
+                            { id: "ORD-9901", customer: "John Doe", items: [{ name: "Classic Red Rose Bouquet", price: 499, quantity: 1, image: "https://images.unsplash.com/photo-1767824122857-9a1521db58d3?q=80&w=800&h=800&auto=format&fit=crop" }], total: 499, status: "Pending", date: "2026-05-23", deliveryDetails: { name: "John Doe", email: "john@example.com", phone: "9876543210" } },
+                            { id: "ORD-9902", customer: "Sarah Smith", items: [{ name: "Romantic Love Bouquet", price: 549, quantity: 2, image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=800&h=800&auto=format&fit=crop" }], total: 1098, status: "Delivered", date: "2026-05-22", deliveryDetails: { name: "Sarah Smith", email: "sarah@example.com", phone: "9876543210" } },
+                            { id: "ORD-9903", customer: "Jane Doe", items: [{ name: "Birthday Celebration Bouquet", price: 649, quantity: 1, image: "https://images.unsplash.com/photo-1667489024245-7beb09ac43c5?q=80&w=800&h=800&auto=format&fit=crop" }], total: 649, status: "Processing", date: "2026-05-20", deliveryDetails: { name: "Jane Doe", email: "jane@example.com", phone: "9876543210" } },
+                            { id: "ORD-9904", customer: "Michael Brown", items: [{ name: "Anniversary Special Bouquet", price: 849, quantity: 1, image: "https://images.unsplash.com/photo-1729151634645-1f4ed2938f0b?q=80&w=800&h=800&auto=format&fit=crop" }], total: 849, status: "Delivered", date: "2026-05-15", deliveryDetails: { name: "Michael Brown", email: "michael@example.com", phone: "9876543210" } },
+                            { id: "ORD-9905", customer: "David Wilson", items: [{ name: "Spring Garden Bouquet", price: 749, quantity: 2, image: "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?q=80&w=800&h=800&auto=format&fit=crop" }], total: 1498, status: "Delivered", date: "2026-04-10", deliveryDetails: { name: "David Wilson", email: "david@example.com", phone: "9876543210" } },
+                            { id: "ORD-9906", customer: "Emily Davis", items: [{ name: "Elegant Mixed Flower Bouquet", price: 599, quantity: 3, image: "https://images.unsplash.com/photo-1699830008232-fe4ae2a6ee11?q=80&w=800&h=800&auto=format&fit=crop" }], total: 1797, status: "Delivered", date: "2026-01-05", deliveryDetails: { name: "Emily Davis", email: "emily@example.com", phone: "9876543210" } },
+                            { id: "ORD-9907", customer: "Robert Taylor", items: [{ name: "Premium Rose Basket", price: 949, quantity: 1, image: "https://plus.unsplash.com/premium_photo-1674197235302-1190e266fd04?q=80&w=800&h=800&auto=format&fit=crop" }], total: 949, status: "Delivered", date: "2025-11-20", deliveryDetails: { name: "Robert Taylor", email: "robert@example.com", phone: "9876543210" } }
+                        ];
+
+                        // Seed localStorage if empty
+                        if (!storedOrders) {
+                            localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
+                        }
+
+                        const pathParts = path.split('/');
+                        // Remove empty string from split
+                        const cleanParts = pathParts.filter(Boolean);
+                        const idParam = cleanParts.length > 1 ? cleanParts[1] : null;
+
+                        if (idParam) {
+                            const index = orders.findIndex(o => o.id === idParam || o.id === '#' + idParam || '#' + o.id === idParam);
+                            if (method === 'GET') {
+                                if (index !== -1) resolve(orders[index]);
+                                else reject(new Error('Order not found'));
+                            } else if (method === 'PUT') {
+                                if (index !== -1) {
+                                    orders[index] = { ...orders[index], ...body };
+                                    localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
+                                    resolve(orders[index]);
+                                } else {
+                                    reject(new Error('Order not found'));
+                                }
+                            }
+                        } else {
+                            if (method === 'GET') {
+                                resolve(orders);
+                            } else if (method === 'POST') {
+                                const newOrder = {
+                                    id: 'FF-' + Math.floor(1000 + Math.random() * 9000),
+                                    date: new Date().toISOString().split('T')[0],
+                                    status: 'Pending',
+                                    ...body
+                                };
+                                orders.push(newOrder);
+                                localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
+                                resolve(newOrder);
+                            }
                         }
                         return;
                     }
@@ -275,6 +309,13 @@ class ApiClient {
             method: 'POST',
             body: JSON.stringify(orderData)
         });
+    }
+
+    async updateOrder(id, orderData) {
+        return this.request(`/orders/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(orderData)
+        }, true);
     }
 }
 
