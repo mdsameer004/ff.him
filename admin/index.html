@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        // Force trailing slash redirect to ensure relative assets resolve properly
+        if (window.location.pathname.endsWith('/admin')) {
+            window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Friends Florist</title>
@@ -99,7 +105,7 @@
 
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value.trim();
             const alertBox = document.getElementById('error-alert');
             const submitBtn = this.querySelector('button[type="submit"]');

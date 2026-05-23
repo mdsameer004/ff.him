@@ -84,7 +84,8 @@ class ApiClient {
                     // 1. AUTH LOGIN FALLBACK
                     if (path.startsWith('/auth/login') && method === 'POST') {
                         const { email, password } = body;
-                        if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
+                        const normalizedEmail = (email || '').trim().toLowerCase();
+                        if (normalizedEmail === 'admin@friendsflorist.com' && password === 'Friends@123') {
                             const mockToken = 'mock-jwt-header-token-for-admin-friends-florist';
                             this.setToken(mockToken);
                             resolve({
@@ -92,7 +93,7 @@ class ApiClient {
                                 token: mockToken,
                                 user: { email: 'admin@friendsflorist.com', role: 'admin', name: 'Admin User' }
                             });
-                        } else if ((email === 'editor@admin.com' || email === 'editor') && password === 'editor') {
+                        } else if ((normalizedEmail === 'editor@admin.com' || normalizedEmail === 'editor') && password === 'editor') {
                             const mockToken = 'mock-jwt-header-token-for-editor';
                             this.setToken(mockToken);
                             resolve({
