@@ -40,34 +40,36 @@ class ApiClient {
 
     // Primary request runner with automatic fallback detection
     async request(path, options = {}, secured = false) {
+        // If API_FALLBACK is active, skip the network entirely and go straight to local DB
+        if (window.API_FALLBACK) {
+            const clonedOptions = { ...options, headers: { ...this.getHeaders(secured), ...(options.headers || {}) } };
+            console.info(`%c[Friends Florist Local DB] API_FALLBACK active. Serving ${options.method || 'GET'} ${path} from local database.`, 'color: #2E8B57; font-weight: bold;');
+            return this.executeFallback(path, clonedOptions);
+        }
+
         const url = `${window.API_BASE_URL}${path}`;
         options.headers = { ...this.getHeaders(secured), ...options.headers };
 
         try {
-            // Attempt standard API call
+            // Attempt live backend API call
             const response = await fetch(url, options);
-            
+
             if (response.status === 401 || response.status === 403) {
                 console.warn('Authentication token invalid or expired. Logging out.');
                 this.setToken(null);
             }
 
             if (!response.ok) {
-                // If API fallback is enabled and we encounter 404, 405 Method Not Allowed, or server errors, fallback instantly
-                if (window.API_FALLBACK && (response.status === 404 || response.status === 405 || response.status >= 500)) {
-                    console.info(`%c[Friends Florist Backend Fallback] HTTP ${response.status} detected on ${path}. Redirecting to simulated client database.`, 'color: #2E8B57; font-weight: bold;');
-                    return await this.executeFallback(path, options);
-                }
                 const errorBody = await response.json().catch(() => ({}));
                 throw new Error(errorBody.message || `HTTP Request Failed: status ${response.status}`);
             }
 
             return await response.json();
         } catch (error) {
-            // Check if backend connection failed or explicit/implicit fallback applies
-            if (window.API_FALLBACK) {
-                console.info(`%c[Friends Florist Backend Fallback] Catching error: "${error.message}". Activating simulated database fallback for ${path}.`, 'color: #2E8B57; font-weight: bold;');
-                return await this.executeFallback(path, options);
+            // Network-level failure (e.g. server offline) — activate local fallback
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                console.info(`%c[Friends Florist Local DB] Network error on ${path}: "${error.message}". Activating local database fallback.`, 'color: #2E8B57; font-weight: bold;');
+                return this.executeFallback(path, options);
             }
             throw error;
         }
@@ -244,9 +246,14 @@ class ApiClient {
 
     // Dynamic Helper API endpoints exposed to frontend scripts
     async login(email, password) {
-        return this.request('/auth/login', {
+        // Normalize email to lowercase for case-insensitive matching
+        const normalizedEmail = (email || '').trim().toLowerCase();
+        const normalizedPassword = (password || '').trim();
+
+        // Always use local credential fallback (no live backend on GitHub Pages)
+        return this.executeFallback('/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ email: normalizedEmail, password: normalizedPassword })
         });
     }
 
