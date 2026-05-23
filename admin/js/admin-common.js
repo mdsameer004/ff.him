@@ -233,7 +233,10 @@
 
 // 1. Authentication Guard
 const isAuthenticated = !!localStorage.getItem('ff_jwt_token') || localStorage.getItem('ff_admin_auth') === 'true';
-const isLoginPage = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/admin/');
+const isLoginPage = window.location.pathname.endsWith('index.html') || 
+                    window.location.pathname.endsWith('/admin') || 
+                    window.location.pathname.endsWith('/admin/') ||
+                    window.location.pathname.includes('admin/index.html');
 
 if (!isAuthenticated && !isLoginPage) {
     window.location.href = 'index.html';
