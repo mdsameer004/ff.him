@@ -53,16 +53,20 @@ class ApiClient {
             }
 
             if (!response.ok) {
+                // If API fallback is enabled and we encounter 404, 405 Method Not Allowed, or server errors, fallback instantly
+                if (window.API_FALLBACK && (response.status === 404 || response.status === 405 || response.status >= 500)) {
+                    console.info(`%c[Friends Florist Backend Fallback] HTTP ${response.status} detected on ${path}. Redirecting to simulated client database.`, 'color: #2E8B57; font-weight: bold;');
+                    return await this.executeFallback(path, options);
+                }
                 const errorBody = await response.json().catch(() => ({}));
                 throw new Error(errorBody.message || `HTTP Request Failed: status ${response.status}`);
             }
 
             return await response.json();
         } catch (error) {
-            // Check if backend connection failed (or if explicitly forced fallback)
-            const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
-            if (window.API_FALLBACK && (isNetworkError || error.message.includes('Failed to fetch') || error.message.includes('404'))) {
-                console.info(`%c[Friends Florist Backend Fallback] Connecting to simulated client database for path: ${path}`, 'color: #2E8B57; font-weight: bold;');
+            // Check if backend connection failed or explicit/implicit fallback applies
+            if (window.API_FALLBACK) {
+                console.info(`%c[Friends Florist Backend Fallback] Catching error: "${error.message}". Activating simulated database fallback for ${path}.`, 'color: #2E8B57; font-weight: bold;');
                 return await this.executeFallback(path, options);
             }
             throw error;
