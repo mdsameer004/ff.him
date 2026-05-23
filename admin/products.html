@@ -139,10 +139,22 @@
                         </div>
                     </div>
 
-                    <!-- Image URL -->
+                    <!-- Image Uploader -->
                     <div>
-                        <label for="p-image" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Image URL</label>
-                        <input type="url" id="p-image" placeholder="https://images.unsplash.com/photo-..." class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Upload Images * (1 to 8 images)</label>
+                        <div class="flex items-center gap-4">
+                            <!-- Hidden input -->
+                            <input type="file" id="p-images-input" multiple accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                            <button type="button" onclick="document.getElementById('p-images-input').click()" class="px-4 py-2.5 border-2 border-dashed border-rose-200 dark:border-gray-700 hover:border-rose-450 dark:hover:border-gray-650 bg-rose-50/5 dark:bg-gray-750/10 hover:bg-rose-50/30 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 transition-all flex items-center gap-2">
+                                📷 <span>Select Image Files</span>
+                            </button>
+                            <span id="p-images-count" class="text-2xs text-gray-400 font-medium">0 / 8 uploaded</span>
+                        </div>
+                        
+                        <!-- Uploaded previews grid -->
+                        <div id="p-previews-grid" class="flex flex-wrap gap-3 mt-4">
+                            <!-- Previews dynamically rendered -->
+                        </div>
                     </div>
 
                     <!-- Description -->
@@ -229,11 +241,117 @@
             });
         }
 
+        let tempUploadedImages = [];
+
+        // Image compressor using Canvas to fit within localStorage 5MB limit
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const MAX_HEIGHT = 800;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Output compressed JPEG
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
+        // Handles multi-image selection and compression
+        async function handleImageUpload(e) {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
+
+            const remaining = 8 - tempUploadedImages.length;
+            if (remaining <= 0) {
+                alert("You have already uploaded the maximum limit of 8 images.");
+                return;
+            }
+
+            const filesToProcess = files.slice(0, remaining);
+            if (files.length > remaining) {
+                alert(`You can only upload up to 8 images. Only the first ${remaining} selected files will be processed.`);
+            }
+
+            // Show loading or spinner state
+            const badge = document.getElementById('p-images-count');
+            badge.textContent = "Processing images...";
+
+            for (const file of filesToProcess) {
+                try {
+                    const compressedBase64 = await compressImage(file);
+                    tempUploadedImages.push(compressedBase64);
+                } catch (err) {
+                    console.error("Safeguard: Failed to compress image file.", err);
+                }
+            }
+
+            renderImagePreviews();
+            // Reset file input value so same files can be selected again
+            e.target.value = '';
+        }
+
+        // Renders image preview thumbnails inside modal
+        function renderImagePreviews() {
+            const grid = document.getElementById('p-previews-grid');
+            const badge = document.getElementById('p-images-count');
+            grid.innerHTML = '';
+
+            badge.textContent = `${tempUploadedImages.length} / 8 uploaded`;
+
+            tempUploadedImages.forEach((imgBase64, idx) => {
+                const div = document.createElement('div');
+                div.className = 'relative w-16 h-16 rounded-xl overflow-hidden shadow-inner border border-rose-100 dark:border-gray-700 bg-gray-50 group aspect-square';
+                div.innerHTML = `
+                    <img src="${imgBase64}" class="w-full h-full object-cover">
+                    <!-- Hover delete overlay -->
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button type="button" onclick="removeUploadedImage(${idx})" class="text-white text-xs font-bold leading-none bg-red-650 hover:bg-red-700 w-6 h-6 rounded-full flex items-center justify-center shadow-md">✕</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        // Removes uploaded image from modal list
+        window.removeUploadedImage = function(idx) {
+            tempUploadedImages.splice(idx, 1);
+            renderImagePreviews();
+        };
+
         // Product Modal Handlers
         function openProductModal(title = "Add Product", product = null) {
             document.getElementById('modal-title').textContent = title;
             document.getElementById('product-form').reset();
             document.getElementById('edit-id').value = '';
+            tempUploadedImages = [];
 
             if (product) {
                 document.getElementById('edit-id').value = product.id;
@@ -242,10 +360,17 @@
                 document.getElementById('p-stock').value = product.stock;
                 document.getElementById('p-price').value = product.price;
                 document.getElementById('p-orig-price').value = product.original_price;
-                document.getElementById('p-image').value = product.image || '';
                 document.getElementById('p-desc').value = product.description || '';
+                
+                // Populate uploaded images list (with support for back-compat single image string)
+                if (Array.isArray(product.images)) {
+                    tempUploadedImages = [...product.images];
+                } else if (product.image) {
+                    tempUploadedImages = [product.image];
+                }
             }
 
+            renderImagePreviews();
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
@@ -256,13 +381,19 @@
         // Form Submit
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // Validate image count
+            if (tempUploadedImages.length < 1) {
+                alert("Please upload at least 1 product image (maximum 8 allowed).");
+                return;
+            }
+
             const editId = document.getElementById('edit-id').value;
             const name = document.getElementById('p-name').value.trim();
             const category = document.getElementById('p-category').value;
             const stock = parseInt(document.getElementById('p-stock').value);
             const price = parseFloat(document.getElementById('p-price').value);
             const original_price = parseFloat(document.getElementById('p-orig-price').value);
-            const image = document.getElementById('p-image').value.trim();
             const description = document.getElementById('p-desc').value.trim();
 
             const products = getProducts();
@@ -278,7 +409,8 @@
                         stock,
                         price,
                         original_price,
-                        image: image || fallbackImage,
+                        images: tempUploadedImages,
+                        image: tempUploadedImages[0], // fallback main image URL or Base64
                         description
                     };
                 }
@@ -291,7 +423,8 @@
                     stock,
                     price,
                     original_price,
-                    image: image || fallbackImage,
+                    images: tempUploadedImages,
+                    image: tempUploadedImages[0], // fallback main image URL or Base64
                     description
                 };
                 products.push(newProduct);

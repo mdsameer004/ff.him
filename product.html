@@ -394,23 +394,40 @@
             // Load Reviews
             renderReviews();
 
-            // Images
+            // Images (Dynamic Multi-Image Gallery with try/catch safeguard)
             const mainImg = document.getElementById('detail-main-img');
-            mainImg.src = currentProduct.image;
-            
             const thumbList = document.getElementById('thumb-list');
-            for(let i=0; i<3; i++) {
+            thumbList.innerHTML = '';
+
+            let images = [];
+            try {
+                if (Array.isArray(currentProduct.images) && currentProduct.images.length > 0) {
+                    images = currentProduct.images;
+                } else if (currentProduct.image) {
+                    images = [currentProduct.image];
+                } else {
+                    images = [fallbackImage];
+                }
+            } catch (err) {
+                console.error("Safeguard: Error reading images from currentProduct", err);
+                images = [currentProduct.image || fallbackImage];
+            }
+
+            mainImg.src = images[0];
+
+            images.forEach((imgUrl, i) => {
                 const thumb = document.createElement('img');
-                thumb.src = currentProduct.image;
+                thumb.src = imgUrl;
                 thumb.className = `thumbnail ${i===0 ? 'active' : ''}`;
                 thumb.onclick = (e) => {
                     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
                     e.target.classList.add('active');
                     mainImg.style.opacity = '0.5';
+                    mainImg.src = imgUrl;
                     setTimeout(() => mainImg.style.opacity = '1', 100);
                 };
                 thumbList.appendChild(thumb);
-            }
+            });
 
             // Buttons
             document.getElementById('add-btn').onclick = () => {
