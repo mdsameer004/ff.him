@@ -11,6 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <!-- Prevent all caching of this page -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Admin Portal — Friends Florist</title>
 
     <!-- Google Fonts -->
@@ -857,8 +861,10 @@
     </div>
 
     <!-- ─── Scripts ─── -->
-    <script src="../js/api-client.js?v=1.1.0"></script>
-    <script src="js/admin-common.js"></script>
+    <!-- api-client provides local-DB auth (no network fetch, no 405) -->
+    <script src="../js/api-client.js?v=1.2.0"></script>
+    <!-- NOTE: admin-common.js intentionally NOT loaded on login page —
+         it injects the sidebar shell which overwrites the login form layout -->
     <script>
         // ── Already Authenticated? Redirect instantly ──
         if (localStorage.getItem('ff_jwt_token') || localStorage.getItem('ff_admin_auth') === 'true') {
