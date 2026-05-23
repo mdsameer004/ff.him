@@ -364,8 +364,24 @@
             
             // Populate Details
             document.getElementById('detail-title').textContent = currentProduct.name;
-            document.getElementById('detail-price-original').textContent = `₹${currentProduct.original_price.toLocaleString('en-IN')}`;
-            document.getElementById('detail-price-sale').textContent = `₹${currentProduct.price.toLocaleString('en-IN')}`;
+            // Defensive pricing safeguards
+            const priceNum = typeof currentProduct.price === 'number' && !isNaN(currentProduct.price)
+                ? currentProduct.price
+                : parseFloat(currentProduct.price || 0) || 0;
+            const originalPriceNum = typeof currentProduct.original_price === 'number' && !isNaN(currentProduct.original_price)
+                ? currentProduct.original_price
+                : (currentProduct.original_price ? parseFloat(currentProduct.original_price) || 0 : 0);
+
+            document.getElementById('detail-price-sale').textContent = `₹${priceNum.toLocaleString('en-IN')}`;
+            
+            const origPriceElement = document.getElementById('detail-price-original');
+            if (originalPriceNum > priceNum && originalPriceNum > 0) {
+                origPriceElement.textContent = `₹${originalPriceNum.toLocaleString('en-IN')}`;
+                origPriceElement.style.display = 'inline-block';
+            } else {
+                origPriceElement.textContent = '';
+                origPriceElement.style.display = 'none';
+            }
             document.getElementById('detail-desc').textContent = currentProduct.description;
             document.getElementById('bread-cat').textContent = currentProduct.category;
             document.getElementById('delivery-info').textContent = currentProduct.deliveryInfo;

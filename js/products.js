@@ -121,12 +121,29 @@ function createModernProductCard(product) {
     const revCount = getProductReviews(product.id).length;
     const stars = '★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating));
     const imageUrl = product.image ? product.image : fallbackImage;
-    const discount = product.original_price > product.price 
-        ? Math.round(((product.original_price - product.price) / product.original_price) * 100) 
+    
+    // Defensive pricing safeguards
+    const priceNum = typeof product.price === 'number' && !isNaN(product.price) 
+        ? product.price 
+        : parseFloat(product.price || 0) || 0;
+        
+    const originalPriceNum = typeof product.original_price === 'number' && !isNaN(product.original_price)
+        ? product.original_price
+        : (product.original_price ? parseFloat(product.original_price) || 0 : 0);
+
+    const discount = (originalPriceNum > priceNum && originalPriceNum > 0)
+        ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100) 
         : 0;
+        
     const discountBadge = discount > 0 
         ? `<div class="modern-discount-badge">-${discount}%</div>` 
         : '';
+    
+    const originalPriceHTML = (originalPriceNum > priceNum && originalPriceNum > 0)
+        ? `<span class="price-original">₹${originalPriceNum.toLocaleString('en-IN')}</span>`
+        : '';
+
+    const priceSaleHTML = `<span class="price-sale">₹${priceNum.toLocaleString('en-IN')}</span>`;
     
     return `
         <div class="modern-product-card" data-id="${product.id}" onclick="window.location.href='product.html?id=${product.id}'" style="cursor: pointer;">
@@ -139,8 +156,8 @@ function createModernProductCard(product) {
             <div class="modern-product-info">
                 <h3 class="modern-product-title">${product.name}</h3>
                 <div class="modern-product-price">
-                    <span class="price-original">₹${product.original_price.toLocaleString('en-IN')}</span>
-                    <span class="price-sale">₹${product.price.toLocaleString('en-IN')}</span>
+                    ${originalPriceHTML}
+                    ${priceSaleHTML}
                 </div>
                 <button class="modern-add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${product.id})">Add to Cart</button>
             </div>
