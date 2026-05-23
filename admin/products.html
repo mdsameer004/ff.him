@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        florist: {
+                            50: '#fff5f6',
+                            100: '#ffebe0',
+                            200: '#ffd1d6',
+                            500: '#ff8a95',
+                            600: '#e55b6a',
+                            700: '#c23c4a',
+                            800: '#8f232f',
+                            DEFAULT: '#ff8a95'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content Container for admin-common.js to capture -->
+    <div id="admin-content" class="space-y-6">
+        <!-- Header Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Product Catalog</h2>
+                <p class="text-xs text-gray-400 mt-1" id="products-count-badge">0 products total</p>
+            </div>
+            <button onclick="openProductModal()" class="px-5 py-3 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 hover:shadow-lg transition-all flex items-center gap-2">
+                ➕ <span>Add New Product</span>
+            </button>
+        </div>
+
+        <!-- Search and filters -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex flex-col md:flex-row md:items-center gap-4">
+            <div class="flex-1 relative">
+                <input type="text" id="search-input" oninput="renderProductsTable()" placeholder="Search by product name..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-500/40 bg-rose-50/10 dark:bg-gray-750/30 text-sm placeholder-gray-400">
+                <span class="absolute left-3.5 top-3 text-gray-400">🔍</span>
+            </div>
+            <select id="category-filter" onchange="renderProductsTable()" class="px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-500/40 bg-white dark:bg-gray-800 text-sm text-gray-600 dark:text-gray-300">
+                <option value="">All Categories</option>
+                <option value="Anniversary Flowers">Anniversary Flowers</option>
+                <option value="Birthday Bouquets">Birthday Bouquets</option>
+                <option value="Premium Bouquets">Premium Bouquets</option>
+                <option value="Wedding Decorations">Wedding Decorations</option>
+            </select>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-rose-50/20 dark:bg-gray-750/40 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase border-b border-rose-50 dark:border-gray-700">
+                            <th class="px-6 py-4">Image</th>
+                            <th class="px-6 py-4">Product Name</th>
+                            <th class="px-6 py-4">Category</th>
+                            <th class="px-6 py-4">Price</th>
+                            <th class="px-6 py-4">Stock</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-body" class="divide-y divide-rose-50/30 dark:divide-gray-700">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-16 px-6">
+                <div class="text-4xl mb-3">🌹</div>
+                <h4 class="font-bold text-gray-700 dark:text-gray-300 text-sm">No products found</h4>
+                <p class="text-xs text-gray-400 mt-1">Try modifying your search query or add your first product!</p>
+            </div>
+        </div>
+
+        <!-- Form Modal -->
+        <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-rose-100/40 dark:border-gray-700 p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-rose-50 dark:border-gray-700 pb-4 mb-6">
+                    <h3 id="modal-title" class="font-bold text-gray-800 dark:text-white text-base">Add Product</h3>
+                    <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold">✕</button>
+                </div>
+
+                <form id="product-form" class="space-y-4">
+                    <input type="hidden" id="edit-id">
+
+                    <!-- Name -->
+                    <div>
+                        <label for="p-name" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Product Name *</label>
+                        <input type="text" id="p-name" required placeholder="e.g. Elegant Mixed Bouquet" class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                    </div>
+
+                    <!-- Category & Stock -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="p-category" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Category *</label>
+                            <select id="p-category" required class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                                <option value="Anniversary Flowers">Anniversary Flowers</option>
+                                <option value="Birthday Bouquets">Birthday Bouquets</option>
+                                <option value="Premium Bouquets">Premium Bouquets</option>
+                                <option value="Wedding Decorations">Wedding Decorations</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="p-stock" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Stock Quantity *</label>
+                            <input type="number" id="p-stock" required min="0" placeholder="e.g. 10" class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                        </div>
+                    </div>
+
+                    <!-- Prices -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="p-price" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Price (₹) *</label>
+                            <input type="number" id="p-price" required min="0" placeholder="e.g. 499" class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label for="p-orig-price" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Original Price (₹) *</label>
+                            <input type="number" id="p-orig-price" required min="0" placeholder="e.g. 699" class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                        </div>
+                    </div>
+
+                    <!-- Image URL -->
+                    <div>
+                        <label for="p-image" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Image URL</label>
+                        <input type="url" id="p-image" placeholder="https://images.unsplash.com/photo-..." class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label for="p-desc" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Description</label>
+                        <textarea id="p-desc" rows="3" placeholder="Describe this premium arrangement..." class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100"></textarea>
+                    </div>
+
+                    <!-- Form CTA -->
+                    <div class="flex justify-end gap-3 pt-4 border-t border-rose-50 dark:border-gray-700 mt-6">
+                        <button type="button" onclick="closeProductModal()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-gray-600 dark:text-gray-300 font-semibold text-xs rounded-xl transition-all">Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 hover:shadow-lg transition-all">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Helper Logic and Common script -->
+    <script src="js/admin-common.js"></script>
+    <script>
+        const fallbackImage = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&h=800&auto=format&fit=crop";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProductsTable();
+        });
+
+        // Renders product items dynamically
+        function renderProductsTable() {
+            const products = getProducts();
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const catFilter = document.getElementById('category-filter').value;
+            const tableBody = document.getElementById('products-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const countBadge = document.getElementById('products-count-badge');
+
+            tableBody.innerHTML = '';
+            
+            // Filters products
+            const filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(searchVal);
+                const matchesCat = catFilter === '' || p.category === catFilter;
+                return matchesSearch && matchesCat;
+            });
+
+            countBadge.textContent = `${products.length} products total (${filtered.length} filtered)`;
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-gray-50">
+                            <img src="${p.image || fallbackImage}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="block font-bold text-gray-800 dark:text-white text-sm">${p.name}</span>
+                        <span class="block text-3xs text-gray-400 max-w-xs truncate mt-0.5">${p.description || 'No description provided.'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-xs font-semibold text-rose-500 dark:text-rose-400">${p.category}</td>
+                    <td class="px-6 py-4">
+                        <span class="block font-bold text-gray-800 dark:text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>
+                        ${p.original_price > p.price ? `<span class="block text-3xs text-gray-400 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-0.5 text-2xs font-bold rounded-full ${p.stock <= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'}">${p.stock} units</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editProduct(${p.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
+                            <button onclick="deleteProduct(${p.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Product Modal Handlers
+        function openProductModal(title = "Add Product", product = null) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('product-form').reset();
+            document.getElementById('edit-id').value = '';
+
+            if (product) {
+                document.getElementById('edit-id').value = product.id;
+                document.getElementById('p-name').value = product.name;
+                document.getElementById('p-category').value = product.category;
+                document.getElementById('p-stock').value = product.stock;
+                document.getElementById('p-price').value = product.price;
+                document.getElementById('p-orig-price').value = product.original_price;
+                document.getElementById('p-image').value = product.image || '';
+                document.getElementById('p-desc').value = product.description || '';
+            }
+
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        // Form Submit
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-id').value;
+            const name = document.getElementById('p-name').value.trim();
+            const category = document.getElementById('p-category').value;
+            const stock = parseInt(document.getElementById('p-stock').value);
+            const price = parseFloat(document.getElementById('p-price').value);
+            const original_price = parseFloat(document.getElementById('p-orig-price').value);
+            const image = document.getElementById('p-image').value.trim();
+            const description = document.getElementById('p-desc').value.trim();
+
+            const products = getProducts();
+
+            if (editId) {
+                // Edit existing
+                const idx = products.findIndex(p => p.id === parseInt(editId));
+                if (idx !== -1) {
+                    products[idx] = {
+                        ...products[idx],
+                        name,
+                        category,
+                        stock,
+                        price,
+                        original_price,
+                        image: image || fallbackImage,
+                        description
+                    };
+                }
+            } else {
+                // Add new
+                const newProduct = {
+                    id: Date.now(),
+                    name,
+                    category,
+                    stock,
+                    price,
+                    original_price,
+                    image: image || fallbackImage,
+                    description
+                };
+                products.push(newProduct);
+            }
+
+            if (saveProducts(products)) {
+                closeProductModal();
+                renderProductsTable();
+            } else {
+                alert('An error occurred while saving the product details. Please try again.');
+            }
+        });
+
+        // Edit triggers
+        function editProduct(id) {
+            const products = getProducts();
+            const p = products.find(prod => prod.id === id);
+            if (p) {
+                openProductModal("Edit Product Details", p);
+            }
+        }
+
+        // Delete triggers
+        function deleteProduct(id) {
+            const products = getProducts();
+            const p = products.find(prod => prod.id === id);
+            if (p && confirm(`Are you absolutely sure you want to delete the product "${p.name}"? This operation cannot be undone.`)) {
+                const filtered = products.filter(prod => prod.id !== id);
+                if (saveProducts(filtered)) {
+                    renderProductsTable();
+                } else {
+                    alert('Error deleting product.');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

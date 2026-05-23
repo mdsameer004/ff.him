@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        florist: {
+                            50: '#fff5f6',
+                            100: '#ffebe0',
+                            200: '#ffd1d6',
+                            500: '#ff8a95',
+                            600: '#e55b6a',
+                            700: '#c23c4a',
+                            800: '#8f232f',
+                            DEFAULT: '#ff8a95'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content Container for admin-common.js to capture -->
+    <div id="admin-content" class="space-y-8">
+        <!-- Dashboard Greetings banner -->
+        <div class="mb-4">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Welcome back, Admin 👋</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Here is a quick overview of Friends Florist performance today.</p>
+        </div>
+
+        <!-- Dynamic Statistics Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Products Card -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-14 h-14 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center text-3xl">🌹</div>
+                <div>
+                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Products</span>
+                    <span id="stat-products-count" class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0</span>
+                </div>
+            </div>
+
+            <!-- Deals Card -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-14 h-14 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-3xl">⚡</div>
+                <div>
+                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Active Deals</span>
+                    <span id="stat-deals-count" class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0</span>
+                </div>
+            </div>
+
+            <!-- Albums Card -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-3xl">🖼️</div>
+                <div>
+                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Gallery Albums</span>
+                    <span id="stat-albums-count" class="text-2xl font-bold text-gray-800 dark:text-white mt-1">0</span>
+                </div>
+            </div>
+
+            <!-- Status Card -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-5 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-14 h-14 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-3xl">🌐</div>
+                <div>
+                    <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Website Status</span>
+                    <button onclick="toggleWebsiteStatus()" id="website-status-btn" class="mt-1 px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors">
+                        Online
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Body Grid: Recent Activity & Quick Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Side: Recent Activity Feed (2 Cols) -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 lg:col-span-2 space-y-6">
+                <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Recent Portal Activity</h3>
+                    <p class="text-xs text-gray-400 mt-1">Logs of the latest administrative operations on this storefront.</p>
+                </div>
+
+                <div class="space-y-4" id="activity-log">
+                    <!-- Activities populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Right Side: Quick Action Panel (1 Col) -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+                <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Quick Shortcuts</h3>
+                    <p class="text-xs text-gray-400 mt-1">Direct options to modify details instantly.</p>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <a href="products.html" class="flex items-center gap-3 p-4 bg-rose-50/50 hover:bg-rose-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
+                        <span class="text-2xl group-hover:scale-110 transition-transform">➕</span>
+                        <div class="text-left">
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Add New Product</span>
+                            <span class="block text-2xs text-gray-400">Add name, prices, and stock</span>
+                        </div>
+                    </a>
+                    <a href="flash-deals.html" class="flex items-center gap-3 p-4 bg-amber-50/50 hover:bg-amber-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
+                        <span class="text-2xl group-hover:scale-110 transition-transform">⚡</span>
+                        <div class="text-left">
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Modify Flash Deals</span>
+                            <span class="block text-2xs text-gray-400">Edit homepage discount banners</span>
+                        </div>
+                    </a>
+                    <a href="gallery.html" class="flex items-center gap-3 p-4 bg-emerald-50/50 hover:bg-emerald-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
+                        <span class="text-2xl group-hover:scale-110 transition-transform">🖼️</span>
+                        <div class="text-left">
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Upload Album Photos</span>
+                            <span class="block text-2xs text-gray-400">Add stunning florist setups</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Helper Logic and Common script -->
+    <script src="js/admin-common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Read Dynamic Counts
+            const products = getProducts();
+            const deals = getDeals();
+            const albums = getAlbums();
+
+            document.getElementById('stat-products-count').textContent = products.length;
+            document.getElementById('stat-deals-count').textContent = deals.length;
+            document.getElementById('stat-albums-count').textContent = albums.length;
+
+            // Load Maintenance status
+            const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
+            const statusBtn = document.getElementById('website-status-btn');
+            if (isMaintenance) {
+                statusBtn.textContent = 'Maintenance';
+                statusBtn.className = 'mt-1 px-3 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
+            }
+
+            // Populate Recent Activity logs
+            const activityLog = document.getElementById('activity-log');
+            const defaultLogs = [
+                { text: "Successfully synchronized database with storefront.", icon: "🔧", time: "Just now" },
+                { text: `Loaded product catalog containing ${products.length} active bouquets.`, icon: "💐", time: "2 minutes ago" },
+                { text: `Successfully loaded ${albums.length} photo gallery albums.`, icon: "📂", time: "15 minutes ago" },
+                { text: "Admin portal session established.", icon: "🔐", time: "1 hour ago" }
+            ];
+
+            activityLog.innerHTML = defaultLogs.map(log => `
+                <div class="flex items-start gap-4 p-3 bg-gray-50/50 dark:bg-gray-750/30 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-750/60 transition-colors">
+                    <div class="text-lg">${log.icon}</div>
+                    <div class="flex-1">
+                        <p class="text-xs font-medium text-gray-700 dark:text-gray-300">${log.text}</p>
+                        <span class="text-3xs text-gray-400 block mt-1">${log.time}</span>
+                    </div>
+                </div>
+            `).join('');
+        });
+
+        // Toggle status
+        function toggleWebsiteStatus() {
+            const statusBtn = document.getElementById('website-status-btn');
+            const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
+            
+            if (confirm(`Are you sure you want to switch the website status to ${!isMaintenance ? 'Maintenance Mode' : 'Online Mode'}?`)) {
+                localStorage.setItem('ff_maintenance_mode', (!isMaintenance).toString());
+                if (!isMaintenance) {
+                    statusBtn.textContent = 'Maintenance';
+                    statusBtn.className = 'mt-1 px-3 py-1 text-xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
+                } else {
+                    statusBtn.textContent = 'Online';
+                    statusBtn.className = 'mt-1 px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors';
+                }
+            }
+        }
+    </script>
+</body>
+</html>

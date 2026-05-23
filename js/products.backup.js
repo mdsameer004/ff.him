@@ -16,7 +16,7 @@ const calculateAverageRating = (productId) => {
     return (sum / reviews.length).toFixed(1);
 };
 
-const defaultProducts = [
+const products = [
     {
         id: 1,
         name: "Classic Red Rose Bouquet",
@@ -147,25 +147,5 @@ function createModernProductCard(product) {
         </div>
     `;
 }
-let products;
-try {
-    const stored = localStorage.getItem('products');
-    products = stored ? JSON.parse(stored) : defaultProducts;
-    if (!Array.isArray(products) || products.length === 0) {
-        products = defaultProducts;
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to parse products from localStorage, falling back to default.", e);
-    products = defaultProducts;
-}
-
-try {
-    if (!localStorage.getItem('products')) {
-        localStorage.setItem('products', JSON.stringify(defaultProducts));
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to write initial products to localStorage", e);
-}
-
 window.products = products;
 console.log('Products loaded:', window.products.length);

@@ -218,53 +218,6 @@ function initHomePage() {
 
     // Initialize Hero Slideshow
     initHeroSlideshow();
-
-    // Populate Deals of the Day (Safeguarded by try/catch)
-    try {
-        const dealsBanner = document.querySelector('.deals-banner');
-        if (dealsBanner) {
-            const defaultDeals = [
-                {
-                    title: "Special Anniversary Collection",
-                    discount: "Get 20% off on all Anniversary Bouquets today!",
-                    cta: "shop.html?deal=anniversary",
-                    image: ""
-                }
-            ];
-            let deals = defaultDeals;
-            try {
-                const storedDeals = localStorage.getItem('flash_deals');
-                if (storedDeals) {
-                    deals = JSON.parse(storedDeals);
-                    if (!Array.isArray(deals) || deals.length === 0) {
-                        deals = defaultDeals;
-                    }
-                } else {
-                    localStorage.setItem('flash_deals', JSON.stringify(defaultDeals));
-                }
-            } catch (e) {
-                console.error("Safeguard: Failed to parse flash_deals, falling back to default.", e);
-                deals = defaultDeals;
-            }
-
-            if (deals.length > 0) {
-                const activeDeal = deals[0]; // Show the primary active deal
-                let backgroundStyle = '';
-                if (activeDeal.image) {
-                    backgroundStyle = `background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(${activeDeal.image}); background-size: cover; background-position: center;`;
-                }
-                dealsBanner.innerHTML = `
-                    <div class="deals-content" style="${backgroundStyle}">
-                        <h3>${activeDeal.title}</h3>
-                        <p>${activeDeal.discount}</p>
-                        <a href="${activeDeal.cta || 'shop.html'}" class="btn btn-secondary">Claim Offer</a>
-                    </div>
-                `;
-            }
-        }
-    } catch (e) {
-        console.error("Safeguard: Failed to render dynamic deals banner.", e);
-    }
 }
 
 function initHeroSlideshow() {

@@ -1,4 +1,4 @@
-const defaultAlbumsData = [
+window.albumsData = [
     {
         id: 'hall-decorations',
         title: 'Hall Decoration',
@@ -291,26 +291,6 @@ const defaultAlbumsData = [
             'images/gallery/floral-welcome/Snapchat-687021559.jpg',
             'images/gallery/floral-welcome/Snapchat-708701193.jpg',
             'images/gallery/floral-welcome/Snapchat-83839889.jpg'
+        ]
+    }
 ];
-
-let albumsData;
-try {
-    const stored = localStorage.getItem('albumsData');
-    albumsData = stored ? JSON.parse(stored) : defaultAlbumsData;
-    if (!Array.isArray(albumsData) || albumsData.length === 0) {
-        albumsData = defaultAlbumsData;
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to parse albumsData from localStorage, falling back to default.", e);
-    albumsData = defaultAlbumsData;
-}
-
-try {
-    if (!localStorage.getItem('albumsData')) {
-        localStorage.setItem('albumsData', JSON.stringify(defaultAlbumsData));
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to write initial albumsData to localStorage", e);
-}
-
-window.albumsData = albumsData;

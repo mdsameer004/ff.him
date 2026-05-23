@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery Albums</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        florist: {
+                            50: '#fff5f6',
+                            100: '#ffebe0',
+                            200: '#ffd1d6',
+                            500: '#ff8a95',
+                            600: '#e55b6a',
+                            700: '#c23c4a',
+                            800: '#8f232f',
+                            DEFAULT: '#ff8a95'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content Container for admin-common.js to capture -->
+    <div id="admin-content" class="space-y-6">
+        <!-- Header Actions -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Gallery Albums & Photos</h2>
+                <p class="text-xs text-gray-400 mt-1">Organize customer setups, wedding decors, birthdays, and sangeet galleries.</p>
+            </div>
+            <button onclick="openAlbumModal()" class="px-5 py-3 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20 hover:shadow-lg transition-all flex items-center gap-2">
+                ➕ <span>Create New Album</span>
+            </button>
+        </div>
+
+        <!-- Album Cards Grid -->
+        <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Populated dynamically -->
+        </div>
+
+        <!-- Image Management Modal -->
+        <div id="photos-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-rose-100/40 dark:border-gray-700 p-6 w-full max-w-3xl max-h-[90vh] flex flex-col">
+                <div class="flex items-center justify-between border-b border-rose-50 dark:border-gray-700 pb-4 mb-4">
+                    <div>
+                        <h3 id="photos-modal-title" class="font-bold text-gray-800 dark:text-white text-base">Album Photos</h3>
+                        <p id="photos-modal-subtitle" class="text-2xs text-gray-400 mt-0.5">Manage pictures in this album</p>
+                    </div>
+                    <button onclick="closePhotosModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold">✕</button>
+                </div>
+
+                <!-- Add Photo Form -->
+                <form id="photo-add-form" class="flex gap-3 mb-6 bg-rose-50/20 dark:bg-gray-750/30 p-3.5 rounded-2xl border border-rose-50 dark:border-gray-700/50">
+                    <input type="url" id="new-photo-url" required placeholder="Paste absolute Image URL (https://...)" class="flex-1 px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                    <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all whitespace-nowrap">➕ Add Photo</button>
+                </form>
+
+                <!-- Photos Grid container -->
+                <div class="flex-1 overflow-y-auto min-h-0 space-y-4">
+                    <div id="photos-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
+                    <!-- Empty photos state -->
+                    <div id="empty-photos" class="hidden text-center py-10 text-gray-400 text-xs">
+                        No photos in this album yet. Copy/paste links above to populate it.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Album Modal -->
+        <div id="album-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+            <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-rose-100/40 dark:border-gray-700 p-6 w-full max-w-md">
+                <div class="flex items-center justify-between border-b border-rose-50 dark:border-gray-700 pb-4 mb-6">
+                    <h3 class="font-bold text-gray-800 dark:text-white text-base">Create Event Album</h3>
+                    <button onclick="closeAlbumModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold">✕</button>
+                </div>
+
+                <form id="album-form" class="space-y-4">
+                    <!-- Title -->
+                    <div>
+                        <label for="a-title" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Album Title *</label>
+                        <input type="text" id="a-title" required placeholder="e.g. Engagement Arrangements" class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                    </div>
+
+                    <!-- Cover URL -->
+                    <div>
+                        <label for="a-cover" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Cover Image URL *</label>
+                        <input type="url" id="a-cover" required placeholder="https://images.unsplash.com/photo-..." class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                    </div>
+
+                    <!-- Form CTA -->
+                    <div class="flex justify-end gap-3 pt-4 border-t border-rose-50 dark:border-gray-700 mt-6">
+                        <button type="button" onclick="closeAlbumModal()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-gray-600 dark:text-gray-300 font-semibold text-xs rounded-xl transition-all">Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Create Album</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Helper Logic and Common script -->
+    <script src="js/admin-common.js"></script>
+    <script>
+        const fallbackCover = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&h=800&auto=format&fit=crop";
+        let activeAlbumId = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAlbums();
+        });
+
+        // Renders gallery albums cards
+        function renderAlbums() {
+            const albums = getAlbums();
+            const grid = document.getElementById('albums-grid');
+            grid.innerHTML = '';
+
+            albums.forEach(album => {
+                const div = document.createElement('div');
+                div.className = 'bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-rose-100/40 dark:border-gray-700 flex flex-col group hover:shadow-md hover:scale-[1.01] transition-all duration-200';
+                div.innerHTML = `
+                    <div class="h-48 relative overflow-hidden bg-gray-100">
+                        <img src="${album.cover || fallbackCover}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='${fallbackCover}'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                            <span class="text-white text-xs font-semibold px-2 py-0.5 rounded-md bg-rose-500/80">${album.images ? album.images.length : 0} photos</span>
+                        </div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h3 class="font-bold text-gray-800 dark:text-white text-base">${album.title}</h3>
+                            <p class="text-3xs text-gray-400 mt-1 select-all font-mono">ID: ${album.id}</p>
+                        </div>
+                        <div class="flex items-center gap-2 border-t border-rose-50/50 dark:border-gray-700 pt-4">
+                            <button onclick="managePhotos('${album.id}')" class="flex-1 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-bold text-2xs rounded-xl transition-colors">Manage Photos</button>
+                            <button onclick="deleteAlbum('${album.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-xl transition-colors" title="Delete Album">✕</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        // Create Album Modal triggers
+        function openAlbumModal() {
+            document.getElementById('album-form').reset();
+            document.getElementById('album-modal').classList.remove('hidden');
+        }
+
+        function closeAlbumModal() {
+            document.getElementById('album-modal').classList.add('hidden');
+        }
+
+        // Submit album creation
+        document.getElementById('album-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('a-title').value.trim();
+            const cover = document.getElementById('a-cover').value.trim();
+            const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+            const albums = getAlbums();
+            
+            if (albums.some(a => a.id === id)) {
+                alert('An album with a similar name already exists. Please choose a different title.');
+                return;
+            }
+
+            const newAlbum = {
+                id,
+                title,
+                cover,
+                images: [cover] // Set cover photo as first image
+            };
+
+            albums.push(newAlbum);
+
+            if (saveAlbums(albums)) {
+                closeAlbumModal();
+                renderAlbums();
+            } else {
+                alert('Error creating album.');
+            }
+        });
+
+        // Delete entire album
+        function deleteAlbum(id) {
+            const albums = getAlbums();
+            const a = albums.find(alb => alb.id === id);
+            if (a && confirm(`Are you absolutely sure you want to delete the album "${a.title}"? All internal photo listings will be deleted from the database.`)) {
+                const filtered = albums.filter(alb => alb.id !== id);
+                if (saveAlbums(filtered)) {
+                    renderAlbums();
+                } else {
+                    alert('Error deleting album.');
+                }
+            }
+        }
+
+        // Manage Photos slide-over modal triggers
+        function managePhotos(albumId) {
+            activeAlbumId = albumId;
+            const albums = getAlbums();
+            const a = albums.find(alb => alb.id === albumId);
+            if (!a) return;
+
+            document.getElementById('photos-modal-title').textContent = `${a.title} Photos`;
+            document.getElementById('photos-modal-subtitle').textContent = `Catalog of images currently uploaded in this album.`;
+            document.getElementById('photo-add-form').reset();
+
+            renderPhotosGrid(a);
+            document.getElementById('photos-modal').classList.remove('hidden');
+        }
+
+        function closePhotosModal() {
+            document.getElementById('photos-modal').classList.add('hidden');
+            activeAlbumId = '';
+        }
+
+        // Populate photo grid within album
+        function renderPhotosGrid(album) {
+            const grid = document.getElementById('photos-grid');
+            const empty = document.getElementById('empty-photos');
+            grid.innerHTML = '';
+
+            const imgs = album.images || [];
+
+            if (imgs.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+
+            imgs.forEach((imgUrl, index) => {
+                const div = document.createElement('div');
+                div.className = 'relative group aspect-square rounded-2xl overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-gray-50';
+                div.innerHTML = `
+                    <img src="${imgUrl}" class="w-full h-full object-cover">
+                    <!-- Delete hover overlay -->
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <button type="button" onclick="deletePhoto(${index})" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-3xs rounded-xl shadow-md transition-all">✕ Delete</button>
+                    </div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        // Submit photo addition
+        document.getElementById('photo-add-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const url = document.getElementById('new-photo-url').value.trim();
+            if (!activeAlbumId || !url) return;
+
+            const albums = getAlbums();
+            const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
+            if (aIdx === -1) return;
+
+            if (!albums[aIdx].images) albums[aIdx].images = [];
+            
+            // Append URL
+            albums[aIdx].images.push(url);
+
+            if (saveAlbums(albums)) {
+                document.getElementById('photo-add-form').reset();
+                renderPhotosGrid(albums[aIdx]);
+                renderAlbums();
+            } else {
+                alert('Error adding photo to database.');
+            }
+        });
+
+        // Delete photo within album
+        window.deletePhoto = function(index) {
+            if (!activeAlbumId) return;
+            const albums = getAlbums();
+            const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
+            if (aIdx === -1) return;
+
+            const a = albums[aIdx];
+            if (a.images && confirm(`Are you sure you want to remove this photo from the album?`)) {
+                // Delete photo URL at index
+                a.images.splice(index, 1);
+                
+                // Keep cover updated if deleting cover or cover was first photo
+                if (index === 0 && a.images.length > 0) {
+                    a.cover = a.images[0];
+                }
+
+                if (saveAlbums(albums)) {
+                    renderPhotosGrid(a);
+                    renderAlbums();
+                } else {
+                    alert('Error deleting photo.');
+                }
+            }
+        };
+    </script>
+</body>
+</html>

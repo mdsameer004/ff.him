@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        florist: {
+                            50: '#fff5f6',
+                            100: '#ffebe0',
+                            200: '#ffd1d6',
+                            500: '#ff8a95',
+                            600: '#e55b6a',
+                            700: '#c23c4a',
+                            800: '#8f232f',
+                            DEFAULT: '#ff8a95'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Content Container for admin-common.js to capture -->
+    <div id="admin-content" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Side: Profile & Theme (2 Cols) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Profile Settings Card -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+                    <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-base">Account Profile</h3>
+                        <p class="text-xs text-gray-400 mt-1">Your registered management account details.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Display Name</span>
+                            <span class="block font-bold text-gray-850 dark:text-gray-100 text-sm mt-1">Friends Florist Administrator</span>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Email Address</span>
+                            <span class="block font-bold text-gray-850 dark:text-gray-100 text-sm mt-1">admin@friendsflorist.com</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interface Options Card -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+                    <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-base">Interface Settings</h3>
+                        <p class="text-xs text-gray-400 mt-1">Customize your management portal appearance.</p>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-rose-50/20 dark:bg-gray-750/30 rounded-2xl border border-rose-50 dark:border-gray-700/50">
+                        <div>
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Dark Mode Theme</span>
+                            <span class="block text-2xs text-gray-400 mt-0.5">Toggle high-contrast screen color options.</span>
+                        </div>
+                        <button onclick="toggleTheme()" id="theme-btn" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                            Toggle Theme
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Session Logs & Log Out Controls (1 Col) -->
+            <div class="space-y-6">
+                <!-- Login Session Logs Card -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+                    <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-base">Audit Sessions</h3>
+                        <p class="text-xs text-gray-400 mt-1">Logs of recent portal authentication events.</p>
+                    </div>
+
+                    <div class="space-y-3 font-mono text-2xs text-gray-400">
+                        <div class="flex justify-between items-center p-2.5 bg-gray-50/50 dark:bg-gray-750/30 rounded-xl">
+                            <span>🔑 Session Established</span>
+                            <span class="text-gray-500 font-semibold">Just now</span>
+                        </div>
+                        <div class="flex justify-between items-center p-2.5 bg-gray-50/50 dark:bg-gray-750/30 rounded-xl">
+                            <span>🔑 IP Verified (127.0.0.1)</span>
+                            <span class="text-gray-500 font-semibold">2 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Actions (Log Out) Card -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-4">
+                    <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
+                        <h3 class="font-bold text-gray-800 dark:text-white text-base">Portal Management</h3>
+                        <p class="text-xs text-gray-400 mt-1">End your administrative session safely.</p>
+                    </div>
+
+                    <button onclick="handleLogout()" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 hover:shadow-xl hover:shadow-rose-600/30 transition-all text-sm flex items-center justify-center gap-2">
+                        🚪 <span>Log Out Account</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Helper Logic and Common script -->
+    <script src="js/admin-common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDarkMode = localStorage.getItem('ff_admin_dark_mode') === 'true';
+            document.getElementById('theme-btn').textContent = isDarkMode ? 'Light Mode ☀️' : 'Dark Mode 🌙';
+        });
+    </script>
+</body>
+</html>
