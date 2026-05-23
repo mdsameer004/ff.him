@@ -1,9 +1,10 @@
-// js/api-client.js
+// js/api-client.js  v1.2.0
 // Modern, Unified REST API Client for Friends Florist
+// ⚠️ login() bypasses network entirely — no HTTP requests during auth
 
 window.API_BASE_URL = window.API_BASE_URL || '/api';
-// Set fallback to true by default when live backend is offline to guarantee working demonstration
-window.API_FALLBACK = typeof window.API_FALLBACK !== 'undefined' ? window.API_FALLBACK : true;
+window.API_FALLBACK = true; // Always on — no live backend on GitHub Pages
+
 
 class ApiClient {
     constructor() {
@@ -333,3 +334,40 @@ class ApiClient {
 
 // Instantiate and expose globally
 window.apiClient = new ApiClient();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INSTANCE-LEVEL PATCH: Override login() directly on the live instance.
+// This runs AFTER instantiation, so it overrides any cached/old class method.
+// login() will NEVER touch the network — always goes straight to local DB.
+// This patch is the final guarantee against HTTP 405 errors on GitHub Pages.
+// ─────────────────────────────────────────────────────────────────────────────
+window.apiClient.login = async function(email, password) {
+    const normalizedEmail    = (email    || '').toString().trim().toLowerCase();
+    const normalizedPassword = (password || '').toString().trim();
+
+    console.info(
+        '%c[Friends Florist Auth] login() instance patch active — using local DB, no network fetch.',
+        'color: #2E8B57; font-weight: bold;'
+    );
+
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (normalizedEmail === 'admin@friendsflorist.com' && normalizedPassword === 'Friends@123') {
+                const token = 'mock-jwt-token-admin-friends-florist-2026';
+                localStorage.setItem('ff_jwt_token',  token);
+                localStorage.setItem('ff_admin_auth', 'true');
+                resolve({ success: true, token, user: { email: 'admin@friendsflorist.com', role: 'admin', name: 'Admin' } });
+            } else if (
+                (normalizedEmail === 'editor@admin.com' || normalizedEmail === 'editor') &&
+                normalizedPassword === 'editor'
+            ) {
+                const token = 'mock-jwt-token-editor-friends-florist-2026';
+                localStorage.setItem('ff_jwt_token',  token);
+                localStorage.setItem('ff_admin_auth', 'true');
+                resolve({ success: true, token, user: { email: 'editor@admin.com', role: 'editor', name: 'Editor' } });
+            } else {
+                reject(new Error('Invalid email or password. Please try again.'));
+            }
+        }, 400);
+    });
+};
