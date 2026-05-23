@@ -2,158 +2,992 @@
 <html lang="en">
 <head>
     <script>
-        // Force trailing slash redirect so relative assets resolve properly
+        // Redirect /admin → /admin/ so relative paths resolve correctly
         if (window.location.pathname.endsWith('/admin')) {
             window.location.replace(window.location.pathname + '/' + window.location.search + window.location.hash);
         }
     </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Friends Florist</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        rose: {
-                            50: '#FFF0F5',
-                            100: '#FADADD',
-                            200: '#FFB6C1',
-                            300: '#F5E6C8',
-                            400: '#D4A5A5',
-                            500: '#1e3f2d',
-                            600: '#2E8B57',
-                            700: '#142b1f',
-                            800: '#0d1d15',
-                            900: '#070f0b'
-                        },
-                        emerald: {
-                            50: '#E8F5E9',
-                            500: '#B2C9AD',
-                            600: '#2E8B57',
-                            800: '#1e3f2d'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Portal — Friends Florist</title>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
+        /* ─────────────────────────────────────────
+           RESET & BASE
+        ───────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green-deep:   #1e3f2d;
+            --green-mid:    #2E8B57;
+            --green-light:  #B2C9AD;
+            --green-pale:   #E8F5E9;
+            --pink-soft:    #FFB6C1;
+            --pink-light:   #FFF0F5;
+            --pink-border:  #F5E6C8;
+            --white:        #FFFFFF;
+            --off-white:    #FFFDF9;
+            --text-dark:    #1a2e22;
+            --text-mid:     #4a6258;
+            --text-light:   #7a9080;
+            --shadow-green: rgba(30, 63, 45, 0.15);
+            --shadow-pink:  rgba(245, 180, 190, 0.25);
+            --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
         }
-        h1 {
-            font-family: 'Playfair Display', serif;
+
+        html, body {
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: var(--off-white);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* ─────────────────────────────────────────
+           ANIMATED BACKGROUND
+        ───────────────────────────────────────── */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        /* Soft gradient base */
+        .bg-canvas::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 70% 60% at 15% 20%, rgba(178,201,173,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 80%, rgba(255,182,193,0.2) 0%, transparent 60%),
+                radial-gradient(ellipse 80% 70% at 50% 50%, rgba(232,245,233,0.4) 0%, transparent 70%),
+                linear-gradient(160deg, #f5fdf7 0%, #fff0f5 50%, #f0f9f3 100%);
+        }
+
+        /* Drifting orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.45;
+            animation: drift linear infinite;
+        }
+        .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, #b2c9ad 0%, #e8f5e9 60%);
+            top: -120px; left: -80px;
+            animation-duration: 28s;
+        }
+        .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #ffc8d2 0%, #fff0f5 60%);
+            bottom: -100px; right: -60px;
+            animation-duration: 22s;
+            animation-direction: reverse;
+        }
+        .orb-3 {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, #a8d5ba 0%, transparent 70%);
+            top: 40%; right: 10%;
+            animation-duration: 35s;
+        }
+        @keyframes drift {
+            0%   { transform: translate(0, 0) scale(1); }
+            33%  { transform: translate(30px, -40px) scale(1.05); }
+            66%  { transform: translate(-20px, 25px) scale(0.97); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* Floating petals */
+        .petals {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .petal {
+            position: absolute;
+            opacity: 0;
+            animation: fall linear infinite;
+        }
+        .petal svg { display: block; }
+
+        @keyframes fall {
+            0%   { opacity: 0;    transform: translateY(-60px) rotate(0deg); }
+            10%  { opacity: 0.6; }
+            90%  { opacity: 0.4; }
+            100% { opacity: 0;    transform: translateY(110vh) rotate(360deg); }
+        }
+
+        /* ─────────────────────────────────────────
+           LAYOUT
+        ───────────────────────────────────────── */
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* ─── LEFT PANEL (Brand Side) ─── */
+        .brand-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 60px 70px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(140deg, rgba(30,63,45,0.93) 0%, rgba(46,139,87,0.88) 100%);
+        }
+
+        .brand-panel-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('../images/floral-bg.png');
+            background-size: 450px auto;
+            background-repeat: repeat;
+            opacity: 0.07;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            max-width: 440px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+            animation: slideInLeft 0.8s var(--ease-out) both;
+        }
+
+        .brand-badge-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #7fff9e;
+            box-shadow: 0 0 8px #7fff9e;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .brand-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 600;
+            line-height: 1.05;
+            color: white;
+            margin-bottom: 8px;
+            animation: slideInLeft 0.8s var(--ease-out) 0.1s both;
+        }
+
+        .brand-logo span {
+            color: rgba(178,201,173,1);
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .brand-tagline {
+            font-size: 1rem;
+            font-weight: 300;
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 0.03em;
+            line-height: 1.7;
+            margin-bottom: 56px;
+            animation: slideInLeft 0.8s var(--ease-out) 0.2s both;
+        }
+
+        .brand-features {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            animation: slideInLeft 0.8s var(--ease-out) 0.3s both;
+        }
+
+        .brand-feature {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-feature-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .brand-feature-text {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 400;
+        }
+
+        .brand-feature-text strong {
+            color: white;
+            font-weight: 600;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .brand-footer {
+            margin-top: 60px;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 0.05em;
+            animation: slideInLeft 0.8s var(--ease-out) 0.4s both;
+        }
+
+        /* ─── RIGHT PANEL (Login Form) ─── */
+        .login-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 70px;
+            position: relative;
+        }
+
+        .login-back-link {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--pink-border);
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(8px);
+            transition: all 0.25s ease;
+        }
+        .login-back-link:hover {
+            color: var(--green-deep);
+            border-color: var(--green-light);
+            background: white;
+            box-shadow: 0 4px 16px var(--shadow-green);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            animation: slideInRight 0.9s var(--ease-out) 0.15s both;
+        }
+
+        .login-header {
+            margin-bottom: 36px;
+        }
+
+        .login-welcome {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--green-mid);
+            margin-bottom: 10px;
+        }
+
+        .login-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: var(--green-deep);
+            line-height: 1.15;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        /* Alert Box */
+        .alert-box {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: #fff5f7;
+            border: 1px solid #fcd0d8;
+            border-left: 3px solid #e05070;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 22px;
+            font-size: 0.8rem;
+            color: #c0304a;
+            font-weight: 500;
+            animation: shake 0.4s ease;
+        }
+
+        .alert-box.show { display: flex; }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-6px); }
+            40%     { transform: translateX(6px); }
+            60%     { transform: translateX(-4px); }
+            80%     { transform: translateX(4px); }
+        }
+
+        /* Form Fields */
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-mid);
+            margin-bottom: 8px;
+        }
+
+        .field-wrap {
+            position: relative;
+        }
+
+        .field-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--green-light);
+            pointer-events: none;
+            transition: color 0.25s ease;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 14px 46px 14px 44px;
+            border: 1.5px solid var(--pink-border);
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(6px);
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .field-input::placeholder { color: #b0bfb5; }
+
+        .field-input:focus {
+            border-color: var(--green-mid);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(46,139,87,0.1);
+        }
+
+        .field-input:focus + .field-icon-right,
+        .field-wrap:focus-within .field-icon { color: var(--green-mid); }
+
+        .field-icon-right {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.2s ease;
+            background: none;
+            border: none;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .field-icon-right:hover { color: var(--green-deep); }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 100%);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s var(--ease-out);
+            box-shadow: 0 6px 24px var(--shadow-green);
+            margin-top: 8px;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(30,63,45,0.3);
+        }
+
+        .login-btn:hover::before { opacity: 1; }
+
+        .login-btn:active:not(:disabled) { transform: translateY(0); }
+
+        .login-btn:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-btn-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .login-btn.loading .spinner { display: block; }
+        .login-btn.loading .btn-label { opacity: 0.7; }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 28px 0;
+            color: var(--text-light);
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--pink-border);
+        }
+
+        /* Credential Hints */
+        .creds-hint {
+            background: linear-gradient(135deg, rgba(232,245,233,0.8), rgba(255,240,245,0.8));
+            border: 1px solid var(--pink-border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            font-size: 0.78rem;
+            color: var(--text-mid);
+        }
+
+        .creds-hint-title {
+            font-weight: 700;
+            color: var(--green-deep);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .creds-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px dashed rgba(178,201,173,0.5);
+        }
+        .creds-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .creds-key {
+            font-weight: 500;
+            color: var(--text-mid);
+            font-size: 0.75rem;
+        }
+
+        .creds-val {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--green-deep);
+            font-size: 0.78rem;
+            background: rgba(30,63,45,0.07);
+            padding: 2px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .creds-val:hover { background: rgba(30,63,45,0.14); }
+
+        /* Login footer */
+        .login-footer {
+            margin-top: 32px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* ─────────────────────────────────────────
+           ANIMATIONS
+        ───────────────────────────────────────── */
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ─────────────────────────────────────────
+           RESPONSIVE
+        ───────────────────────────────────────── */
+        @media (max-width: 820px) {
+            .page-wrap { grid-template-columns: 1fr; }
+            .brand-panel { display: none; }
+            .login-panel { padding: 40px 28px; }
+            .login-back-link { top: 20px; right: 20px; }
+        }
+
+        @media (max-width: 480px) {
+            .login-panel { padding: 32px 20px; }
+        }
+
+        /* ─────────────────────────────────────────
+           SUCCESS OVERLAY
+        ───────────────────────────────────────── */
+        .success-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: linear-gradient(140deg, var(--green-deep), var(--green-mid));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-icon {
+            width: 72px; height: 72px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: popIn 0.5s var(--ease-out) both;
+        }
+
+        .success-text {
+            color: white;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            animation: popIn 0.5s var(--ease-out) 0.1s both;
+        }
+
+        .success-sub {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.85rem;
+            animation: popIn 0.5s var(--ease-out) 0.2s both;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to   { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
-    <!-- Card Container -->
-    <div class="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl shadow-rose-100/50 border border-white/60 p-8 w-full max-w-md transition-all duration-300 hover:shadow-2xl hover:shadow-rose-100/70">
-        <!-- Logo Header -->
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce">🌹</div>
-            <h1 class="text-3xl font-bold text-gray-800">Friends <span class="text-emerald-800 font-normal">Florist</span></h1>
-            <p class="text-xs text-rose-500 font-semibold tracking-wider uppercase mt-1">Management Portal</p>
+<body>
+
+    <!-- ── Animated Background ── -->
+    <div class="bg-canvas" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <!-- Floating petals -->
+        <div class="petals" id="petals-container"></div>
+    </div>
+
+    <!-- ── Success Overlay (shown on login) ── -->
+    <div class="success-overlay" id="success-overlay" aria-live="assertive">
+        <div class="success-icon">🌹</div>
+        <div class="success-text">Welcome Back, Admin</div>
+        <div class="success-sub">Redirecting to your dashboard…</div>
+    </div>
+
+    <!-- ── Page Layout ── -->
+    <div class="page-wrap">
+
+        <!-- LEFT: Brand Panel -->
+        <div class="brand-panel" role="complementary">
+            <div class="brand-panel-bg" aria-hidden="true"></div>
+            <div class="brand-content">
+                <div class="brand-badge">
+                    <span class="brand-badge-dot"></span>
+                    Admin Portal
+                </div>
+
+                <div class="brand-logo">
+                    Friends<br><span>Florist</span>
+                </div>
+
+                <p class="brand-tagline">
+                    Manage your entire floral storefront — products,<br>
+                    orders, gallery, and deals — all in one place.
+                </p>
+
+                <div class="brand-features">
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon">📦</div>
+                        <div class="brand-feature-text">
+                            <strong>Order Management</strong>
+                            Track, update, and fulfill customer orders in real-time
+                        </div>
+                    </div>
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon">🌹</div>
+                        <div class="brand-feature-text">
+                            <strong>Product Catalog</strong>
+                            Add, edit, and manage your full bouquet collection
+                        </div>
+                    </div>
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon">📊</div>
+                        <div class="brand-feature-text">
+                            <strong>Revenue Analytics</strong>
+                            View daily, monthly, and yearly sales breakdown
+                        </div>
+                    </div>
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon">⚡</div>
+                        <div class="brand-feature-text">
+                            <strong>Flash Deals</strong>
+                            Set time-sensitive promotions for your customers
+                        </div>
+                    </div>
+                </div>
+
+                <div class="brand-footer">© 2026 Friends Florist &nbsp;·&nbsp; Admin Panel v1.1</div>
+            </div>
         </div>
 
-        <!-- Login Form -->
-        <form id="login-form" class="space-y-6">
-            <!-- Alert Section -->
-            <div id="error-alert" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-xs px-4 py-3 rounded-xl font-medium"></div>
-
-            <!-- Email Input -->
-            <div>
-                <label for="email" class="block text-xs font-semibold text-gray-600 uppercase mb-2">Email Address</label>
-                <input type="email" id="email" required placeholder="admin@friendsflorist.com" class="w-full px-4 py-3 rounded-xl border border-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500 bg-white/70 text-gray-800 text-sm placeholder-gray-400 transition-all">
-            </div>
-
-            <!-- Password Input -->
-            <div>
-                <label for="password" class="block text-xs font-semibold text-gray-600 uppercase mb-2">Password</label>
-                <input type="password" id="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500 bg-white/70 text-gray-800 text-sm placeholder-gray-400 transition-all">
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" id="login-btn" class="w-full py-3.5 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 hover:shadow-xl hover:shadow-rose-600/30 transition-all duration-200 text-sm flex items-center justify-center gap-2">
-                🔒 <span>Sign In</span>
-            </button>
-        </form>
-
-        <!-- Footer -->
-        <div class="text-center mt-8 pt-6 border-t border-rose-50">
-            <a href="../index.html" class="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center justify-center gap-1.5 transition-colors">
-                ← <span>Back to Main Website</span>
+        <!-- RIGHT: Login Panel -->
+        <div class="login-panel" role="main">
+            <a href="../index.html" class="login-back-link" id="back-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Store
             </a>
+
+            <div class="login-card">
+                <!-- Header -->
+                <div class="login-header">
+                    <p class="login-welcome">🌿 Secure Access</p>
+                    <h1 class="login-title">Sign in to<br>your Portal</h1>
+                    <p class="login-subtitle">Enter your administrator credentials to access<br>the Friends Florist management dashboard.</p>
+                </div>
+
+                <!-- Error Alert -->
+                <div class="alert-box" id="alert-box" role="alert">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span id="alert-msg">Invalid credentials.</span>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" novalidate autocomplete="on">
+
+                    <!-- Email -->
+                    <div class="field-group">
+                        <label class="field-label" for="email">Email Address</label>
+                        <div class="field-wrap">
+                            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="field-input"
+                                placeholder="admin@friendsflorist.com"
+                                autocomplete="username"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="field-group">
+                        <label class="field-label" for="password">Password</label>
+                        <div class="field-wrap">
+                            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="field-input"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+                            <button type="button" class="field-icon-right" id="toggle-pw" aria-label="Toggle password visibility" title="Show / hide password">
+                                <svg id="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg id="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="login-btn" id="login-btn">
+                        <div class="login-btn-inner">
+                            <div class="spinner" id="btn-spinner"></div>
+                            <span class="btn-label" id="btn-label">Sign In to Dashboard</span>
+                        </div>
+                    </button>
+                </form>
+
+                <div class="divider">or use demo credentials</div>
+
+                <!-- Credentials Hint -->
+                <div class="creds-hint">
+                    <div class="creds-hint-title">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Admin Credentials
+                    </div>
+                    <div class="creds-row">
+                        <span class="creds-key">Email</span>
+                        <span class="creds-val" title="Click to auto-fill" id="hint-email">admin@friendsflorist.com</span>
+                    </div>
+                    <div class="creds-row">
+                        <span class="creds-key">Password</span>
+                        <span class="creds-val" title="Click to auto-fill" id="hint-pass">Friends@123</span>
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    Secure admin access &nbsp;·&nbsp; Friends Florist Portal
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Scripts: api-client MUST load before admin-common so apiClient is available -->
+    <!-- ─── Scripts ─── -->
     <script src="../js/api-client.js?v=1.1.0"></script>
     <script src="js/admin-common.js"></script>
     <script>
-        // ── Auto-redirect if already logged in ──
+        // ── Already Authenticated? Redirect instantly ──
         if (localStorage.getItem('ff_jwt_token') || localStorage.getItem('ff_admin_auth') === 'true') {
-            window.location.href = 'dashboard.html';
+            window.location.replace('dashboard.html');
         }
 
-        // ── Login Form Handler ──
+        // ── Floating petals generator ──
+        (function () {
+            const container = document.getElementById('petals-container');
+            const petalColors = ['#ffc8d0', '#b2c9ad', '#ffd6e0', '#a8d5b5', '#ffe4ea'];
+            for (let i = 0; i < 14; i++) {
+                const el = document.createElement('div');
+                el.className = 'petal';
+                const size = 8 + Math.random() * 14;
+                const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+                el.style.cssText = `
+                    left: ${Math.random() * 100}%;
+                    width: ${size}px;
+                    height: ${size * 1.4}px;
+                    animation-duration: ${12 + Math.random() * 18}s;
+                    animation-delay: ${Math.random() * 20}s;
+                    animation-timing-function: ease-in-out;
+                `;
+                el.innerHTML = `<svg width="${size}" height="${size * 1.4}" viewBox="0 0 20 28">
+                    <ellipse cx="10" cy="14" rx="9" ry="13" fill="${color}" opacity="0.7"/>
+                </svg>`;
+                container.appendChild(el);
+            }
+        })();
+
+        // ── Password Toggle ──
+        document.getElementById('toggle-pw').addEventListener('click', function () {
+            const pw = document.getElementById('password');
+            const eyeOpen   = document.getElementById('eye-open');
+            const eyeClosed = document.getElementById('eye-closed');
+            if (pw.type === 'password') {
+                pw.type = 'text';
+                eyeOpen.style.display   = 'none';
+                eyeClosed.style.display = 'block';
+            } else {
+                pw.type = 'password';
+                eyeOpen.style.display   = 'block';
+                eyeClosed.style.display = 'none';
+            }
+        });
+
+        // ── Click-to-autofill credential hints ──
+        document.getElementById('hint-email').addEventListener('click', function () {
+            document.getElementById('email').value = 'admin@friendsflorist.com';
+        });
+        document.getElementById('hint-pass').addEventListener('click', function () {
+            document.getElementById('password').value = 'Friends@123';
+        });
+
+        // ── Alert helpers ──
+        function showError(msg) {
+            const box = document.getElementById('alert-box');
+            document.getElementById('alert-msg').textContent = msg || 'Invalid credentials. Please try again.';
+            box.classList.add('show');
+            box.style.animation = 'none';
+            void box.offsetWidth;
+            box.style.animation = '';
+        }
+        function hideError() {
+            document.getElementById('alert-box').classList.remove('show');
+        }
+
+        // ── Button state helpers ──
+        const btn      = document.getElementById('login-btn');
+        const spinner  = document.getElementById('btn-spinner');
+        const btnLabel = document.getElementById('btn-label');
+
+        function setLoading(val) {
+            btn.disabled = val;
+            btn.classList.toggle('loading', val);
+            spinner.style.display = val ? 'block' : 'none';
+            btnLabel.textContent  = val ? 'Verifying…' : 'Sign In to Dashboard';
+        }
+
+        // ── Login success animation ──
+        function showSuccess() {
+            document.getElementById('success-overlay').classList.add('show');
+        }
+
+        // ── Main Form Submit Handler ──
         document.getElementById('login-form').addEventListener('submit', async function (e) {
             e.preventDefault();
+            hideError();
 
             const email    = document.getElementById('email').value.trim().toLowerCase();
-            const password = document.getElementById('password').value.trim();
-            const alertBox = document.getElementById('error-alert');
-            const btn      = document.getElementById('login-btn');
+            const password = document.getElementById('password').value;
 
-            // Reset UI
-            alertBox.classList.add('hidden');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ <span>Verifying...</span>';
+            if (!email || !password) {
+                showError('Please enter both email and password.');
+                return;
+            }
 
-            const resetBtn = () => {
-                btn.disabled = false;
-                btn.innerHTML = '🔒 <span>Sign In</span>';
-            };
+            setLoading(true);
 
-            const showError = (msg) => {
-                alertBox.textContent = msg || 'Invalid email or password. Please try again.';
-                alertBox.classList.remove('hidden');
-                resetBtn();
-            };
-
-            // ── Path 1: apiClient available (calls executeFallback directly, NO network fetch) ──
+            // ── Path 1: apiClient (goes DIRECTLY to local DB — no network, no 405) ──
             if (window.apiClient) {
                 try {
                     await window.apiClient.login(email, password);
-                    window.location.href = 'dashboard.html';
+                    showSuccess();
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1400);
                 } catch (err) {
-                    showError(err.message);
+                    setLoading(false);
+                    showError(err.message || 'Invalid email or password.');
                 }
                 return;
             }
 
-            // ── Path 2: apiClient failed to load — hardcoded credential check ──
-            if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
-                localStorage.setItem('ff_jwt_token', 'mock-jwt-header-token-for-admin-friends-florist');
-                localStorage.setItem('ff_admin_auth', 'true');
-                window.location.href = 'dashboard.html';
-                return;
-            }
-            if ((email === 'editor@admin.com' || email === 'editor') && password === 'editor') {
-                localStorage.setItem('ff_jwt_token', 'mock-jwt-header-token-for-editor');
-                localStorage.setItem('ff_admin_auth', 'true');
-                window.location.href = 'dashboard.html';
-                return;
-            }
-
-            showError('Invalid email or password. Please try again.');
+            // ── Path 2: Hardcoded check if apiClient didn't load ──
+            setTimeout(() => {
+                if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
+                    localStorage.setItem('ff_jwt_token', 'mock-jwt-header-token-for-admin-friends-florist');
+                    localStorage.setItem('ff_admin_auth', 'true');
+                    showSuccess();
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1400);
+                } else if ((email === 'editor@admin.com' || email === 'editor') && password === 'editor') {
+                    localStorage.setItem('ff_jwt_token', 'mock-jwt-header-token-for-editor');
+                    localStorage.setItem('ff_admin_auth', 'true');
+                    showSuccess();
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1400);
+                } else {
+                    setLoading(false);
+                    showError('Invalid email or password. Please try again.');
+                }
+            }, 600);
         });
     </script>
 </body>
