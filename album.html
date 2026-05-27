@@ -213,7 +213,8 @@
                 return;
             }
 
-            currentAlbum = albumsData.find(a => a.id === albumId);
+            const data = window.albumsData || albumsData || [];
+            currentAlbum = data.find(a => a.id === albumId);
             
             if (!currentAlbum) {
                 window.location.href = 'gallery.html';

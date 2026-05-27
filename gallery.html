@@ -176,7 +176,8 @@
             const grid = document.getElementById('album-grid');
             grid.innerHTML = '';
             
-            albumsData.forEach((album) => {
+            const data = window.albumsData || albumsData || [];
+            data.forEach((album) => {
                 const div = document.createElement('div');
                 div.className = `album-item album-cover-${album.id}`;
                 div.innerHTML = `
