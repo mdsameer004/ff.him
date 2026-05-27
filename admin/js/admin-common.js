@@ -249,15 +249,15 @@ if (!isAuthenticated && !isLoginPage) {
 const defaultProducts = [
     {
         id: 1,
-        name: "Classic Red Rose Bouquet",
+        name: "rose lily bouquet",
         category: "Anniversary Flowers",
-        original_price: 699,
-        price: 499,
+        original_price: 1499,
+        price: 1199,
         rating: 5,
         stock: 12,
         deliveryInfo: "Same day delivery available for orders before 2 PM.",
-        image: "https://images.unsplash.com/photo-1767824122857-9a1521db58d3?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "A timeless arrangement of premium red roses, expertly hand-tied for that perfect romantic gesture."
+        image: "images/rose-lily-bouquet.jpg",
+        description: "A timeless arrangement of premium pink roses, expertly hand-tied for that perfect romantic gesture."
     },
     {
         id: 2,
@@ -348,7 +348,15 @@ async function getProducts() {
             return defaultProducts;
         }
         const parsed = JSON.parse(stored);
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultProducts;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            const p1 = parsed.find(p => p.id === 1);
+            if (p1 && p1.name !== "rose lily bouquet") {
+                localStorage.setItem('products', JSON.stringify(defaultProducts));
+                return defaultProducts;
+            }
+            return parsed;
+        }
+        return defaultProducts;
     } catch (e) {
         console.error(e);
         return defaultProducts;

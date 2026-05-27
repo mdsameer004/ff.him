@@ -225,10 +225,11 @@
             filtered.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
+                const resolvedImg = (p.image && !p.image.startsWith('http') && !p.image.startsWith('../')) ? `../${p.image}` : (p.image || fallbackImage);
                 tr.innerHTML = `
                     <td class="px-6 py-4">
                         <div class="w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-gray-50">
-                            <img src="${p.image || fallbackImage}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
+                            <img src="${resolvedImg}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
                         </div>
                     </td>
                     <td class="px-6 py-4">
