@@ -172,7 +172,11 @@ class ApiClient {
                     // 4. ALBUMS GALLERY FALLBACK
                     if (path.startsWith('/albums')) {
                         if (method === 'GET') {
-                            const albums = JSON.parse(localStorage.getItem('albumsData')) || [];
+                            const stored = localStorage.getItem('albumsData');
+                            let albums = stored ? JSON.parse(stored) : [];
+                            if (!Array.isArray(albums) || albums.length === 0) {
+                                albums = window.albumsData || [];
+                            }
                             resolve(albums);
                         } else if (method === 'POST' || method === 'PUT') {
                             localStorage.setItem('albumsData', JSON.stringify(body));

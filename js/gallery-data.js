@@ -299,18 +299,14 @@ try {
     albumsData = stored ? JSON.parse(stored) : defaultAlbumsData;
     if (!Array.isArray(albumsData) || albumsData.length === 0) {
         albumsData = defaultAlbumsData;
+        localStorage.setItem('albumsData', JSON.stringify(defaultAlbumsData));
     }
 } catch (e) {
     console.error("Safeguard: Failed to parse albumsData from localStorage, falling back to default.", e);
     albumsData = defaultAlbumsData;
-}
-
-try {
-    if (!localStorage.getItem('albumsData')) {
+    try {
         localStorage.setItem('albumsData', JSON.stringify(defaultAlbumsData));
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to write initial albumsData to localStorage", e);
+    } catch (err) {}
 }
 
 window.albumsData = albumsData;
