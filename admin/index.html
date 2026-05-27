@@ -950,12 +950,14 @@
         }
 
         // ── Main Form Submit Handler ──
-        document.getElementById('login-form').addEventListener('submit', async function (e) {
+        // ⚠️ ZERO network requests — pure local credential check only.
+        // GitHub Pages does not support POST (returns 405). We never fetch.
+        document.getElementById('login-form').addEventListener('submit', function (e) {
             e.preventDefault();
             hideError();
 
             const email    = document.getElementById('email').value.trim().toLowerCase();
-            const password = document.getElementById('password').value;
+            const password = document.getElementById('password').value.trim();
 
             if (!email || !password) {
                 showError('Please enter both email and password.');
@@ -964,36 +966,28 @@
 
             setLoading(true);
 
-            // ── Path 1: apiClient (goes DIRECTLY to local DB — no network, no 405) ──
-            if (window.apiClient) {
-                try {
-                    await window.apiClient.login(email, password);
-                    showSuccess();
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1400);
-                } catch (err) {
-                    setLoading(false);
-                    showError(err.message || 'Invalid email or password.');
-                }
-                return;
-            }
-
-            // ── Path 2: Hardcoded check if apiClient didn't load ──
-            setTimeout(() => {
+            // Simulated async delay (no network call whatsoever)
+            setTimeout(function () {
+                // ── Admin credentials ──
                 if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
-                    localStorage.setItem('ff_jwt_token', 'mock-jwt-header-token-for-admin-friends-florist');
+                    localStorage.setItem('ff_jwt_token', 'mock-jwt-token-admin-friends-florist-2026');
                     localStorage.setItem('ff_admin_auth', 'true');
                     showSuccess();
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1400);
-                } else if ((email === 'editor@admin.com' || email === 'editor') && password === 'editor') {
-                    localStorage.setItem('ff_jwt_token', 'mock-jwt-header-token-for-editor');
+                    setTimeout(function () { window.location.href = 'dashboard.html'; }, 1400);
+                }
+                // ── Editor credentials ──
+                else if ((email === 'editor@admin.com' || email === 'editor') && password === 'editor') {
+                    localStorage.setItem('ff_jwt_token', 'mock-jwt-token-editor-friends-florist-2026');
                     localStorage.setItem('ff_admin_auth', 'true');
                     showSuccess();
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1400);
-                } else {
+                    setTimeout(function () { window.location.href = 'dashboard.html'; }, 1400);
+                }
+                // ── Wrong credentials ──
+                else {
                     setLoading(false);
                     showError('Invalid email or password. Please try again.');
                 }
-            }, 600);
+            }, 500);
         });
     </script>
 </body>
