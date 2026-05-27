@@ -856,6 +856,26 @@
             document.getElementById('success-overlay').classList.add('show');
         }
 
+        // ── Session Clearing Helper ──
+        function clearSession() {
+            localStorage.removeItem('ff_jwt_token');
+            localStorage.removeItem('ff_admin_auth');
+            sessionStorage.removeItem('ff_jwt_token');
+            sessionStorage.removeItem('ff_admin_auth');
+            if (window.apiClient) {
+                window.apiClient.logout();
+            }
+            console.info('[Friends Florist Auth] Session cleared successfully.');
+        }
+
+        // Clear session immediately when page loads to ensure fresh slate
+        clearSession();
+
+        // Clear session if they exit by clicking the "Back to Store" link
+        document.getElementById('back-link').addEventListener('click', function () {
+            clearSession();
+        });
+
         // ── Main Form Submit Handler ──
         // ⚠️ ZERO network requests — pure local credential check only.
         // GitHub Pages does not support POST (returns 405). We never fetch.
@@ -879,6 +899,8 @@
                 if (email === 'admin@friendsflorist.com' && password === 'Friends@123') {
                     localStorage.setItem('ff_jwt_token', 'mock-jwt-token-admin-friends-florist-2026');
                     localStorage.setItem('ff_admin_auth', 'true');
+                    sessionStorage.setItem('ff_jwt_token', 'mock-jwt-token-admin-friends-florist-2026');
+                    sessionStorage.setItem('ff_admin_auth', 'true');
                     showSuccess();
                     setTimeout(function () { window.location.href = 'dashboard.html'; }, 1400);
                 }
@@ -886,6 +908,8 @@
                 else if ((email === 'editor@admin.com' || email === 'editor') && password === 'editor') {
                     localStorage.setItem('ff_jwt_token', 'mock-jwt-token-editor-friends-florist-2026');
                     localStorage.setItem('ff_admin_auth', 'true');
+                    sessionStorage.setItem('ff_jwt_token', 'mock-jwt-token-editor-friends-florist-2026');
+                    sessionStorage.setItem('ff_admin_auth', 'true');
                     showSuccess();
                     setTimeout(function () { window.location.href = 'dashboard.html'; }, 1400);
                 }

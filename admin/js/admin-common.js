@@ -232,7 +232,10 @@
 })();
 
 // 1. Authentication Guard
-const isAuthenticated = !!localStorage.getItem('ff_jwt_token') || localStorage.getItem('ff_admin_auth') === 'true';
+const isAuthenticated = !!localStorage.getItem('ff_jwt_token') || 
+                        localStorage.getItem('ff_admin_auth') === 'true' ||
+                        !!sessionStorage.getItem('ff_jwt_token') || 
+                        sessionStorage.getItem('ff_admin_auth') === 'true';
 const isLoginPage = window.location.pathname.endsWith('index.html') || 
                     window.location.pathname.endsWith('/admin') || 
                     window.location.pathname.endsWith('/admin/') ||
@@ -527,6 +530,21 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
     `;
+
+    // Intercept clicks on links that go out of the admin panel back to the store (e.g. brand logo link)
+    const brandLinks = document.querySelectorAll('a[href="../index.html"]');
+    brandLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            localStorage.removeItem('ff_jwt_token');
+            localStorage.removeItem('ff_admin_auth');
+            sessionStorage.removeItem('ff_jwt_token');
+            sessionStorage.removeItem('ff_admin_auth');
+            if (window.apiClient) {
+                window.apiClient.logout();
+            }
+            console.info('[Friends Florist Auth] Session cleared on exit to main store.');
+        });
+    });
 });
 
 // Mobile Sidebar toggle handler
@@ -545,11 +563,12 @@ function toggleMobileSidebar() {
 // Log out handler
 function handleLogout() {
     if (confirm("Are you sure you want to log out of the admin panel?")) {
+        localStorage.removeItem('ff_jwt_token');
+        localStorage.removeItem('ff_admin_auth');
+        sessionStorage.removeItem('ff_jwt_token');
+        sessionStorage.removeItem('ff_admin_auth');
         if (window.apiClient) {
             window.apiClient.logout();
-        } else {
-            localStorage.removeItem('ff_jwt_token');
-            localStorage.removeItem('ff_admin_auth');
         }
         window.location.href = 'index.html';
     }
