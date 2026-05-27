@@ -83,7 +83,7 @@ const footerHTML = `
                 <h4>Contact Info</h4>
                 <p>📍 Opp Lenscart,3-5, Main Rd,
 Himayatnagar, Hyderabad, Telangana 500029</p>
-                <p>📞 +91 97039 65734</p>
+                <p>📞 +91 76720 57864</p>
                 <p>✉️ friendsflorist@gmail.com</p>
             </div>
         </div>
