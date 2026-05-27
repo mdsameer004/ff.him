@@ -293,20 +293,15 @@ const defaultAlbumsData = [
             'images/gallery/floral-welcome/Snapchat-83839889.jpg'
 ];
 
-let albumsData;
-try {
-    const stored = localStorage.getItem('albumsData');
-    albumsData = stored ? JSON.parse(stored) : defaultAlbumsData;
-    if (!Array.isArray(albumsData) || albumsData.length === 0) {
-        albumsData = defaultAlbumsData;
-        localStorage.setItem('albumsData', JSON.stringify(defaultAlbumsData));
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to parse albumsData from localStorage, falling back to default.", e);
-    albumsData = defaultAlbumsData;
-    try {
-        localStorage.setItem('albumsData', JSON.stringify(defaultAlbumsData));
-    } catch (err) {}
-}
+// Always use the hardcoded defaultAlbumsData as the source of truth.
+// localStorage is NOT used for display — every visitor sees the same albums.
+// The admin panel can still write to localStorage for its own management.
+const albumsData = defaultAlbumsData;
+window.albumsData = defaultAlbumsData;
 
-window.albumsData = albumsData;
+// Seed localStorage so the admin panel can also read/manage these albums
+try {
+    localStorage.setItem('albumsData', JSON.stringify(defaultAlbumsData));
+} catch (e) {
+    console.warn("Could not seed albumsData to localStorage:", e);
+}
