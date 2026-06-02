@@ -260,7 +260,7 @@ img {
 
 .hero-text h1 {
     font-family: 'Cormorant Garamond', 'Playfair Display', serif;
-    font-size: 4rem;
+    font-size: 3.2rem;
     font-weight: 600;
     color: var(--color-dark-green);
     margin-bottom: 0;
@@ -324,7 +324,7 @@ img {
         flex-direction: column;
         text-align: center;
     }
-    .hero-text h1 { font-size: 3rem; }
+    .hero-text h1 { font-size: 2.4rem; }
     .hero-text p {
         margin-left: auto;
         margin-right: auto;
@@ -334,7 +334,7 @@ img {
 
 /* Tablet — 768px */
 @media (max-width: 768px) {
-    .hero-text h1 { font-size: 2.5rem; }
+    .hero-text h1 { font-size: 2rem; }
     .hero-container { gap: 30px; }
     .scroll-track img {
         height: 250px;
