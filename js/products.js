@@ -39,19 +39,19 @@ const defaultProducts = [
         stock: 21,
         deliveryInfo: "Same day delivery available.",
         image: "images/cash-and-roses.png",
-        description: "Celebrate milestones, new beginnings, and prosperity with a gift that truly stands out. The Fortune & Flora Luxury Bouquet seamlessly blends the timeless elegance of premium white roses and soft hydrangeas with a stunning, artfully arranged display of currency. Housed in a sleek, minimalist matte black box, this high-impact arrangement is the ultimate statement piece for corporate milestones, weddings, festivals, and monumental celebrations."
+        description: "comes with 2100 rupees,Celebrate milestones, new beginnings, and prosperity with a gift that truly stands out. The Fortune & Flora Luxury Bouquet seamlessly blends the timeless elegance of premium white roses and soft hydrangeas with a stunning, artfully arranged display of currency. Housed in a sleek, minimalist matte black box, this high-impact arrangement is the ultimate statement piece for corporate milestones, weddings, festivals, and monumental celebrations."
     },
     {
         id: 3,
-        name: "Birthday Celebration Bouquet",
+        name: "Chocolate & Roses",
         category: "Birthday Bouquets",
-        original_price: 899,
-        price: 649,
-        rating: 4.9,
+        original_price: 1499,
+        price: 1199,
+        rating: 4.6,
         stock: 15,
-        deliveryInfo: "Free standard delivery.",
-        image: "https://images.unsplash.com/photo-1667489024245-7beb09ac43c5?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "A joyful mix of colorful tulips and peonies to celebrate another wonderful year."
+        deliveryInfo: "Will be delivered today.",
+        image: "images/chocolate-and-roses.png",
+        description: "Indulge their sweet tooth and capture their heart all at once. The Sweet Romance Bouquet is a spectacular, high-impact gifting arrangement that beautifully pairs the classic elegance of fresh red roses with an absolute treasure trove of premium chocolates. Expertly wrapped in soft pink premium tissue layers and tied with a satin bow, it's the ultimate gesture for birthdays, anniversaries, Valentine's Day, or 'just because.' Chocolates included: Cadbury Dairy Milk Silk Oreo, Galaxy Smooth Milk, Nestlé KitKat / KitKat Chunky, Cadbury 5 Star, and Cadbury Dairy Milk."
     },
     {
         id: 4,
@@ -164,15 +164,22 @@ function createModernProductCard(product) {
         </div>
     `;
 }
+const PRODUCTS_VERSION = "2.1"; // Bump this to force a localStorage refresh
+
 let products;
 try {
+    const storedVersion = localStorage.getItem('products_version');
     const stored = localStorage.getItem('products');
-    products = stored ? JSON.parse(stored) : defaultProducts;
-    if (!Array.isArray(products) || products.length === 0) {
+
+    // If version mismatch or no data, reset from defaultProducts
+    if (storedVersion !== PRODUCTS_VERSION || !stored) {
         products = defaultProducts;
+        localStorage.setItem('products', JSON.stringify(defaultProducts));
+        localStorage.setItem('products_version', PRODUCTS_VERSION);
+        console.log('Products cache refreshed to version', PRODUCTS_VERSION);
     } else {
-        const p1 = products.find(p => p.id === 1);
-        if (p1 && p1.name !== "rose lily bouquet") {
+        products = JSON.parse(stored);
+        if (!Array.isArray(products) || products.length === 0) {
             products = defaultProducts;
             localStorage.setItem('products', JSON.stringify(defaultProducts));
         }
@@ -180,14 +187,6 @@ try {
 } catch (e) {
     console.error("Safeguard: Failed to parse products from localStorage, falling back to default.", e);
     products = defaultProducts;
-}
-
-try {
-    if (!localStorage.getItem('products')) {
-        localStorage.setItem('products', JSON.stringify(defaultProducts));
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to write initial products to localStorage", e);
 }
 
 window.products = products;
