@@ -55,51 +55,51 @@ const defaultProducts = [
     },
     {
         id: 4,
-        name: "Anniversary Special Bouquet",
+        name: "Prestige Floral Edition",
         category: "Anniversary Flowers",
-        original_price: 1199,
-        price: 849,
+        original_price: 1599,
+        price: 1199,
         rating: 4.7,
-        stock: 5,
+        stock: 25,
         deliveryInfo: "Premium courier delivery.",
-        image: "https://images.unsplash.com/photo-1729151634645-1f4ed2938f0b?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "A premium arrangement of orchids and lilies, designed for those truly special milestones."
+        image: "images/prestige-floral-edition.png",
+        description: "A grand and luxurious floral arrangement designed to leave a lasting impression. The Prestige Floral Edition showcases an exquisite blend of premium red roses, elegant white lilies, vibrant purple alstroemeria, delicate baby's breath, and lush white chrysanthemums. Expertly arranged with fresh seasonal greenery, this bouquet offers a perfect balance of color, texture, and sophistication. Wrapped in premium black-and-gold designer paper and finished with a graceful satin ribbon, this statement bouquet embodies elegance, celebration, and heartfelt emotions. Contents: Premium Red Roses, White Lilies, Purple Alstroemeria, White Chrysanthemums, Baby's Breath (Gypsophila), Fresh Seasonal Foliage. Perfect for anniversaries, birthdays, congratulations, grand celebrations, thank you gifts, and special occasions."
     },
     {
         id: 5,
-        name: "Spring Garden Bouquet",
+        name: "The Teddy & Roses Collection",
         category: "Birthday Bouquets",
-        original_price: 999,
-        price: 749,
+        original_price: 1699,
+        price: 1299,
         stock: 10,
         deliveryInfo: "Standard shipping times apply.",
         rating: 4.9,
-        image: "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "Gorgeous ruffled peonies and seasonal flowers that bring the beauty of spring indoors."
+        image: "images/teddy-and-roses.png",
+        description: "A heartwarming blend of elegance and affection. The Teddy & Roses Collection features a luxurious arrangement of premium white roses beautifully paired with a soft plush teddy bear. Delicate baby's breath and fresh greenery enhance the arrangement, creating a timeless display of purity, love, and warmth. Presented in a sophisticated black hat box, this charming floral gift combines the beauty of fresh flowers with a cuddly keepsake. Contents: Premium White Roses, Baby's Breath (Gypsophila), Fresh Seasonal Greenery, Soft Plush Teddy Bear, Luxury Black Hat Box. Perfect for birthdays, anniversaries, and all special occasions."
     },
     {
         id: 6,
-        name: "Elegant Mixed Flower Bouquet",
+        name: "Sunset Symphony Bouquet",
         category: "Premium Bouquets",
-        original_price: 849,
-        price: 599,
+        original_price: 1499,
+        price: 999,
         stock: 20,
         deliveryInfo: "Bulk delivery options available.",
         rating: 5,
-        image: "https://images.unsplash.com/photo-1699830008232-fe4ae2a6ee11?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "A thoughtful mix of seasonal blooms, perfect for corporate events or home decor."
+        image: "images/sunset-symphony.png",
+        description: "A stunning floral masterpiece inspired by the warm hues of a sunset. The Sunset Symphony Bouquet brings together a vibrant blend of premium flowers — radiant sunflowers, passionate red roses, delicate pink blooms, graceful orange gladiolus, and airy baby's breath — in a harmonious display of color and elegance. Expertly arranged with fresh seasonal greenery and wrapped in elegant designer paper. Contents: Premium Red Roses, Bright Sunflowers, Orange Gladiolus, Pink Seasonal Blooms, Baby's Breath (Gypsophila), Fresh Seasonal Greenery, Premium Designer Wrapping. Perfect for birthdays, anniversaries, congratulations, graduations, thank you gifts, and special occasions. 🌻🌹✨"
     },
     {
         id: 7,
-        name: "Premium Rose Basket",
+        name: "The Gentleman's Prestige Hamper",
         category: "Premium Bouquets",
-        original_price: 1299,
-        price: 949,
-        stock: 6,
+        original_price: 800,
+        price: 600,
+        stock: 25,
         deliveryInfo: "Same day delivery in specific zones.",
         rating: 4.1,
-        image: "https://plus.unsplash.com/premium_photo-1674197235302-1190e266fd04?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "Premium florist style fresh roses artfully arranged in a rustic hand-woven basket."
+        image: "images/gentlemans-prestige-hamper.png",
+        description: "A customized luxury gift hamper designed to transform your selected gifts into an elegant presentation. Our team will carefully arrange your preferred items in a premium wicker basket, enhanced with fresh flowers, decorative fillers, and stylish finishing touches. Featuring fresh red roses, delicate baby's breath, and professional hamper styling, this arrangement turns everyday gifts into a memorable and sophisticated gifting experience. What's Included: Premium Wicker Gift Basket, Fresh Red Roses, Baby's Breath (Gypsophila), Decorative Fillers & Greenery, Professional Hamper Arrangement, Elegant Gift Presentation. Customer Should Provide: Grooming Products, Perfumes & Fragrances, Clothing & Accessories, Chocolates & Snacks, Personalized Gifts, or Any Other Gift Items. Note: Items shown inside the hamper are for display purposes only. 🎁🌹✨"
     },
     {
         id: 8,
@@ -164,7 +164,7 @@ function createModernProductCard(product) {
         </div>
     `;
 }
-const PRODUCTS_VERSION = "2.1"; // Bump this to force a localStorage refresh
+const PRODUCTS_VERSION = "2.6"; // Bump this to force a localStorage refresh
 
 let products;
 try {
