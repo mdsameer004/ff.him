@@ -31,15 +31,15 @@ const defaultProducts = [
     },
     {
         id: 2,
-        name: "Romantic Love Bouquet",
-        category: "Anniversary Flowers",
-        original_price: 799,
-        price: 549,
-        rating: 4.8,
-        stock: 8,
-        deliveryInfo: "Next day delivery available.",
-        image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=800&h=800&auto=format&fit=crop",
-        description: "Soft pink roses and delicate baby's breath create a truly enchanting atmosphere."
+        name: "Cash & Roses",
+        category: "Birthday Bouquets",
+        original_price: 3999,
+        price: 2999,
+        rating: 4.7,
+        stock: 21,
+        deliveryInfo: "Same day delivery available.",
+        image: "images/cash-and-roses.png",
+        description: "Celebrate milestones, new beginnings, and prosperity with a gift that truly stands out. The Fortune & Flora Luxury Bouquet seamlessly blends the timeless elegance of premium white roses and soft hydrangeas with a stunning, artfully arranged display of currency. Housed in a sleek, minimalist matte black box, this high-impact arrangement is the ultimate statement piece for corporate milestones, weddings, festivals, and monumental celebrations."
     },
     {
         id: 3,
@@ -121,30 +121,30 @@ function createModernProductCard(product) {
     const revCount = getProductReviews(product.id).length;
     const stars = '★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating));
     const imageUrl = product.image ? product.image : fallbackImage;
-    
+
     // Defensive pricing safeguards
-    const priceNum = typeof product.price === 'number' && !isNaN(product.price) 
-        ? product.price 
+    const priceNum = typeof product.price === 'number' && !isNaN(product.price)
+        ? product.price
         : parseFloat(product.price || 0) || 0;
-        
+
     const originalPriceNum = typeof product.original_price === 'number' && !isNaN(product.original_price)
         ? product.original_price
         : (product.original_price ? parseFloat(product.original_price) || 0 : 0);
 
     const discount = (originalPriceNum > priceNum && originalPriceNum > 0)
-        ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100) 
+        ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100)
         : 0;
-        
-    const discountBadge = discount > 0 
-        ? `<div class="modern-discount-badge">-${discount}%</div>` 
+
+    const discountBadge = discount > 0
+        ? `<div class="modern-discount-badge">-${discount}%</div>`
         : '';
-    
+
     const originalPriceHTML = (originalPriceNum > priceNum && originalPriceNum > 0)
         ? `<span class="price-original">₹${originalPriceNum.toLocaleString('en-IN')}</span>`
         : '';
 
     const priceSaleHTML = `<span class="price-sale">₹${priceNum.toLocaleString('en-IN')}</span>`;
-    
+
     return `
         <div class="modern-product-card" data-id="${product.id}" onclick="window.location.href='product.html?id=${product.id}'" style="cursor: pointer;">
             <div class="modern-image-container">
@@ -193,7 +193,7 @@ try {
 window.products = products;
 console.log('Products loaded synchronously:', window.products.length);
 
-window.loadProducts = async function() {
+window.loadProducts = async function () {
     if (window.apiClient) {
         try {
             window.products = await window.apiClient.getProducts();
