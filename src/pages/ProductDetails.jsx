@@ -14,12 +14,13 @@ const ProductDetails = () => {
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
-    // Scroll to top
     window.scrollTo(0, 0);
-    const found = products.find(p => p.id === parseInt(id));
-    if (found) {
-      setProduct(found);
-    }
+    // Match by MongoDB _id (string) first, then fall back to legacy numeric id
+    const found = products.find(p =>
+      String(p._id) === String(id) || String(p.id) === String(id)
+    );
+    console.log('[ProductDetails] Looking for id:', id, '| Found:', found?.name || 'NOT FOUND');
+    if (found) setProduct(found);
   }, [id, products]);
 
   if (!product) {
@@ -45,7 +46,11 @@ const ProductDetails = () => {
       <div className="pd-layout">
         <div className="pd-image-col">
           <div className="pd-main-img">
-            <img src={product.images[0]} alt={product.name} />
+            {/* Support both images[] array (backend) and image string (legacy) */}
+            <img
+              src={(Array.isArray(product.images) && product.images[0]) ? product.images[0] : (product.image || '')}
+              alt={product.name}
+            />
           </div>
           {/* If there were multiple thumbnails, they would go here */}
         </div>
@@ -62,10 +67,10 @@ const ProductDetails = () => {
               <Star size={16} fill="var(--accent)" color="var(--accent)" />
               <Star size={16} fill="var(--accent)" color="var(--accent)" />
             </div>
-            <span className="rating-text">{product.rating} ({product.reviews} reviews)</span>
+            <span className="rating-text">{product.rating || 0} ({product.reviews || 0} reviews)</span>
           </div>
 
-          <div className="pd-price">₹{product.price.toLocaleString()}</div>
+          <div className="pd-price">₹{Number(product.price).toLocaleString()}</div>
           
           <p className="pd-desc">{product.description}</p>
 

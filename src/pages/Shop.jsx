@@ -8,24 +8,31 @@ import './Shop.css';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+  // Support both `images[]` (backend) and `image` (legacy mock) field shapes
+  const imageUrl = (Array.isArray(product.images) && product.images[0])
+    ? product.images[0]
+    : (product.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800');
+  // Use MongoDB _id as primary key/route param, fallback to numeric id
+  const productId = product._id || product.id;
+
   return (
     <div className="shop-product-card">
       <div className="shop-product-image">
-        <Link to={`/product/${product.id}`} style={{display: 'block', height: '100%'}}>
-          <img src={product.images[0]} alt={product.name} />
+        <Link to={`/product/${productId}`} style={{display: 'block', height: '100%'}}>
+          <img src={imageUrl} alt={product.name} />
         </Link>
         <button className="shop-add-btn" onClick={(e) => { e.preventDefault(); addToCart(product); }}>Add to Cart</button>
       </div>
       <div className="shop-product-info">
         <span className="shop-product-cat">{product.category}</span>
-        <Link to={`/product/${product.id}`} style={{color: 'inherit', textDecoration: 'none'}}>
+        <Link to={`/product/${productId}`} style={{color: 'inherit', textDecoration: 'none'}}>
           <h4>{product.name}</h4>
         </Link>
         <div className="shop-product-rating">
           <Star size={14} fill="var(--accent)" color="var(--accent)"/>
-          <span>{product.rating}</span>
+          <span>{product.rating || 0}</span>
         </div>
-        <div className="shop-product-price">₹{product.price.toLocaleString()}</div>
+        <div className="shop-product-price">₹{Number(product.price).toLocaleString()}</div>
       </div>
     </div>
   );
@@ -37,7 +44,8 @@ const Shop = () => {
   const initSearch = searchParams.get('search') || '';
 
   const { products } = useData();
-  const [displayProducts, setDisplayProducts] = useState(products);
+  // Start empty — useEffect below re-filters whenever context `products` updates
+  const [displayProducts, setDisplayProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState(initCategory);
   const [searchQuery, setSearchQuery] = useState(initSearch);
   const [sortBy, setSortBy] = useState('featured');
@@ -150,7 +158,8 @@ const Shop = () => {
           {displayProducts.length > 0 ? (
             <div className="shop-grid">
               {displayProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+                // Use _id (MongoDB) with fallback to numeric id for unique React keys
+                <ProductCard key={product._id || product.id} product={product} />
               ))}
             </div>
           ) : (

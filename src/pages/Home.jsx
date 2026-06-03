@@ -8,12 +8,17 @@ import './Home.css';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
-  
+  // Support both `images[]` (backend) and `image` (legacy mock) field shapes
+  const imageUrl = (Array.isArray(product.images) && product.images[0])
+    ? product.images[0]
+    : (product.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800');
+  const productId = product._id || product.id;
+
   return (
     <div className="product-card">
       <div className="product-image-wrap">
-        <Link to={`/product/${product.id}`} style={{display: 'block', height: '100%'}}>
-          <img src={product.images[0]} alt={product.name} />
+        <Link to={`/product/${productId}`} style={{display: 'block', height: '100%'}}>
+          <img src={imageUrl} alt={product.name} />
         </Link>
         <button className="add-to-cart-btn" onClick={(e) => { e.preventDefault(); addToCart(product); }}>
           Add to Cart
@@ -21,14 +26,14 @@ const ProductCard = ({ product }) => {
       </div>
       <div className="product-info">
         <span className="product-category">{product.category}</span>
-        <Link to={`/product/${product.id}`} style={{color: 'inherit', textDecoration: 'none'}}>
+        <Link to={`/product/${productId}`} style={{color: 'inherit', textDecoration: 'none'}}>
           <h3 className="product-title">{product.name}</h3>
         </Link>
         <div className="product-rating">
           <Star size={14} fill="var(--accent)" color="var(--accent)" />
-          <span>{product.rating} ({product.reviews})</span>
+          <span>{product.rating || 0} ({product.reviews || 0})</span>
         </div>
-        <div className="product-price">₹{product.price.toLocaleString()}</div>
+        <div className="product-price">₹{Number(product.price).toLocaleString()}</div>
       </div>
     </div>
   );
@@ -37,7 +42,11 @@ const ProductCard = ({ product }) => {
 const Home = () => {
   const { products } = useData();
   const primaryBanner = bannerOffers[0];
-  const featuredProducts = products.filter(p => p.featured);
+  // Featured products: prefer products with featured=true flag.
+  // MongoDB backend products may not have this field — fall back to first 4 products.
+  const featuredProducts = products.filter(p => p.featured).length > 0
+    ? products.filter(p => p.featured)
+    : products.slice(0, 4);
 
   return (
     <div className="home-container">
@@ -82,7 +91,7 @@ const Home = () => {
         </div>
         <div className="product-grid">
           {featuredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id || product.id} product={product} />
           ))}
         </div>
       </section>
