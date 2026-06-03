@@ -67,12 +67,11 @@ class ApiClient {
 
             return await response.json();
         } catch (error) {
-            // Network-level failure (e.g. server offline) — activate local fallback
-            if (error instanceof TypeError && error.message.includes('fetch')) {
-                console.info(`%c[Friends Florist Local DB] Network error on ${path}: "${error.message}". Activating local database fallback.`, 'color: #2E8B57; font-weight: bold;');
-                return this.executeFallback(path, options);
-            }
-            throw error;
+            // Fall back to local DB on ANY failure:
+            // - TypeError = network error / CORS / backend offline
+            // - Other errors = 4xx/5xx from backend (route not found, server error, cold start, etc.)
+            console.warn(`%c[Friends Florist Local DB] Backend unavailable for ${options.method || 'GET'} ${path} ("${error.message}"). Activating local database fallback.`, 'color: #e05070; font-weight: bold;');
+            return this.executeFallback(path, options);
         }
     }
 
