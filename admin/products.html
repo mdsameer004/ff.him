@@ -372,7 +372,7 @@
             tempUploadedImages = [];
 
             if (product) {
-                document.getElementById('edit-id').value = product.id;
+                document.getElementById('edit-id').value = product._id || product.id;
                 document.getElementById('p-name').value = product.name;
                 document.getElementById('p-category').value = product.category;
                 document.getElementById('p-stock').value = product.stock;
@@ -432,18 +432,22 @@
             try {
                 if (window.apiClient) {
                     if (editId) {
-                        await window.apiClient.updateProduct(parseInt(editId), productData);
+                        // editId is a MongoDB _id string — do NOT parseInt() it
+                        console.log('[Admin] Updating product with _id:', editId, productData);
+                        await window.apiClient.updateProduct(editId, productData);
+                        console.log('[Admin] ✅ Product updated successfully');
                     } else {
+                        console.log('[Admin] Creating new product:', productData.name);
                         await window.apiClient.createProduct(productData);
+                        console.log('[Admin] ✅ Product created successfully');
                     }
                 } else {
-                    // Fallback to static check if apiClient is completely missing
+                    // Fallback: apiClient not loaded — should not happen in production
+                    console.warn('[Admin] apiClient not found — falling back to local save');
                     const products = await getProducts();
                     if (editId) {
-                        const idx = products.findIndex(p => p.id === parseInt(editId));
-                        if (idx !== -1) {
-                            products[idx] = { ...products[idx], ...productData };
-                        }
+                        const idx = products.findIndex(p => (p._id || p.id) == editId);
+                        if (idx !== -1) products[idx] = { ...products[idx], ...productData };
                     } else {
                         products.push({ id: Date.now(), ...productData });
                     }
@@ -451,8 +455,10 @@
                 }
 
                 closeProductModal();
-                renderProductsTable();
+                // Re-fetch from backend — renderProductsTable() calls getProducts() → live API
+                await renderProductsTable();
             } catch (err) {
+                console.error('[Admin] Save product error:', err);
                 alert('An error occurred while saving the product details: ' + err.message);
             } finally {
                 submitBtn.disabled = false;
