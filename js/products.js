@@ -164,48 +164,69 @@ function createModernProductCard(product) {
         </div>
     `;
 }
-const PRODUCTS_VERSION = "2.6"; // Bump this to force a localStorage refresh
+const PRODUCTS_VERSION = "3.0"; // Bumped — now API-first, no localStorage render cache
 
-let products;
-try {
-    const storedVersion = localStorage.getItem('products_version');
-    const stored = localStorage.getItem('products');
+// Start with empty array — will be populated async from backend
+window.products = [];
+let _onProductsLoaded = null; // callback registered by page scripts
 
-    // If version mismatch or no data, reset from defaultProducts
-    if (storedVersion !== PRODUCTS_VERSION || !stored) {
-        products = defaultProducts;
-        localStorage.setItem('products', JSON.stringify(defaultProducts));
-        localStorage.setItem('products_version', PRODUCTS_VERSION);
-        console.log('Products cache refreshed to version', PRODUCTS_VERSION);
-    } else {
-        products = JSON.parse(stored);
-        if (!Array.isArray(products) || products.length === 0) {
-            products = defaultProducts;
-            localStorage.setItem('products', JSON.stringify(defaultProducts));
-        }
-    }
-} catch (e) {
-    console.error("Safeguard: Failed to parse products from localStorage, falling back to default.", e);
-    products = defaultProducts;
-}
+/**
+ * Register a callback to be fired when products are loaded from the API.
+ * Pages call this before DOMContentLoaded so they re-render after data arrives.
+ */
+window.onProductsLoaded = function(callback) {
+    _onProductsLoaded = callback;
+    // If products are already loaded (e.g. second call), fire immediately
+    if (window.products.length > 0) callback(window.products);
+};
 
-window.products = products;
-console.log('Products loaded synchronously:', window.products.length);
-
-window.loadProducts = async function () {
+/**
+ * Loads products from the live backend API.
+ * Falls back to defaultProducts only if the network is completely unreachable.
+ */
+window.loadProducts = async function() {
+    // 1. Try live backend via apiClient (unwraps envelope for us)
     if (window.apiClient) {
         try {
-            window.products = await window.apiClient.getProducts();
-            console.log('Products loaded asynchronously via API:', window.products.length);
+            const data = await window.apiClient.getProducts();
+            console.log('[products.js] ✅ Products loaded from API:', data.length, 'items', data);
+            window.products = data;
+            if (typeof _onProductsLoaded === 'function') _onProductsLoaded(window.products);
             return window.products;
         } catch (e) {
-            console.warn('API getProducts failed, using localStorage fallback:', e);
+            console.error('[products.js] apiClient.getProducts() failed:', e.message);
         }
     }
+
+    // 2. Direct fetch fallback (if apiClient not loaded)
+    try {
+        const BASE = (typeof window.API_BASE_URL !== 'undefined')
+            ? window.API_BASE_URL
+            : 'https://floristbackend.onrender.com/api';
+        console.log('[products.js] Fetching directly from', BASE + '/products');
+        const res = await fetch(BASE + '/products');
+        if (res.ok) {
+            const envelope = await res.json();
+            console.log('[products.js] Raw API response:', envelope);
+            // Backend returns { success, count, data: Product[] }
+            const data = Array.isArray(envelope) ? envelope : (envelope.data || []);
+            console.log('[products.js] ✅ Products loaded via direct fetch:', data.length, 'items');
+            window.products = data;
+            if (typeof _onProductsLoaded === 'function') _onProductsLoaded(window.products);
+            return window.products;
+        } else {
+            console.error('[products.js] GET /products failed — status', res.status);
+        }
+    } catch (e) {
+        console.error('[products.js] Direct fetch failed:', e.message);
+    }
+
+    // 3. Last resort: hardcoded defaults (offline / cold start failure)
+    console.warn('[products.js] All API attempts failed — using defaultProducts fallback');
+    window.products = defaultProducts;
+    if (typeof _onProductsLoaded === 'function') _onProductsLoaded(window.products);
     return window.products;
 };
 
-// Auto-run if apiClient is available on the window
-if (window.apiClient) {
-    window.loadProducts().catch(err => console.error("Error auto-loading products:", err));
-}
+// Kick off async load immediately on script parse
+window.loadProducts().catch(err => console.error('[products.js] loadProducts error:', err));

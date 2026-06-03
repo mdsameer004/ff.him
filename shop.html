@@ -226,12 +226,18 @@
     <script src="js/wishlist.js"></script>
     <script src="js/app.js"></script>
     <script>
-        let currentProducts = [...products];
+        let currentProducts = [];
 
         function renderShopGrid() {
             const grid = document.getElementById('modern-shop-grid');
             const count = document.getElementById('product-count');
-            
+
+            if (!currentProducts.length) {
+                grid.innerHTML = '<p style="text-align:center;padding:40px;color:#888;">Loading products...</p>';
+                count.textContent = 'Loading...';
+                return;
+            }
+
             grid.innerHTML = currentProducts.map(p => createModernProductCard(p)).join('');
             count.textContent = `Showing ${currentProducts.length} results`;
             if (typeof initHeartIcons === 'function') initHeartIcons();
@@ -254,7 +260,6 @@
         });
 
         function filterProducts(category) {
-            // Update active state in dropdown
             document.querySelectorAll('#category-menu a').forEach(a => a.classList.remove('active'));
             const labelMap = {
                 'All': 'All Arrangements',
@@ -267,16 +272,14 @@
             document.querySelectorAll('#category-menu a').forEach(a => {
                 if (a.textContent === label) a.classList.add('active');
             });
-            // Update button label
             document.getElementById('category-label').textContent = category === 'All' ? 'Categories' : label;
-            // Close menu
             document.getElementById('category-btn').classList.remove('open');
             document.getElementById('category-menu').classList.remove('open');
 
             if (category === 'All') {
-                currentProducts = [...products];
+                currentProducts = [...window.products];
             } else {
-                currentProducts = products.filter(p => p.category === category);
+                currentProducts = window.products.filter(p => p.category === category);
             }
             sortProducts();
         }
@@ -288,24 +291,27 @@
             } else if (sortVal === 'price-high') {
                 currentProducts.sort((a, b) => b.price - a.price);
             } else if (sortVal === 'rating') {
-                currentProducts.sort((a, b) => b.rating - a.rating);
+                currentProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
             } else {
-                // Featured (default id sorting)
-                currentProducts.sort((a, b) => a.id - b.id);
+                currentProducts.sort((a, b) => (a.id || 0) - (b.id || 0));
             }
             renderShopGrid();
         }
 
-        // Parse URL params for initial category/search
-        document.addEventListener('DOMContentLoaded', () => {
+        // Show loading state immediately
+        renderShopGrid();
+
+        // Re-render when API products arrive (called by products.js)
+        window.onProductsLoaded(function(loadedProducts) {
+            console.log('[shop.html] Products received from API, re-rendering grid:', loadedProducts.length);
             const urlParams = new URLSearchParams(window.location.search);
             const search = urlParams.get('search');
             const cat = urlParams.get('category');
             const deal = urlParams.get('deal');
 
             if (search) {
-                currentProducts = products.filter(p => 
-                    p.name.toLowerCase().includes(search.toLowerCase()) || 
+                currentProducts = loadedProducts.filter(p =>
+                    p.name.toLowerCase().includes(search.toLowerCase()) ||
                     p.category.toLowerCase().includes(search.toLowerCase())
                 );
                 document.getElementById('product-count').textContent = `Search results for "${search}"`;
@@ -315,7 +321,8 @@
             } else if (deal === 'anniversary') {
                 filterProducts('Anniversary Flowers');
             } else {
-                renderShopGrid();
+                currentProducts = [...loadedProducts];
+                sortProducts();
             }
         });
     </script>

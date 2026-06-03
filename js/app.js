@@ -156,49 +156,52 @@ function performSearch() {
 function initHomePage() {
     if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') return;
 
-    // Populate Categories (derived from products)
-    const categoriesSet = new Set(products.map(p => p.category));
-    const categoriesSection = document.getElementById('home-categories');
-    
-    if (categoriesSection) {
-        let catHTML = '';
-        const images = [
-            "https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=400", // Wedding
-            "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=400", // Anniversary
-            "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=400", // Birthday
-            "https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=400"  // Event
-        ];
-        
-        Array.from(categoriesSet).slice(0, 4).forEach((category, idx) => {
-            catHTML += `
-                <a href="shop.html?category=${encodeURIComponent(category)}" class="category-card" style="text-align: center; display: block; text-decoration: none;">
-                    <div style="width: 100%; max-width: 200px; aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; margin: 0 auto 15px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                        <img src="${images[idx] || products[0].image}" alt="${category}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                    </div>
-                    <h3 class="category-card-title">${category}</h3>
-                </a>
-            `;
-        });
-        
-        // Add minimal layout CSS dynamically for category grid
-        categoriesSection.style.display = 'grid';
-        categoriesSection.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
-        categoriesSection.style.gap = '30px';
-        categoriesSection.style.justifyContent = 'center';
+    // Render home page sections when API products arrive
+    window.onProductsLoaded(function(loadedProducts) {
+        console.log('[app.js] Rendering home page with', loadedProducts.length, 'products');
 
-        categoriesSection.innerHTML = catHTML;
-    }
+        // ── Categories ──────────────────────────────────────────────────────────
+        const categoriesSet = new Set(loadedProducts.map(p => p.category));
+        const categoriesSection = document.getElementById('home-categories');
+        if (categoriesSection) {
+            let catHTML = '';
+            const images = [
+                "https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=400",
+                "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=400",
+                "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=400",
+                "https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=400"
+            ];
+            Array.from(categoriesSet).slice(0, 4).forEach((category, idx) => {
+                catHTML += `
+                    <a href="shop.html?category=${encodeURIComponent(category)}" class="category-card" style="text-align: center; display: block; text-decoration: none;">
+                        <div style="width: 100%; max-width: 200px; aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; margin: 0 auto 15px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                            <img src="${images[idx] || ''}" alt="${category}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        </div>
+                        <h3 class="category-card-title">${category}</h3>
+                    </a>
+                `;
+            });
+            categoriesSection.style.display = 'grid';
+            categoriesSection.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+            categoriesSection.style.gap = '30px';
+            categoriesSection.style.justifyContent = 'center';
+            categoriesSection.innerHTML = catHTML;
+        }
 
-    // Populate Best Sellers (Top 4 rated)
-    const bestSellersGrid = document.getElementById('best-sellers-grid');
-    if (bestSellersGrid) {
-        const topProducts = [...products].sort((a, b) => b.rating - a.rating).slice(0, 4);
-        bestSellersGrid.className = 'modern-shop-grid';
-        bestSellersGrid.innerHTML = topProducts.map(p => createModernProductCard(p)).join('');
-        if (typeof initHeartIcons === 'function') initHeartIcons();
-    }
+        // ── Best Sellers (Top 4 by rating) ───────────────────────────────────────
+        const bestSellersGrid = document.getElementById('best-sellers-grid');
+        if (bestSellersGrid) {
+            const topProducts = [...loadedProducts].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 4);
+            bestSellersGrid.className = 'modern-shop-grid';
+            bestSellersGrid.innerHTML = topProducts.map(p => createModernProductCard(p)).join('');
+            if (typeof initHeartIcons === 'function') initHeartIcons();
+        }
 
-    // Populate Testimonials
+        // ── Hero Slideshow ───────────────────────────────────────────────────────
+        initHeroSlideshow(loadedProducts);
+    });
+
+    // ── Testimonials (static, no products needed) ────────────────────────────
     const testGrid = document.getElementById('testimonials-container');
     if (testGrid) {
         testGrid.className = 'grid-3';
@@ -216,43 +219,25 @@ function initHomePage() {
         `).join('');
     }
 
-    // Initialize Hero Slideshow
-    initHeroSlideshow();
-
-    // Populate Deals of the Day (Safeguarded by try/catch)
+    // ── Deals of the Day ─────────────────────────────────────────────────────
     try {
         const dealsBanner = document.querySelector('.deals-banner');
         if (dealsBanner) {
-            const defaultDeals = [
-                {
-                    title: "Special Anniversary Collection",
-                    discount: "Get 20% off on all Anniversary Bouquets today!",
-                    cta: "shop.html?deal=anniversary",
-                    image: ""
-                }
-            ];
+            const defaultDeals = [{ title: "Special Anniversary Collection", discount: "Get 20% off on all Anniversary Bouquets today!", cta: "shop.html?deal=anniversary", image: "" }];
             let deals = defaultDeals;
             try {
                 const storedDeals = localStorage.getItem('flash_deals');
                 if (storedDeals) {
                     deals = JSON.parse(storedDeals);
-                    if (!Array.isArray(deals) || deals.length === 0) {
-                        deals = defaultDeals;
-                    }
+                    if (!Array.isArray(deals) || deals.length === 0) deals = defaultDeals;
                 } else {
                     localStorage.setItem('flash_deals', JSON.stringify(defaultDeals));
                 }
-            } catch (e) {
-                console.error("Safeguard: Failed to parse flash_deals, falling back to default.", e);
-                deals = defaultDeals;
-            }
+            } catch (e) { deals = defaultDeals; }
 
             if (deals.length > 0) {
-                const activeDeal = deals[0]; // Show the primary active deal
-                let backgroundStyle = '';
-                if (activeDeal.image) {
-                    backgroundStyle = `background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(${activeDeal.image}); background-size: cover; background-position: center;`;
-                }
+                const activeDeal = deals[0];
+                let backgroundStyle = activeDeal.image ? `background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(${activeDeal.image}); background-size: cover; background-position: center;` : '';
                 dealsBanner.innerHTML = `
                     <div class="deals-content" style="${backgroundStyle}">
                         <h3>${activeDeal.title}</h3>
@@ -263,46 +248,42 @@ function initHomePage() {
             }
         }
     } catch (e) {
-        console.error("Safeguard: Failed to render dynamic deals banner.", e);
+        console.error('Safeguard: Failed to render dynamic deals banner.', e);
     }
 }
 
-function initHeroSlideshow() {
+function initHeroSlideshow(loadedProducts) {
     const slideshow = document.getElementById('hero-slideshow');
-    if (!slideshow || !products || products.length === 0) return;
+    const prods = loadedProducts || window.products || [];
+    if (!slideshow || prods.length === 0) return;
 
-    // Clear existing content and populate with all product images
-    slideshow.innerHTML = products.map((product, index) => `
-        <img src="${product.image || fallbackImage}" 
+    slideshow.innerHTML = prods.map((product, index) => `
+        <img src="${product.image || (Array.isArray(product.images) ? product.images[0] : '') || fallbackImage}" 
              alt="${product.name}" 
              class="${index === 0 ? 'active' : ''}">
     `).join('');
 
     const images = slideshow.querySelectorAll('img');
     let currentIndex = 0;
-
-    // Function to show next image
     const nextImage = () => {
         images[currentIndex].classList.remove('active');
         currentIndex = (currentIndex + 1) % images.length;
         images[currentIndex].classList.add('active');
     };
-
-    // Change image every 2 seconds (2000ms) for a snappier feel
     setInterval(nextImage, 2000);
 }
 
 // Stub for Quick View Modal
 window.quickView = function(id) {
-    const product = products.find(p => p.id === id);
-    if(product) {
+    const product = (window.products || []).find(p => (p._id || p.id) == id);
+    if (product) {
         openModal({
             title: 'Quick View',
-            message: `${product.name}<br>₹${product.price.toLocaleString('en-IN')}<br><br>${product.description}`,
+            message: `${product.name}<br>₹${Number(product.price).toLocaleString('en-IN')}<br><br>${product.description}`,
             type: 'info'
         });
     }
-}
+};
 
 // Global Notification System
 
