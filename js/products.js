@@ -119,7 +119,7 @@ function createModernProductCard(product) {
                     ${priceSaleHTML}
                 </div>
 
-                <button onclick="event.stopPropagation(); addToCart('${productId}')">
+                <button class="modern-add-to-cart-btn" onclick="event.stopPropagation(); addToCart('${productId}')">
                     Add to Cart
                 </button>
             </div>
