@@ -13,6 +13,7 @@ const Admin = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '', price: '', category: categories[0], stock: '', images: '', description: ''
   });
@@ -42,7 +43,7 @@ const Admin = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (product) => {
+  const handleDelete = async (product) => {
     // Use _id (MongoDB ObjectId) — this is what the backend DELETE /api/products/:id expects
     const mongoId = product._id || product.id;
     if (!mongoId) {
@@ -50,12 +51,18 @@ const Admin = () => {
       return;
     }
     if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      console.log('[Admin] Deleting product with _id:', mongoId);
-      deleteProduct(mongoId);
+      try {
+        console.log('[Admin] Deleting product with _id:', mongoId);
+        await deleteProduct(mongoId);
+        console.log('[Admin] ✅ Product deleted, list refreshed from backend');
+      } catch (err) {
+        alert('Failed to delete product: ' + err.message);
+      }
     }
   };
 
-  const handleFormSubmit = (e) => {
+  // ── CRITICAL: must be async so we await the API call + fetchProducts() inside DataContext
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     const formattedData = {
       ...formData,
@@ -66,12 +73,24 @@ const Admin = () => {
       reviews: 0
     };
 
-    if (editingId) {
-      updateProduct(editingId, formattedData);
-    } else {
-      addProduct({ ...formattedData, featured: false });
+    setSubmitting(true);
+    try {
+      if (editingId) {
+        console.log('[Admin] Updating product:', editingId);
+        await updateProduct(editingId, formattedData);
+        console.log('[Admin] ✅ Product updated — list refetched from backend');
+      } else {
+        console.log('[Admin] Creating product:', formattedData.name);
+        await addProduct({ ...formattedData, featured: false });
+        console.log('[Admin] ✅ Product created — list refetched from backend');
+      }
+      // Only close the form AFTER the mutation + fetchProducts() have both completed
+      setShowForm(false);
+    } catch (err) {
+      alert('Failed to save product: ' + err.message);
+    } finally {
+      setSubmitting(false);
     }
-    setShowForm(false);
   };
 
   const totalRevenue = orders.reduce((acc, current) => acc + current.amount, 0);
@@ -206,7 +225,7 @@ const Admin = () => {
             </div>
             <div className="form-actions">
               <button type="button" className="outline-btn" onClick={() => setShowForm(false)}>Cancel</button>
-              <button type="submit" className="primary-btn">{editingId ? 'Save Changes' : 'Add Product'}</button>
+              <button type="submit" className="primary-btn" disabled={submitting}>{submitting ? 'Saving...' : (editingId ? 'Save Changes' : 'Add Product')}</button>
             </div>
           </form>
         </div>
