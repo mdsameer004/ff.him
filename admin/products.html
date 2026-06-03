@@ -183,85 +183,82 @@
 
     <!-- Admin Helper Logic and Common script -->
     <script src="../js/api-client.js?v=1.2.0"></script>
-    <script src="js/admin-common.js"></script>
     <script>
         const fallbackImage = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&h=800&auto=format&fit=crop";
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProductsTable();
-        });
+        let tempUploadedImages = [];
 
         // Renders product items dynamically
         async function renderProductsTable() {
             const tableBody = document.getElementById('products-table-body');
             const emptyState = document.getElementById('empty-state');
             const countBadge = document.getElementById('products-count-badge');
+            if (!tableBody) return;
 
             tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">Loading products...</td></tr>`;
 
             try {
                 const products = await getProducts();
-                const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
-                const catFilter = document.getElementById('category-filter').value;
+                const searchInput = document.getElementById('search-input');
+                const catFilterEl = document.getElementById('category-filter');
+                const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const catFilter = catFilterEl ? catFilterEl.value : '';
 
                 tableBody.innerHTML = '';
                 
-                // Filters products
                 const filtered = products.filter(p => {
                     const matchesSearch = p.name.toLowerCase().includes(searchVal);
                     const matchesCat = catFilter === '' || p.category === catFilter;
                     return matchesSearch && matchesCat;
                 });
 
-                countBadge.textContent = `${products.length} products total (${filtered.length} filtered)`;
+                if (countBadge) countBadge.textContent = `${products.length} products total (${filtered.length} filtered)`;
 
                 if (filtered.length === 0) {
-                    emptyState.classList.remove('hidden');
+                    if (emptyState) emptyState.classList.remove('hidden');
                     return;
                 }
 
-                emptyState.classList.add('hidden');
+                if (emptyState) emptyState.classList.add('hidden');
 
-            filtered.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
-                const resolvedImg = (p.image && !p.image.startsWith('http') && !p.image.startsWith('../')) ? `../${p.image}` : (p.image || fallbackImage);
-                tr.innerHTML = `
-                    <td class="px-6 py-4">
-                        <div class="w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-gray-50">
-                            <img src="${resolvedImg}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="block font-bold text-gray-800 dark:text-white text-sm">${p.name}</span>
-                        <span class="block text-3xs text-gray-400 max-w-xs truncate mt-0.5">${p.description || 'No description provided.'}</span>
-                    </td>
-                    <td class="px-6 py-4 text-xs font-semibold text-rose-500 dark:text-rose-400">${p.category}</td>
-                    <td class="px-6 py-4">
-                        <span class="block font-bold text-gray-800 dark:text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>
-                        ${p.original_price > p.price ? `<span class="block text-3xs text-gray-400 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-0.5 text-2xs font-bold rounded-full ${p.stock <= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'}">${p.stock} units</span>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <div class="flex items-center justify-end gap-2">
-                            <button onclick="editProduct('${p._id || p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
-                            <button onclick="deleteProduct('${p._id || p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
-                        </div>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
+                filtered.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
+                    const resolvedImg = (p.image && !p.image.startsWith('http') && !p.image.startsWith('../')) ? `../${p.image}` : (p.image || fallbackImage);
+                    tr.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-rose-50 dark:border-gray-700 bg-gray-50">
+                                <img src="${resolvedImg}" class="w-full h-full object-cover" onerror="this.src='${fallbackImage}'">
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="block font-bold text-gray-800 dark:text-white text-sm">${p.name}</span>
+                            <span class="block text-3xs text-gray-400 max-w-xs truncate mt-0.5">${p.description || 'No description provided.'}</span>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-semibold text-rose-500 dark:text-rose-400">${p.category}</td>
+                        <td class="px-6 py-4">
+                            <span class="block font-bold text-gray-800 dark:text-white">₹${Number(p.price).toLocaleString('en-IN')}</span>
+                            ${p.original_price > p.price ? `<span class="block text-3xs text-gray-400 line-through">₹${Number(p.original_price).toLocaleString('en-IN')}</span>` : ''}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-0.5 text-2xs font-bold rounded-full ${p.stock <= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'}">${p.stock} units</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="editProduct('${p._id || p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
+                                <button onclick="deleteProduct('${p._id || p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
             } catch (err) {
                 console.error("Error loading products table:", err);
                 tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-550 font-semibold">⚠️ Failed to load products. Please check your backend connection.</td></tr>`;
             }
         }
 
-        let tempUploadedImages = [];
-
-        // Image compressor using Canvas to fit within localStorage 5MB limit
+        // Image compressor using Canvas
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -277,23 +274,15 @@
                         let height = img.height;
 
                         if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                         } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                         }
 
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-
-                        // Output compressed JPEG
                         resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
                     img.onerror = reject;
@@ -302,54 +291,46 @@
             });
         }
 
-        // Handles multi-image selection and compression
         async function handleImageUpload(e) {
             const files = Array.from(e.target.files);
             if (!files.length) return;
 
             const remaining = 8 - tempUploadedImages.length;
-            if (remaining <= 0) {
-                alert("You have already uploaded the maximum limit of 8 images.");
-                return;
-            }
+            if (remaining <= 0) { alert("Maximum 8 images reached."); return; }
 
             const filesToProcess = files.slice(0, remaining);
             if (files.length > remaining) {
-                alert(`You can only upload up to 8 images. Only the first ${remaining} selected files will be processed.`);
+                alert(`Only the first ${remaining} files will be processed (8 image limit).`);
             }
 
-            // Show loading or spinner state
-            const badge = document.getElementById('p-images-count');
-            badge.textContent = "Processing images...";
+            const imagesCountEl = document.getElementById('p-images-count');
+            if (imagesCountEl) imagesCountEl.textContent = "Processing images...";
 
             for (const file of filesToProcess) {
                 try {
-                    const compressedBase64 = await compressImage(file);
-                    tempUploadedImages.push(compressedBase64);
+                    const compressed = await compressImage(file);
+                    tempUploadedImages.push(compressed);
                 } catch (err) {
-                    console.error("Safeguard: Failed to compress image file.", err);
+                    console.error("Failed to compress image:", err);
                 }
             }
 
             renderImagePreviews();
-            // Reset file input value so same files can be selected again
             e.target.value = '';
         }
 
-        // Renders image preview thumbnails inside modal
         function renderImagePreviews() {
             const grid = document.getElementById('p-previews-grid');
             const badge = document.getElementById('p-images-count');
+            if (!grid) return;
             grid.innerHTML = '';
-
-            badge.textContent = `${tempUploadedImages.length} / 8 uploaded`;
+            if (badge) badge.textContent = `${tempUploadedImages.length} / 8 uploaded`;
 
             tempUploadedImages.forEach((imgBase64, idx) => {
                 const div = document.createElement('div');
                 div.className = 'relative w-16 h-16 rounded-xl overflow-hidden shadow-inner border border-rose-100 dark:border-gray-700 bg-gray-50 group aspect-square';
                 div.innerHTML = `
                     <img src="${imgBase64}" class="w-full h-full object-cover">
-                    <!-- Hover delete overlay -->
                     <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button type="button" onclick="removeUploadedImage(${idx})" class="text-white text-xs font-bold leading-none bg-red-650 hover:bg-red-700 w-6 h-6 rounded-full flex items-center justify-center shadow-md">✕</button>
                     </div>
@@ -358,13 +339,11 @@
             });
         }
 
-        // Removes uploaded image from modal list
         window.removeUploadedImage = function(idx) {
             tempUploadedImages.splice(idx, 1);
             renderImagePreviews();
         };
 
-        // Product Modal Handlers
         function openProductModal(title = "Add Product", product = null) {
             document.getElementById('modal-title').textContent = title;
             document.getElementById('product-form').reset();
@@ -380,8 +359,7 @@
                 document.getElementById('p-orig-price').value = product.original_price;
                 document.getElementById('p-desc').value = product.description || '';
                 
-                // Populate uploaded images list (with support for back-compat single image string)
-                if (Array.isArray(product.images)) {
+                if (Array.isArray(product.images) && product.images.length > 0) {
                     tempUploadedImages = [...product.images];
                 } else if (product.image) {
                     tempUploadedImages = [product.image];
@@ -396,53 +374,44 @@
             document.getElementById('product-modal').classList.add('hidden');
         }
 
-        // Form Submit
-        document.getElementById('product-form').addEventListener('submit', async function(e) {
+        // ── Form Submit — event delegation on document ────────────────────────
+        document.addEventListener('submit', async function(e) {
+            if (!e.target || e.target.id !== 'product-form') return;
             e.preventDefault();
 
-            // Validate image count
             if (tempUploadedImages.length < 1) {
                 alert("Please upload at least 1 product image (maximum 8 allowed).");
                 return;
             }
 
             const editId = document.getElementById('edit-id').value;
-            const name = document.getElementById('p-name').value.trim();
-            const category = document.getElementById('p-category').value;
-            const stock = parseInt(document.getElementById('p-stock').value);
-            const price = parseFloat(document.getElementById('p-price').value);
-            const original_price = parseFloat(document.getElementById('p-orig-price').value);
-            const description = document.getElementById('p-desc').value.trim();
-
             const productData = {
-                name,
-                category,
-                stock,
-                price,
-                original_price,
-                images: tempUploadedImages,
-                image: tempUploadedImages[0], // fallback main image URL or Base64
-                description
+                name:           document.getElementById('p-name').value.trim(),
+                category:       document.getElementById('p-category').value,
+                stock:          parseInt(document.getElementById('p-stock').value),
+                price:          parseFloat(document.getElementById('p-price').value),
+                original_price: parseFloat(document.getElementById('p-orig-price').value),
+                description:    document.getElementById('p-desc').value.trim(),
+                images:         tempUploadedImages,
+                image:          tempUploadedImages[0],
             };
 
-            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
             try {
                 if (window.apiClient) {
                     if (editId) {
-                        // editId is a MongoDB _id string — do NOT parseInt() it
-                        console.log('[Admin] Updating product with _id:', editId, productData);
+                        console.log('[Admin] Updating product:', editId);
                         await window.apiClient.updateProduct(editId, productData);
-                        console.log('[Admin] ✅ Product updated successfully');
+                        console.log('[Admin] ✅ Product updated');
                     } else {
-                        console.log('[Admin] Creating new product:', productData.name);
+                        console.log('[Admin] Creating product:', productData.name);
                         await window.apiClient.createProduct(productData);
-                        console.log('[Admin] ✅ Product created successfully');
+                        console.log('[Admin] ✅ Product created');
                     }
                 } else {
-                    // Fallback: apiClient not loaded — should not happen in production
                     console.warn('[Admin] apiClient not found — falling back to local save');
                     const products = await getProducts();
                     if (editId) {
@@ -455,55 +424,41 @@
                 }
 
                 closeProductModal();
-                // Re-fetch from backend — renderProductsTable() calls getProducts() → live API
                 await renderProductsTable();
             } catch (err) {
                 console.error('[Admin] Save product error:', err);
-                alert('An error occurred while saving the product details: ' + err.message);
+                alert('Error saving product: ' + err.message);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Save Changes';
             }
         });
 
-        // Edit triggers — use _id (MongoDB ObjectId)
+        // Edit — fetch full product and open modal
         async function editProduct(id) {
-            if (!id || id === 'undefined') {
-                console.error('[Admin] editProduct called with invalid id:', id);
-                return;
-            }
+            if (!id || id === 'undefined') { console.error('[Admin] Invalid id:', id); return; }
             try {
                 const products = await getProducts();
                 const p = products.find(prod => (prod._id || prod.id) == id);
-                if (p) {
-                    openProductModal("Edit Product Details", p);
-                } else {
-                    console.error('[Admin] Product not found for id:', id);
-                }
+                if (p) openProductModal("Edit Product Details", p);
+                else console.error('[Admin] Product not found:', id);
             } catch (err) {
                 console.error("Error editing product:", err);
             }
         }
 
-        // Delete triggers — use _id (MongoDB ObjectId)
+        // Delete product
         async function deleteProduct(id) {
-            // Guard: stop immediately if id is missing
-            if (!id || id === 'undefined') {
-                console.error('[Admin] deleteProduct called with invalid id:', id);
-                alert('Cannot delete: product ID is missing.');
-                return;
-            }
-            console.log('[Admin] Attempting to delete product with _id:', id);
+            if (!id || id === 'undefined') { alert('Cannot delete: product ID is missing.'); return; }
             try {
                 const products = await getProducts();
                 const p = products.find(prod => (prod._id || prod.id) == id);
-                if (p && confirm(`Are you absolutely sure you want to delete "${p.name}"? This operation cannot be undone.`)) {
+                if (p && confirm(`Delete "${p.name}"? This cannot be undone.`)) {
                     if (window.apiClient) {
                         await window.apiClient.deleteProduct(id);
-                        console.log('[Admin] ✅ Product deleted successfully:', id);
+                        console.log('[Admin] ✅ Deleted:', id);
                     } else {
-                        const filtered = products.filter(prod => (prod._id || prod.id) != id);
-                        await saveProducts(filtered);
+                        await saveProducts(products.filter(prod => (prod._id || prod.id) != id));
                     }
                     renderProductsTable();
                 }
@@ -511,6 +466,17 @@
                 alert('Error deleting product: ' + err.message);
             }
         }
+    </script>
+    <!-- admin-common.js must load AFTER page functions are defined -->
+    <script src="js/admin-common.js"></script>
+    <script>
+        // Run table render after admin-common.js has rebuilt the DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            // admin-common.js rebuilds body.innerHTML synchronously in DOMContentLoaded.
+            // We defer renderProductsTable() via setTimeout(0) to ensure it runs after
+            // the DOM rebuild is fully complete.
+            setTimeout(() => renderProductsTable(), 0);
+        });
     </script>
 </body>
 </html>
