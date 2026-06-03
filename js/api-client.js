@@ -51,28 +51,22 @@ class ApiClient {
         const url = `${window.API_BASE_URL}${path}`;
         options.headers = { ...this.getHeaders(secured), ...options.headers };
 
-        try {
-            // Attempt live backend API call
-            const response = await fetch(url, options);
+        // Attempt live backend API call
+        const response = await fetch(url, options);
 
-            if (response.status === 401 || response.status === 403) {
-                console.warn('Authentication token invalid or expired. Logging out.');
-                this.setToken(null);
-            }
-
-            if (!response.ok) {
-                const errorBody = await response.json().catch(() => ({}));
-                throw new Error(errorBody.message || `HTTP Request Failed: status ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            // Fall back to local DB on ANY failure:
-            // - TypeError = network error / CORS / backend offline
-            // - Other errors = 4xx/5xx from backend (route not found, server error, cold start, etc.)
-            console.warn(`%c[Friends Florist Local DB] Backend unavailable for ${options.method || 'GET'} ${path} ("${error.message}"). Activating local database fallback.`, 'color: #e05070; font-weight: bold;');
-            return this.executeFallback(path, options);
+        if (response.status === 401 || response.status === 403) {
+            console.warn('[FF Auth] Token invalid or expired. Logging out.');
+            this.setToken(null);
         }
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            const msg = errorBody.message || `HTTP ${response.status} on ${options.method || 'GET'} ${url}`;
+            console.error(`[FF API] Request failed: ${msg}`);
+            throw new Error(msg);
+        }
+
+        return await response.json(); // returns raw envelope: { success, count, data }
     }
 
     // Dynamic Client-side Simulated Local Database (LocalStorage Fallback)
@@ -285,12 +279,22 @@ class ApiClient {
         return { success: true };
     }
 
+    // getProducts — unwraps the backend envelope: { success, count, data: Product[] }
     async getProducts() {
-        return this.request('/products', { method: 'GET' });
+        const envelope = await this.request('/products', { method: 'GET' });
+        // Backend returns: { success: true, count: N, data: [...] }
+        // Fallback (localStorage) returns a plain array directly
+        if (Array.isArray(envelope)) return envelope;
+        if (envelope && Array.isArray(envelope.data)) return envelope.data;
+        console.error('[FF API] Unexpected /products response shape:', envelope);
+        return [];
     }
 
+    // getProduct — unwraps single product from envelope
     async getProduct(id) {
-        return this.request(`/products/${id}`, { method: 'GET' });
+        const envelope = await this.request(`/products/${id}`, { method: 'GET' });
+        if (envelope && envelope.data) return envelope.data;
+        return envelope; // plain object fallback
     }
 
     async createProduct(productData) {

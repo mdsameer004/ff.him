@@ -34,19 +34,28 @@ export const DataProvider = ({ children }) => {
       try {
         const prodRes = await fetch(`${API_BASE_URL}/products`);
         if (prodRes.ok) {
-          const prodData = await prodRes.json();
+          const prodEnvelope = await prodRes.json();
+          // Backend returns: { success: true, count: N, data: Product[] }
+          const prodData = Array.isArray(prodEnvelope) ? prodEnvelope : (prodEnvelope.data || []);
+          console.log('[DataContext] Loaded', prodData.length, 'products from backend');
           setProducts(prodData);
+        } else {
+          console.error('[DataContext] GET /products failed with status', prodRes.status);
         }
 
         const ordRes = await fetch(`${API_BASE_URL}/orders`, {
           headers: getAuthHeaders()
         });
         if (ordRes.ok) {
-          const ordData = await ordRes.json();
+          const ordEnvelope = await ordRes.json();
+          const ordData = Array.isArray(ordEnvelope) ? ordEnvelope : (ordEnvelope.data || []);
+          console.log('[DataContext] Loaded', ordData.length, 'orders from backend');
           setOrders(ordData);
+        } else {
+          console.error('[DataContext] GET /orders failed with status', ordRes.status);
         }
       } catch (err) {
-        console.warn('[Data Context Backend Fallback] Fetching initial REST endpoints failed. Defaulting to local mock states.', err.message);
+        console.error('[DataContext] Failed to load from backend. Using local fallback.', err.message);
       }
     };
 
@@ -70,12 +79,16 @@ export const DataProvider = ({ children }) => {
         body: JSON.stringify(product)
       });
       if (response.ok) {
-        const newProduct = await response.json();
+        const envelope = await response.json();
+        // Unwrap envelope: backend returns { success, data: newProduct }
+        const newProduct = (envelope && envelope.data) ? envelope.data : envelope;
         setProducts(prev => [...prev, newProduct]);
         return;
+      } else {
+        console.error('[DataContext] POST /products failed with status', response.status);
       }
     } catch (err) {
-      console.warn('[Data Context Fallback] POST /products failed, modifying simulated client DB.', err.message);
+      console.error('[DataContext] POST /products error:', err.message);
     }
     // Fallback
     const newProduct = { ...product, id: Date.now() };
@@ -90,12 +103,15 @@ export const DataProvider = ({ children }) => {
         body: JSON.stringify(updatedProduct)
       });
       if (response.ok) {
-        const newProduct = await response.json();
+        const envelope = await response.json();
+        const newProduct = (envelope && envelope.data) ? envelope.data : envelope;
         setProducts(prev => prev.map(p => p.id === id ? newProduct : p));
         return;
+      } else {
+        console.error(`[DataContext] PUT /products/${id} failed with status`, response.status);
       }
     } catch (err) {
-      console.warn(`[Data Context Fallback] PUT /products/${id} failed, modifying simulated client DB.`, err.message);
+      console.error(`[DataContext] PUT /products/${id} error:`, err.message);
     }
     // Fallback
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedProduct } : p));
