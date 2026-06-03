@@ -1,9 +1,9 @@
-// js/api-client.js  v1.2.0
+// js/api-client.js  v2.0.0
 // Modern, Unified REST API Client for Friends Florist
-// ⚠️ login() bypasses network entirely — no HTTP requests during auth
+// Connected to deployed backend: https://floristbackend.onrender.com
 
-window.API_BASE_URL = window.API_BASE_URL || '/api';
-window.API_FALLBACK = true; // Always on — no live backend on GitHub Pages
+window.API_BASE_URL = 'https://floristbackend.onrender.com/api';
+window.API_FALLBACK = false; // Live backend active — only falls back on network failure
 
 
 class ApiClient {
@@ -251,15 +251,34 @@ class ApiClient {
 
     // Dynamic Helper API endpoints exposed to frontend scripts
     async login(email, password) {
-        // Normalize email to lowercase for case-insensitive matching
+        // Attempt live backend login first, fall back to local credentials on network failure
         const normalizedEmail = (email || '').trim().toLowerCase();
         const normalizedPassword = (password || '').trim();
-
-        // Always use local credential fallback (no live backend on GitHub Pages)
-        return this.executeFallback('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email: normalizedEmail, password: normalizedPassword })
-        });
+        try {
+            const response = await fetch(`${window.API_BASE_URL}/admin/login`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ email: normalizedEmail, password: normalizedPassword })
+            });
+            if (!response.ok) {
+                const errBody = await response.json().catch(() => ({}));
+                throw new Error(errBody.message || `Login failed: ${response.status}`);
+            }
+            const data = await response.json();
+            this.setToken(data.token);
+            return data;
+        } catch (error) {
+            // Fall back to local credentials only on network-level failure
+            const isNetworkError = error instanceof TypeError && error.message.includes('fetch');
+            if (isNetworkError) {
+                console.info('%c[Friends Florist Auth] Network error — falling back to local credentials.', 'color: #2E8B57; font-weight: bold;');
+                return this.executeFallback('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: normalizedEmail, password: normalizedPassword })
+                });
+            }
+            throw error;
+        }
     }
 
     async logout() {
@@ -339,28 +358,45 @@ class ApiClient {
 // Instantiate and expose globally
 window.apiClient = new ApiClient();
 
-// ─────────────────────────────────────────────────────────────────────────────
-// INSTANCE-LEVEL PATCH: Override login() directly on the live instance.
-// This runs AFTER instantiation, so it overrides any cached/old class method.
-// login() will NEVER touch the network — always goes straight to local DB.
-// This patch is the final guarantee against HTTP 405 errors on GitHub Pages.
-// ─────────────────────────────────────────────────────────────────────────────
+// Override the instance-level login() patch:
+// Now tries the live backend first, then falls back to local credentials.
+// This replaces the old GitHub Pages-only patch that bypassed the network entirely.
 window.apiClient.login = async function(email, password) {
     const normalizedEmail    = (email    || '').toString().trim().toLowerCase();
     const normalizedPassword = (password || '').toString().trim();
 
     console.info(
-        '%c[Friends Florist Auth] login() instance patch active — using local DB, no network fetch.',
+        '%c[Friends Florist Auth] login() — attempting live backend at ' + window.API_BASE_URL + '/admin/login',
         'color: #2E8B57; font-weight: bold;'
     );
 
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
+    try {
+        const response = await fetch(`${window.API_BASE_URL}/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: normalizedEmail, password: normalizedPassword })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const token = data.token || data.accessToken || '';
+            localStorage.setItem('ff_jwt_token',  token);
+            localStorage.setItem('ff_admin_auth', 'true');
+            return { success: true, token, user: data.user || { email: normalizedEmail, role: 'admin' } };
+        } else {
+            const errBody = await response.json().catch(() => ({}));
+            throw new Error(errBody.message || `Login failed with status ${response.status}`);
+        }
+    } catch (networkErr) {
+        const isNetworkError = networkErr instanceof TypeError && networkErr.message.includes('fetch');
+        if (isNetworkError) {
+            // Backend unreachable — fall back to hardcoded admin credentials
+            console.warn('%c[Friends Florist Auth] Backend unreachable. Using offline fallback credentials.', 'color: #e05070; font-weight: bold;');
             if (normalizedEmail === 'admin@friendsflorist.com' && normalizedPassword === 'Friends@123') {
                 const token = 'mock-jwt-token-admin-friends-florist-2026';
                 localStorage.setItem('ff_jwt_token',  token);
                 localStorage.setItem('ff_admin_auth', 'true');
-                resolve({ success: true, token, user: { email: 'admin@friendsflorist.com', role: 'admin', name: 'Admin' } });
+                return { success: true, token, user: { email: 'admin@friendsflorist.com', role: 'admin', name: 'Admin' } };
             } else if (
                 (normalizedEmail === 'editor@admin.com' || normalizedEmail === 'editor') &&
                 normalizedPassword === 'editor'
@@ -368,10 +404,11 @@ window.apiClient.login = async function(email, password) {
                 const token = 'mock-jwt-token-editor-friends-florist-2026';
                 localStorage.setItem('ff_jwt_token',  token);
                 localStorage.setItem('ff_admin_auth', 'true');
-                resolve({ success: true, token, user: { email: 'editor@admin.com', role: 'editor', name: 'Editor' } });
+                return { success: true, token, user: { email: 'editor@admin.com', role: 'editor', name: 'Editor' } };
             } else {
-                reject(new Error('Invalid email or password. Please try again.'));
+                throw new Error('Invalid email or password.');
             }
-        }, 400);
-    });
+        }
+        throw networkErr;
+    }
 };

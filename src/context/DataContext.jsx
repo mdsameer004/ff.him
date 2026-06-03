@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { products as initialProducts, initialOrders } from '../data/mockData';
+import { API_BASE_URL } from '../config/api';
 
 const DataContext = createContext();
 
@@ -16,7 +17,7 @@ export const DataProvider = ({ children }) => {
     return stored ? JSON.parse(stored) : initialOrders;
   });
 
-  const API_BASE_URL = window.API_BASE_URL || '/api';
+  // API_BASE_URL is imported from src/config/api.js — points to deployed backend.
 
   // Helper for authenticated headers
   const getAuthHeaders = () => {

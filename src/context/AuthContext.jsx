@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { mockUser } from '../data/mockData';
+import { API_BASE_URL } from '../config/api';
 
 const AuthContext = createContext();
 
@@ -19,9 +20,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const API_BASE_URL = window.API_BASE_URL || '/api';
+    const API_URL = API_BASE_URL; // imported from src/config/api.js
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
