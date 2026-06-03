@@ -64,10 +64,10 @@ window.loadProducts = async function() {
 // initial load
 window.loadProducts();
 
-// AUTO REFRESH every 3 seconds (REAL-TIME BEHAVIOR)
+// AUTO REFRESH every 30 seconds
 setInterval(() => {
     window.loadProducts();
-}, 3000);
+}, 30000);
 
 /* ---------------- PRODUCT CARD UI ---------------- */
 
@@ -94,9 +94,11 @@ function createModernProductCard(product) {
 
     const priceSaleHTML = `<span class="price-sale">₹${priceNum.toLocaleString('en-IN')}</span>`;
 
+    const productId = product._id || product.id;
+
     return `
-        <div class="modern-product-card" data-id="${product.id}"
-            onclick="window.location.href='product.html?id=${product.id}'">
+        <div class="modern-product-card" data-id="${productId}"
+            onclick="window.location.href='product.html?id=${productId}'">
 
             <div class="modern-image-container">
                 <img src="${imageUrl}" class="modern-product-image"
@@ -117,13 +119,10 @@ function createModernProductCard(product) {
                     ${priceSaleHTML}
                 </div>
 
-                <button onclick="event.stopPropagation(); addToCart(${product.id})">
+                <button onclick="event.stopPropagation(); addToCart('${productId}')">
                     Add to Cart
                 </button>
             </div>
         </div>
     `;
 }
-
-/* ---------------- INITIAL AUTO START ---------------- */
-window.loadProducts();

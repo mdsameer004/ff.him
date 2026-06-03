@@ -5,15 +5,19 @@
     document.addEventListener('DOMContentLoaded', () => {
 
         const urlParams = new URLSearchParams(window.location.search);
-        currentProductId = parseInt(urlParams.get('id') || '1');
+        currentProductId = urlParams.get('id') || '1'; // keep as string — MongoDB uses _id strings
 
         // WAIT until backend products are loaded
         window.onProductsLoaded((data) => {
 
-            currentProduct = data.find(p => p.id === currentProductId);
+            // Match by _id (MongoDB string) or legacy numeric id
+            currentProduct = data.find(p =>
+                String(p._id) === String(currentProductId) ||
+                String(p.id)  === String(currentProductId)
+            );
 
             if (!currentProduct) {
-                console.error("Product not found");
+                console.error("Product not found for id:", currentProductId);
                 return;
             }
 
@@ -85,7 +89,10 @@
     setInterval(() => {
         if (!window.products || !currentProduct) return;
 
-        const updated = window.products.find(p => p.id === currentProduct.id);
+        const updated = window.products.find(p =>
+            String(p._id) === String(currentProductId) ||
+            String(p.id)  === String(currentProductId)
+        );
 
         if (updated && JSON.stringify(updated) !== JSON.stringify(currentProduct)) {
             currentProduct = updated;
@@ -93,7 +100,7 @@
             console.log("🔄 Product updated live");
         }
 
-    }, 3000);
+    }, 30000);
 
     /* ---------------- IMAGE SETUP ---------------- */
 
