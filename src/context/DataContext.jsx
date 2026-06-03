@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { products as initialProducts, initialOrders } from '../data/mockData';
+import { initialOrders } from '../data/mockData';
 import { API_BASE_URL } from '../config/api';
 
 const DataContext = createContext();
@@ -7,17 +7,13 @@ const DataContext = createContext();
 export const useData = () => useContext(DataContext);
 
 export const DataProvider = ({ children }) => {
-  const [products, setProducts] = useState(() => {
-    const stored = localStorage.getItem('friends-florist-products');
-    return stored ? JSON.parse(stored) : initialProducts;
-  });
+  // Start empty — fetchProducts() populates from backend on mount
+  const [products, setProducts] = useState([]);
 
   const [orders, setOrders] = useState(() => {
     const stored = localStorage.getItem('friends-florist-orders');
     return stored ? JSON.parse(stored) : initialOrders;
   });
-
-  // API_BASE_URL is imported from src/config/api.js — points to deployed backend.
 
   // Helper for authenticated headers
   const getAuthHeaders = () => {
@@ -28,21 +24,35 @@ export const DataProvider = ({ children }) => {
     };
   };
 
-  // Fetch active products and orders on mount
+  // ─── Single canonical product fetcher ────────────────────────────────────────
+  // Always GETs fresh data from GET /api/products.
+  // Called on mount AND after every create / update / delete mutation.
+  const fetchProducts = async () => {
+    try {
+      console.log('[DataContext] Fetching products from backend...');
+      const res = await fetch(`${API_BASE_URL}/products`);
+      if (!res.ok) {
+        console.error('[DataContext] GET /products failed — status', res.status);
+        return;
+      }
+      const envelope = await res.json();
+      // Backend returns: { success: true, count: N, data: Product[] }
+      const data = Array.isArray(envelope) ? envelope : (envelope.data || []);
+      console.log('[DataContext] ✅ Products synced from backend:', data.length, 'items');
+      setProducts(data);
+    } catch (err) {
+      console.error('[DataContext] GET /products network error:', err.message);
+    }
+  };
+
+  // Load products + orders on mount
   useEffect(() => {
     const loadInitialData = async () => {
-      try {
-        const prodRes = await fetch(`${API_BASE_URL}/products`);
-        if (prodRes.ok) {
-          const prodEnvelope = await prodRes.json();
-          // Backend returns: { success: true, count: N, data: Product[] }
-          const prodData = Array.isArray(prodEnvelope) ? prodEnvelope : (prodEnvelope.data || []);
-          console.log('[DataContext] Loaded', prodData.length, 'products from backend');
-          setProducts(prodData);
-        } else {
-          console.error('[DataContext] GET /products failed with status', prodRes.status);
-        }
+      // Products — always from backend, never from localStorage
+      await fetchProducts();
 
+      // Orders — fetch from backend
+      try {
         const ordRes = await fetch(`${API_BASE_URL}/orders`, {
           headers: getAuthHeaders()
         });
@@ -52,24 +62,22 @@ export const DataProvider = ({ children }) => {
           console.log('[DataContext] Loaded', ordData.length, 'orders from backend');
           setOrders(ordData);
         } else {
-          console.error('[DataContext] GET /orders failed with status', ordRes.status);
+          console.error('[DataContext] GET /orders failed — status', ordRes.status);
         }
       } catch (err) {
-        console.error('[DataContext] Failed to load from backend. Using local fallback.', err.message);
+        console.error('[DataContext] GET /orders network error:', err.message);
       }
     };
 
     loadInitialData();
   }, []);
 
-  // Sync state mutations to localStorage as local simulated DB fallback
-  useEffect(() => {
-    localStorage.setItem('friends-florist-products', JSON.stringify(products));
-  }, [products]);
-
+  // Cache orders in localStorage as read cache
   useEffect(() => {
     localStorage.setItem('friends-florist-orders', JSON.stringify(orders));
   }, [orders]);
+
+  // ─── Mutations — all refetch from backend after success ───────────────────────
 
   const addProduct = async (product) => {
     try {
@@ -78,21 +86,20 @@ export const DataProvider = ({ children }) => {
         headers: getAuthHeaders(),
         body: JSON.stringify(product)
       });
-      if (response.ok) {
-        const envelope = await response.json();
-        // Unwrap envelope: backend returns { success, data: newProduct }
-        const newProduct = (envelope && envelope.data) ? envelope.data : envelope;
-        setProducts(prev => [...prev, newProduct]);
-        return;
-      } else {
-        console.error('[DataContext] POST /products failed with status', response.status);
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.message || `POST /products failed — status ${response.status}`);
       }
+      const envelope = await response.json();
+      const created = (envelope && envelope.data) ? envelope.data : envelope;
+      console.log('[DataContext] ✅ Product created:', created.name || created._id || created.id);
+      // Refetch full list — never trust manual array splice
+      await fetchProducts();
+      return created;
     } catch (err) {
       console.error('[DataContext] POST /products error:', err.message);
+      throw err;
     }
-    // Fallback
-    const newProduct = { ...product, id: Date.now() };
-    setProducts(prev => [...prev, newProduct]);
   };
 
   const updateProduct = async (id, updatedProduct) => {
@@ -102,19 +109,20 @@ export const DataProvider = ({ children }) => {
         headers: getAuthHeaders(),
         body: JSON.stringify(updatedProduct)
       });
-      if (response.ok) {
-        const envelope = await response.json();
-        const newProduct = (envelope && envelope.data) ? envelope.data : envelope;
-        setProducts(prev => prev.map(p => p.id === id ? newProduct : p));
-        return;
-      } else {
-        console.error(`[DataContext] PUT /products/${id} failed with status`, response.status);
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.message || `PUT /products/${id} failed — status ${response.status}`);
       }
+      const envelope = await response.json();
+      const updated = (envelope && envelope.data) ? envelope.data : envelope;
+      console.log('[DataContext] ✅ Product updated:', id);
+      // Refetch full list — guaranteed backend state in UI
+      await fetchProducts();
+      return updated;
     } catch (err) {
       console.error(`[DataContext] PUT /products/${id} error:`, err.message);
+      throw err;
     }
-    // Fallback
-    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updatedProduct } : p));
   };
 
   const deleteProduct = async (id) => {
@@ -123,19 +131,21 @@ export const DataProvider = ({ children }) => {
         method: 'DELETE',
         headers: getAuthHeaders()
       });
-      if (response.ok) {
-        setProducts(prev => prev.filter(p => p.id !== id));
-        return;
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.message || `DELETE /products/${id} failed — status ${response.status}`);
       }
+      console.log('[DataContext] ✅ Product deleted:', id);
+      // Refetch — do not trust local filter
+      await fetchProducts();
     } catch (err) {
-      console.warn(`[Data Context Fallback] DELETE /products/${id} failed, modifying simulated client DB.`, err.message);
+      console.error(`[DataContext] DELETE /products/${id} error:`, err.message);
+      throw err;
     }
-    // Fallback
-    setProducts(prev => prev.filter(p => p.id !== id));
   };
 
   return (
-    <DataContext.Provider value={{ products, orders, addProduct, updateProduct, deleteProduct }}>
+    <DataContext.Provider value={{ products, orders, addProduct, updateProduct, deleteProduct, fetchProducts }}>
       {children}
     </DataContext.Provider>
   );
