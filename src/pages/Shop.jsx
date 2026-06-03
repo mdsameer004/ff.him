@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Filter, SlidersHorizontal, Search, Star } from 'lucide-react';
-import { categories } from '../data/mockData';
 import { useCart } from '../context/CartContext';
 import { useData } from '../context/DataContext';
 import './Shop.css';
@@ -44,15 +43,31 @@ const Shop = () => {
   const initSearch = searchParams.get('search') || '';
 
   const { products } = useData();
+
+  // Derive categories from actual backend products (not hardcoded mock list)
+  const liveCategories = useMemo(() => {
+    const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+    console.log('[Shop] Live categories from backend:', cats);
+    return cats;
+  }, [products]);
+
+  // Derive max price from actual product prices for the range slider
+  const maxPrice = useMemo(() => {
+    if (!products.length) return 5000;
+    const max = Math.max(...products.map(p => p.price));
+    return Math.ceil(max * 1.2); // 20% headroom
+  }, [products]);
+
   // Start empty — useEffect below re-filters whenever context `products` updates
   const [displayProducts, setDisplayProducts] = useState([]);
   const [activeCategory, setActiveCategory] = useState(initCategory);
   const [searchQuery, setSearchQuery] = useState(initSearch);
   const [sortBy, setSortBy] = useState('featured');
-  const [priceRange, setPriceRange] = useState(5000);
+  const [priceRange, setPriceRange] = useState(maxPrice);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
+    console.log('[Shop] useEffect — products count:', products.length, '| category:', activeCategory, '| search:', searchQuery);
     let filtered = [...products];
 
     // Category Filter
@@ -65,7 +80,7 @@ const Shop = () => {
       filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
     }
 
-    // Price Filter
+    // Price Filter — use maxPrice so all products show by default
     filtered = filtered.filter(p => p.price <= priceRange);
 
     // Sorting
@@ -77,8 +92,14 @@ const Shop = () => {
       filtered.sort((a, b) => b.rating - a.rating);
     }
 
+    console.log('[Shop] Filtered result:', filtered.length, 'products');
     setDisplayProducts(filtered);
   }, [activeCategory, searchQuery, priceRange, sortBy, products]);
+
+  // Reset price range when maxPrice changes (new products loaded)
+  useEffect(() => {
+    setPriceRange(maxPrice);
+  }, [maxPrice]);
 
   return (
     <div className="shop-container">
@@ -109,15 +130,15 @@ const Shop = () => {
           <div className="filter-group">
             <h3>Categories</h3>
             <ul className="category-list">
-              <li 
-                className={activeCategory === 'All' ? 'active' : ''} 
+              <li
+                className={activeCategory === 'All' ? 'active' : ''}
                 onClick={() => setActiveCategory('All')}
               >
                 All Arrangements
               </li>
-              {categories.map(cat => (
-                <li 
-                  key={cat} 
+              {liveCategories.map(cat => (
+                <li
+                  key={cat}
                   className={activeCategory === cat ? 'active' : ''}
                   onClick={() => setActiveCategory(cat)}
                 >
@@ -128,13 +149,13 @@ const Shop = () => {
           </div>
 
           <div className="filter-group">
-            <h3>Max Price: ₹{priceRange}</h3>
-            <input 
-              type="range" 
+            <h3>Max Price: ${priceRange.toFixed(2)}</h3>
+            <input
+              type="range"
               className="price-slider"
-              min="500" 
-              max="5000" 
-              step="100"
+              min={0}
+              max={maxPrice}
+              step={1}
               value={priceRange}
               onChange={(e) => setPriceRange(Number(e.target.value))}
             />

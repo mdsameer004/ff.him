@@ -24,6 +24,23 @@ export const DataProvider = ({ children }) => {
     };
   };
 
+  // ─── Normalize a single product from backend schema → UI schema ──────────────
+  // Backend: { _id, image: string, price: number, category: string, ... }
+  // UI needs: { _id, images: string[], rating, reviews, featured, ... }
+  const normalizeProduct = (p) => ({
+    ...p,
+    // Normalize image field: prefer images[] array, fall back to image string
+    images: Array.isArray(p.images) && p.images.length > 0
+      ? p.images
+      : [p.image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800'],
+    // Provide safe defaults for fields the UI reads
+    rating: p.rating || 0,
+    reviews: p.reviews || 0,
+    featured: p.featured || false,
+    price: Number(p.price) || 0,
+    stock: Number(p.stock) || 0,
+  });
+
   // ─── Single canonical product fetcher ────────────────────────────────────────
   // Always GETs fresh data from GET /api/products.
   // Called on mount AND after every create / update / delete mutation.
@@ -36,9 +53,13 @@ export const DataProvider = ({ children }) => {
         return;
       }
       const envelope = await res.json();
+      console.log('[DataContext] Raw API response:', JSON.stringify(envelope).slice(0, 300));
       // Backend returns: { success: true, count: N, data: Product[] }
-      const data = Array.isArray(envelope) ? envelope : (envelope.data || []);
+      const raw = Array.isArray(envelope) ? envelope : (envelope.data || []);
+      // Normalize each product so UI components get a consistent shape
+      const data = raw.map(normalizeProduct);
       console.log('[DataContext] ✅ Products synced from backend:', data.length, 'items');
+      console.log('[DataContext] Sample product:', data[0] ? JSON.stringify(data[0]).slice(0, 200) : 'none');
       setProducts(data);
     } catch (err) {
       console.error('[DataContext] GET /products network error:', err.message);

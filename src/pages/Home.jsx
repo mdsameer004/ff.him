@@ -42,6 +42,10 @@ const ProductCard = ({ product }) => {
 const Home = () => {
   const { products } = useData();
   const primaryBanner = bannerOffers[0];
+
+  // Debug: confirm products are reaching Home from DataContext
+  console.log('[Home] products from DataContext:', products.length, products[0] ? `first: "${products[0].name}"` : '(empty)');
+
   // Featured products: prefer products with featured=true flag.
   // MongoDB backend products may not have this field — fall back to first 4 products.
   const featuredProducts = products.filter(p => p.featured).length > 0
