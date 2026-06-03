@@ -29,21 +29,29 @@ const Admin = () => {
   };
 
   const handleOpenEdit = (product) => {
-    setEditingId(product.id);
+    // Use _id (MongoDB ObjectId) — not the local numeric id field
+    setEditingId(product._id || product.id);
     setFormData({
       name: product.name,
       price: product.price,
       category: product.category,
       stock: product.stock,
-      images: product.images[0], // simplified for form
+      images: Array.isArray(product.images) ? product.images[0] : (product.image || ''),
       description: product.description || ''
     });
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
+  const handleDelete = (product) => {
+    // Use _id (MongoDB ObjectId) — this is what the backend DELETE /api/products/:id expects
+    const mongoId = product._id || product.id;
+    if (!mongoId) {
+      console.error('[Admin] handleDelete called with undefined ID — product:', product);
+      return;
+    }
+    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
+      console.log('[Admin] Deleting product with _id:', mongoId);
+      deleteProduct(mongoId);
     }
   };
 
@@ -225,16 +233,16 @@ const Admin = () => {
           </thead>
           <tbody>
             {products.map(p => (
-              <tr key={p.id}>
-                <td><img src={p.images[0]} alt={p.name} className="admin-prod-img" /></td>
+              <tr key={p._id || p.id}>
+                <td><img src={Array.isArray(p.images) ? p.images[0] : p.image} alt={p.name} className="admin-prod-img" /></td>
                 <td>{p.name}</td>
                 <td>{p.category}</td>
-                <td>₹{p.price.toLocaleString()}</td>
+                <td>₹{Number(p.price).toLocaleString()}</td>
                 <td>{p.stock}</td>
                 <td>
                   <div className="action-buttons-inline">
                     <button className="icon-btn-small" onClick={() => handleOpenEdit(p)} title="Edit"><Edit size={16}/></button>
-                    <button className="icon-btn-small text-danger" onClick={() => handleDelete(p.id)} title="Delete"><Trash2 size={16}/></button>
+                    <button className="icon-btn-small text-danger" onClick={() => handleDelete(p)} title="Delete"><Trash2 size={16}/></button>
                   </div>
                 </td>
               </tr>

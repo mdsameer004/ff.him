@@ -126,6 +126,13 @@ export const DataProvider = ({ children }) => {
   };
 
   const deleteProduct = async (id) => {
+    // Guard: refuse to call the API if id is missing (prevents "Cast to ObjectId failed" error)
+    if (!id) {
+      const msg = '[DataContext] deleteProduct called with undefined/null id — aborting DELETE request';
+      console.error(msg);
+      throw new Error(msg);
+    }
+    console.log('[DataContext] DELETE /api/products/' + id);
     try {
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'DELETE',

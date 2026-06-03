@@ -246,8 +246,8 @@
                     </td>
                     <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                            <button onclick="editProduct(${p.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
-                            <button onclick="deleteProduct(${p.id})" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
+                            <button onclick="editProduct('${p._id || p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-600 dark:text-rose-400 font-semibold text-2xs rounded-lg transition-colors">Edit</button>
+                            <button onclick="deleteProduct('${p._id || p.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-rose-700 hover:text-red-600 font-semibold text-2xs rounded-lg transition-colors">Delete</button>
                         </div>
                     </td>
                 `;
@@ -460,29 +460,43 @@
             }
         });
 
-        // Edit triggers
+        // Edit triggers — use _id (MongoDB ObjectId)
         async function editProduct(id) {
+            if (!id || id === 'undefined') {
+                console.error('[Admin] editProduct called with invalid id:', id);
+                return;
+            }
             try {
                 const products = await getProducts();
-                const p = products.find(prod => prod.id === id);
+                const p = products.find(prod => (prod._id || prod.id) == id);
                 if (p) {
                     openProductModal("Edit Product Details", p);
+                } else {
+                    console.error('[Admin] Product not found for id:', id);
                 }
             } catch (err) {
                 console.error("Error editing product:", err);
             }
         }
 
-        // Delete triggers
+        // Delete triggers — use _id (MongoDB ObjectId)
         async function deleteProduct(id) {
+            // Guard: stop immediately if id is missing
+            if (!id || id === 'undefined') {
+                console.error('[Admin] deleteProduct called with invalid id:', id);
+                alert('Cannot delete: product ID is missing.');
+                return;
+            }
+            console.log('[Admin] Attempting to delete product with _id:', id);
             try {
                 const products = await getProducts();
-                const p = products.find(prod => prod.id === id);
-                if (p && confirm(`Are you absolutely sure you want to delete the product "${p.name}"? This operation cannot be undone.`)) {
+                const p = products.find(prod => (prod._id || prod.id) == id);
+                if (p && confirm(`Are you absolutely sure you want to delete "${p.name}"? This operation cannot be undone.`)) {
                     if (window.apiClient) {
                         await window.apiClient.deleteProduct(id);
+                        console.log('[Admin] ✅ Product deleted successfully:', id);
                     } else {
-                        const filtered = products.filter(prod => prod.id !== id);
+                        const filtered = products.filter(prod => (prod._id || prod.id) != id);
                         await saveProducts(filtered);
                     }
                     renderProductsTable();
