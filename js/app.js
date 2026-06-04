@@ -135,11 +135,42 @@ function initUserNav() {
                 </div>
             `;
             if (mobileAuthLink) {
-                mobileAuthLink.textContent = `Hi, ${firstName}`;
-                mobileAuthLink.href = '#';
-                mobileAuthLink.onclick = logoutUser;
+                // Hide standard login link on mobile when logged in
+                mobileAuthLink.style.display = 'none';
+
+                // Check and remove existing elements to prevent duplicates
+                const existingGreeting = document.getElementById('nav-mobile-greeting');
+                const existingLogout = document.getElementById('nav-mobile-logout');
+                if (existingGreeting) existingGreeting.remove();
+                if (existingLogout) existingLogout.remove();
+
+                // Create greeting element
+                const greeting = document.createElement('div');
+                greeting.id = 'nav-mobile-greeting';
+                greeting.className = 'mobile-user-greeting';
+                greeting.innerHTML = `Hi, ${firstName} 🌸`;
+
+                // Create logout element
+                const logout = document.createElement('a');
+                logout.id = 'nav-mobile-logout';
+                logout.href = '#';
+                logout.className = 'mobile-logout-link';
+                logout.textContent = 'Logout';
+                logout.onclick = logoutUser;
+
+                // Insert into menu
+                mobileAuthLink.parentNode.insertBefore(greeting, mobileAuthLink.nextSibling);
+                greeting.parentNode.insertBefore(logout, greeting.nextSibling);
             }
         } catch(e) { /* ignore */ }
+    } else {
+        if (mobileAuthLink) {
+            mobileAuthLink.style.display = '';
+        }
+        const existingGreeting = document.getElementById('nav-mobile-greeting');
+        const existingLogout = document.getElementById('nav-mobile-logout');
+        if (existingGreeting) existingGreeting.remove();
+        if (existingLogout) existingLogout.remove();
     }
 }
 

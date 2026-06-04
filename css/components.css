@@ -693,6 +693,10 @@
     font-size: 0.9rem;
 }
 
+.mobile-user-greeting, .mobile-logout-link {
+    display: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .nav-links {
@@ -714,8 +718,26 @@
         display: block; /* Show only on mobile dropdown */
     }
     
-    .nav-actions .login-icon, .nav-actions .wishlist-nav-icon {
-        display: none; /* Hide top icon on mobile */
+    #nav-auth-area, .nav-actions .wishlist-nav-icon {
+        display: none !important; /* Hide top user area and wishlist icon on mobile */
+    }
+
+    .mobile-user-greeting {
+        display: block !important;
+        color: var(--color-dark-green);
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .mobile-logout-link {
+        display: block !important;
+        color: #e74c3c;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
     }
 
     .mobile-menu-btn {

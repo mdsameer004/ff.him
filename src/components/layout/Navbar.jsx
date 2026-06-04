@@ -104,6 +104,20 @@ const Navbar = () => {
           ))}
           {user ? (
             <>
+              <li className="mobile-only-item">
+                <span 
+                  style={{ 
+                    display: 'block', 
+                    padding: '1rem', 
+                    color: 'var(--primary)', 
+                    fontWeight: '600', 
+                    textAlign: 'center', 
+                    borderBottom: '1px solid var(--border-color)' 
+                  }}
+                >
+                  Hi, {(user.name || '').split(' ')[0]} 🌸
+                </span>
+              </li>
               <li>
                 <NavLink 
                   to="/orders" 
