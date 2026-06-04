@@ -177,7 +177,7 @@
 
                     <div class="input-group">
                         <label for="login-phone">Mobile Number</label>
-                        <input type="tel" id="login-phone" placeholder="98765 43210" maxlength="10" required autocomplete="tel">
+                        <input type="tel" id="login-phone" placeholder="98765 43210" required autocomplete="tel">
                     </div>
 
                     <div class="input-group">
@@ -209,7 +209,7 @@
 
                     <div class="input-group">
                         <label for="reg-phone">Mobile Number</label>
-                        <input type="tel" id="reg-phone" placeholder="98765 43210" maxlength="10" required autocomplete="tel">
+                        <input type="tel" id="reg-phone" placeholder="98765 43210" required autocomplete="tel">
                     </div>
 
                     <div class="input-group">
@@ -298,15 +298,8 @@
             showError('login-error', '');
             setLoading('login-btn', true);
 
-            const phone    = document.getElementById('login-phone').value.trim().replace(/[\s\-\+\(\)]/g, '');
+            const phone    = document.getElementById('login-phone').value.replace(/\D/g, '');
             const password = document.getElementById('login-password').value;
-
-            // Must be exactly 10 digits
-            if (!/^\d{10}$/.test(phone)) {
-                showError('login-error', 'Please enter a valid 10-digit mobile number.');
-                setLoading('login-btn', false);
-                return;
-            }
 
             try {
                 const res = await fetch(`${API_BASE}/auth/login`, {
@@ -344,15 +337,8 @@
             setLoading('register-btn', true);
 
             const name     = document.getElementById('reg-name').value.trim();
-            const phone    = document.getElementById('reg-phone').value.trim().replace(/[\s\-\+\(\)]/g, '');
+            const phone    = document.getElementById('reg-phone').value.replace(/\D/g, '');
             const password = document.getElementById('reg-password').value;
-
-            // Must be exactly 10 digits
-            if (!/^\d{10}$/.test(phone)) {
-                showError('register-error', 'Please enter a valid 10-digit mobile number.');
-                setLoading('register-btn', false);
-                return;
-            }
 
             if (password.length < 6) {
                 showError('register-error', 'Password must be at least 6 characters.');
