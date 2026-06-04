@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -166,11 +166,14 @@
 
             <div class="auth-body">
                 <!-- Login Form -->
-                <form id="login-form" class="auth-form active" onsubmit="handleAuth(event, 'login')">
+                <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
                     <div class="form-title">
                         <h2>Welcome Back</h2>
                         <p>Sign in to your Friends Florist account</p>
                     </div>
+
+                    <!-- Inline error message -->
+                    <div id="login-error" style="display:none; background:#fef2f2; color:#c0392b; padding:10px 14px; border-radius:8px; font-size:0.9rem; margin-bottom:16px;"></div>
                     
                     <div class="input-group">
                         <label for="login-email">Email Address</label>
@@ -186,7 +189,7 @@
                         <a href="#" style="font-size: 0.85rem; color: var(--color-text-light);">Forgot Password?</a>
                     </div>
 
-                    <button type="submit" class="btn btn-primary auth-btn">Secure Login</button>
+                    <button type="submit" id="login-btn" data-label="Secure Login" class="btn btn-primary auth-btn">Secure Login</button>
 
                     <div class="form-footer">
                         Don't have an account? <a href="javascript:void(0)" onclick="switchAuth('register')">Register here</a>
@@ -194,11 +197,14 @@
                 </form>
 
                 <!-- Register Form -->
-                <form id="register-form" class="auth-form" onsubmit="handleAuth(event, 'register')">
+                <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
                     <div class="form-title">
                         <h2>Join Our Community</h2>
                         <p>Create an account for exclusive floral deals</p>
                     </div>
+
+                    <!-- Inline error message -->
+                    <div id="register-error" style="display:none; background:#fef2f2; color:#c0392b; padding:10px 14px; border-radius:8px; font-size:0.9rem; margin-bottom:16px;"></div>
 
                     <div class="input-group">
                         <label for="reg-name">Full Name</label>
@@ -211,8 +217,13 @@
                     </div>
 
                     <div class="input-group">
+                        <label for="reg-phone">Phone Number <span style="color:var(--color-text-light);font-weight:400;">(optional)</span></label>
+                        <input type="tel" id="reg-phone" placeholder="+91 98765 43210">
+                    </div>
+
+                    <div class="input-group">
                         <label for="reg-password">Password</label>
-                        <input type="password" id="reg-password" placeholder="••••••••" required>
+                        <input type="password" id="reg-password" placeholder="At least 6 characters" required>
                     </div>
 
                     <div class="input-group" style="display: flex; gap: 10px; align-items: flex-start;">
@@ -222,7 +233,7 @@
                         </label>
                     </div>
 
-                    <button type="submit" class="btn btn-primary auth-btn">Create Account</button>
+                    <button type="submit" id="register-btn" data-label="Create Account" class="btn btn-primary auth-btn">Create Account</button>
 
                     <div class="form-footer">
                         Already have an account? <a href="javascript:void(0)" onclick="switchAuth('login')">Login here</a>
@@ -236,43 +247,142 @@
     <div id="footer-container"></div>
 
     <!-- Scripts -->
+    <script src="js/api-client.js"></script>
     <script src="js/products.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/app.js"></script>
     <script>
-        function switchAuth(type) {
-            const loginForm = document.getElementById('login-form');
-            const registerForm = document.getElementById('register-form');
-            const loginTab = document.getElementById('tab-login');
-            const registerTab = document.getElementById('tab-register');
+        // ── Constants ──────────────────────────────────────────────────────────
+        const API_BASE = 'https://floristbackend.onrender.com/api';
+        const USER_KEY  = 'ff_user';
+        const TOKEN_KEY = 'ff_user_token';
 
-            if (type === 'login') {
-                loginForm.classList.add('active');
-                registerForm.classList.remove('active');
-                loginTab.classList.add('active');
-                registerTab.classList.remove('active');
-            } else {
-                loginForm.classList.remove('active');
-                registerForm.classList.add('active');
-                loginTab.classList.remove('active');
-                registerTab.classList.add('active');
+        // ── Redirect if already logged in ──────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem(TOKEN_KEY);
+            if (token) {
+                const returnUrl = new URLSearchParams(window.location.search).get('return') || 'index.html';
+                window.location.href = returnUrl;
+            }
+
+            // Auto-switch tab if URL has ?tab=register
+            const tab = new URLSearchParams(window.location.search).get('tab');
+            if (tab === 'register') switchAuth('register');
+        });
+
+        // ── Tab switch ─────────────────────────────────────────────────────────
+        function switchAuth(type) {
+            document.getElementById('login-form').classList.toggle('active', type === 'login');
+            document.getElementById('register-form').classList.toggle('active', type === 'register');
+            document.getElementById('tab-login').classList.toggle('active', type === 'login');
+            document.getElementById('tab-register').classList.toggle('active', type === 'register');
+            // Clear errors when switching
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('register-error').textContent = '';
+        }
+
+        // ── Show inline error ──────────────────────────────────────────────────
+        function showError(elId, message) {
+            const el = document.getElementById(elId);
+            if (el) { el.textContent = message; el.style.display = 'block'; }
+        }
+
+        // ── Set button loading state ───────────────────────────────────────────
+        function setLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.disabled = loading;
+            btn.textContent = loading ? 'Please wait...' : btn.dataset.label;
+        }
+
+        // ── Save session to localStorage ───────────────────────────────────────
+        function saveSession(token, user) {
+            localStorage.setItem(TOKEN_KEY, token);
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+        }
+
+        // ── Handle Login ───────────────────────────────────────────────────────
+        async function handleLogin(event) {
+            event.preventDefault();
+            showError('login-error', '');
+            setLoading('login-btn', true);
+
+            const email    = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError('login-error', data.message || 'Login failed. Please try again.');
+                    setLoading('login-btn', false);
+                    return;
+                }
+
+                saveSession(data.token, data.user);
+                showToast(`Welcome back, ${data.user.name}! 🌸`, 'success', 'Login Successful');
+
+                setTimeout(() => {
+                    const returnUrl = new URLSearchParams(window.location.search).get('return') || 'index.html';
+                    window.location.href = returnUrl;
+                }, 1000);
+
+            } catch (err) {
+                showError('login-error', 'Network error. Please check your connection.');
+                setLoading('login-btn', false);
             }
         }
 
-        function handleAuth(event, type) {
+        // ── Handle Register ────────────────────────────────────────────────────
+        async function handleRegister(event) {
             event.preventDefault();
-            // Placeholder for real backend logic
-            const email = type === 'login' ? 
-                document.getElementById('login-email').value : 
-                document.getElementById('reg-email').value;
-            
-            openModal({
-                title: type === 'login' ? 'Login Successful' : 'Registration Successful',
-                message: `${type === 'login' ? 'Logging in' : 'Registering'} with: <strong>${email}</strong><br><br>This will be connected to our backend soon!`,
-                type: 'success',
-                onConfirm: () => { window.location.href = 'index.html'; },
-                onCancel: () => { window.location.href = 'index.html'; }
-            });
+            showError('register-error', '');
+            setLoading('register-btn', true);
+
+            const name     = document.getElementById('reg-name').value.trim();
+            const email    = document.getElementById('reg-email').value.trim();
+            const phone    = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+
+            if (password.length < 6) {
+                showError('register-error', 'Password must be at least 6 characters.');
+                setLoading('register-btn', false);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showError('register-error', data.message || 'Registration failed. Please try again.');
+                    setLoading('register-btn', false);
+                    return;
+                }
+
+                saveSession(data.token, data.user);
+                showToast(`Welcome to Friends Florist, ${data.user.name}! 🌸`, 'success', 'Account Created');
+
+                setTimeout(() => {
+                    const returnUrl = new URLSearchParams(window.location.search).get('return') || 'index.html';
+                    window.location.href = returnUrl;
+                }, 1000);
+
+            } catch (err) {
+                showError('register-error', 'Network error. Please check your connection.');
+                setLoading('register-btn', false);
+            }
         }
     </script>
 </body>

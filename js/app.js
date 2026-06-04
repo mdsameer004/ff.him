@@ -16,7 +16,7 @@ const navbarHTML = `
             <a href="contact.html">Contact</a>
             <a href="orders.html">My Orders</a>
             <a href="wishlist.html" class="mobile-only-wishlist">❤️ Wishlist</a>
-            <a href="auth.html" class="mobile-only-login">Login / Register</a>
+            <a href="auth.html" class="mobile-only-login" id="nav-mobile-auth">Login / Register</a>
         </div>
         <div class="nav-actions">
             <div class="nav-search-btn" id="search-btn" title="Search">
@@ -25,12 +25,15 @@ const navbarHTML = `
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </div>
-            <a href="auth.html" class="login-icon" title="Login / Register">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-            </a>
+            <!-- Auth icon: Login or User name -->
+            <div id="nav-auth-area">
+                <a href="auth.html" class="login-icon" title="Login / Register" id="nav-login-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </a>
+            </div>
             <a href="wishlist.html" class="wishlist-nav-icon" title="Wishlist">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/>
@@ -104,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize UI Interactions
     initInteractions();
+    initUserNav();
     
     // Page specific initializations
     initHomePage();
@@ -111,6 +115,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ensure cart badge is correct after DOM loads our new navbar
     setTimeout(() => { if(typeof updateCartBadge === 'function') updateCartBadge(); }, 100);
 });
+
+// ── User nav: show name+logout or login link ──────────────────────────────────
+function initUserNav() {
+    const token    = localStorage.getItem('ff_user_token');
+    const userJson = localStorage.getItem('ff_user');
+    const authArea = document.getElementById('nav-auth-area');
+    const mobileAuthLink = document.getElementById('nav-mobile-auth');
+    if (!authArea) return;
+
+    if (token && userJson) {
+        try {
+            const user = JSON.parse(userJson);
+            const firstName = (user.name || '').split(' ')[0];
+            authArea.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; font-size:0.9rem;">
+                    <span style="color:var(--color-dark-green); font-weight:600;">Hi, ${firstName} 🌸</span>
+                    <a href="#" onclick="logoutUser(event)" style="color:var(--color-text-light); font-size:0.85rem; text-decoration:underline;">Logout</a>
+                </div>
+            `;
+            if (mobileAuthLink) {
+                mobileAuthLink.textContent = `Hi, ${firstName}`;
+                mobileAuthLink.href = '#';
+                mobileAuthLink.onclick = logoutUser;
+            }
+        } catch(e) { /* ignore */ }
+    }
+}
+
+window.logoutUser = function(e) {
+    if (e) e.preventDefault();
+    localStorage.removeItem('ff_user_token');
+    localStorage.removeItem('ff_user');
+    window.location.href = 'auth.html';
+};
 
 function initInteractions() {
     // Mobile Menu Toggle
