@@ -169,24 +169,20 @@
                 <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
                     <div class="form-title">
                         <h2>Welcome Back</h2>
-                        <p>Sign in to your Friends Florist account</p>
+                        <p>Sign in with your mobile number</p>
                     </div>
 
                     <!-- Inline error message -->
                     <div id="login-error" style="display:none; background:#fef2f2; color:#c0392b; padding:10px 14px; border-radius:8px; font-size:0.9rem; margin-bottom:16px;"></div>
-                    
+
                     <div class="input-group">
-                        <label for="login-email">Email Address</label>
-                        <input type="email" id="login-email" placeholder="email@example.com" required>
+                        <label for="login-phone">Mobile Number</label>
+                        <input type="tel" id="login-phone" placeholder="98765 43210" maxlength="10" required autocomplete="tel">
                     </div>
 
                     <div class="input-group">
                         <label for="login-password">Password</label>
                         <input type="password" id="login-password" placeholder="••••••••" required>
-                    </div>
-
-                    <div style="text-align: right; margin-bottom: 20px;">
-                        <a href="#" style="font-size: 0.85rem; color: var(--color-text-light);">Forgot Password?</a>
                     </div>
 
                     <button type="submit" id="login-btn" data-label="Secure Login" class="btn btn-primary auth-btn">Secure Login</button>
@@ -200,7 +196,7 @@
                 <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
                     <div class="form-title">
                         <h2>Join Our Community</h2>
-                        <p>Create an account for exclusive floral deals</p>
+                        <p>Register with your mobile number</p>
                     </div>
 
                     <!-- Inline error message -->
@@ -208,17 +204,12 @@
 
                     <div class="input-group">
                         <label for="reg-name">Full Name</label>
-                        <input type="text" id="reg-name" placeholder="John Doe" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="reg-email">Email Address</label>
-                        <input type="email" id="reg-email" placeholder="email@example.com" required>
+                        <input type="text" id="reg-name" placeholder="John Doe" required autocomplete="name">
                     </div>
 
                     <div class="input-group">
-                        <label for="reg-phone">Phone Number <span style="color:var(--color-text-light);font-weight:400;">(optional)</span></label>
-                        <input type="tel" id="reg-phone" placeholder="+91 98765 43210">
+                        <label for="reg-phone">Mobile Number</label>
+                        <input type="tel" id="reg-phone" placeholder="98765 43210" maxlength="10" required autocomplete="tel">
                     </div>
 
                     <div class="input-group">
@@ -229,7 +220,7 @@
                     <div class="input-group" style="display: flex; gap: 10px; align-items: flex-start;">
                         <input type="checkbox" id="terms" style="width: auto; margin-top: 4px;" required>
                         <label for="terms" style="font-size: 0.8rem; font-weight: 400; color: var(--color-text-light);">
-                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            I agree to the <a href="#">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a>
                         </label>
                     </div>
 
@@ -307,14 +298,21 @@
             showError('login-error', '');
             setLoading('login-btn', true);
 
-            const email    = document.getElementById('login-email').value.trim();
+            const phone    = document.getElementById('login-phone').value.trim().replace(/[\s\-\(\)]/g, '');
             const password = document.getElementById('login-password').value;
+
+            // Client-side phone validation
+            if (!/^[6-9]\d{9}$/.test(phone)) {
+                showError('login-error', 'Please enter a valid 10-digit Indian mobile number.');
+                setLoading('login-btn', false);
+                return;
+            }
 
             try {
                 const res = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ phone, password })
                 });
 
                 const data = await res.json();
@@ -346,9 +344,15 @@
             setLoading('register-btn', true);
 
             const name     = document.getElementById('reg-name').value.trim();
-            const email    = document.getElementById('reg-email').value.trim();
-            const phone    = document.getElementById('reg-phone').value.trim();
+            const phone    = document.getElementById('reg-phone').value.trim().replace(/[\s\-\(\)]/g, '');
             const password = document.getElementById('reg-password').value;
+
+            // Client-side phone validation
+            if (!/^[6-9]\d{9}$/.test(phone)) {
+                showError('register-error', 'Please enter a valid 10-digit Indian mobile number.');
+                setLoading('register-btn', false);
+                return;
+            }
 
             if (password.length < 6) {
                 showError('register-error', 'Password must be at least 6 characters.');
@@ -360,7 +364,7 @@
                 const res = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, phone, password })
+                    body: JSON.stringify({ name, phone, password })
                 });
 
                 const data = await res.json();
