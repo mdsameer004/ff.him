@@ -7,27 +7,57 @@ function saveCart() {
     updateCartBadge();
 }
 
+// ─── Resolve the canonical ID for a product ─────────────────────────────────
+// Backend products use _id (MongoDB string), legacy/local products use numeric id.
+// We store a unified `cartId` in each cart item so lookups always work.
+function getProductId(product) {
+    return product._id || product.id || null;
+}
+
 // Add Item to Cart
 function addToCart(productId, quantity = 1) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
+    // productId may be a MongoDB _id string or a numeric id
+    const product = (window.products || []).find(p =>
+        String(p._id) === String(productId) ||
+        String(p.id)  === String(productId)
+    );
 
-    const existingItem = cart.find(item => item.id === productId);
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({ ...product, quantity });
+    if (!product) {
+        console.warn('[Cart] Product not found for id:', productId);
+        showToast('Product not found. Please refresh and try again.', 'error', 'Error');
+        return;
     }
-    
+
+    // Enforce stock check
+    const maxQty = product.stock > 0 ? product.stock : Infinity;
+
+    // Use a stable cartId (prefer _id from MongoDB)
+    const cartId = getProductId(product);
+
+    const existingItem = cart.find(item => String(item.cartId) === String(cartId));
+    if (existingItem) {
+        const newQty = existingItem.quantity + quantity;
+        existingItem.quantity = Math.min(newQty, maxQty);
+    } else {
+        cart.push({
+            cartId,             // unified lookup key (could be _id string or number)
+            _id: product._id || null,
+            id: product.id || null,
+            name: product.name,
+            price: product.price,
+            image: product.image || (Array.isArray(product.images) && product.images[0]) || '',
+            stock: product.stock,
+            quantity: Math.min(quantity, maxQty)
+        });
+    }
+
     saveCart();
-    
-    // Optional: Show toast notification
     showToast(`${product.name} added to cart!`, 'success', 'Added to Cart');
 }
 
 // Remove from Cart
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+function removeFromCart(cartId) {
+    cart = cart.filter(item => String(item.cartId) !== String(cartId));
     saveCart();
     // Re-render cart if on cart page
     if (window.location.pathname.includes('cart.html')) {
@@ -36,13 +66,18 @@ function removeFromCart(productId) {
 }
 
 // Update Quantity
-function updateQuantity(productId, change) {
-    const item = cart.find(item => item.id === productId);
+function updateQuantity(cartId, change) {
+    const item = cart.find(item => String(item.cartId) === String(cartId));
     if (item) {
         item.quantity += change;
         if (item.quantity <= 0) {
-            removeFromCart(productId);
+            removeFromCart(cartId);
         } else {
+            // Respect stock limit
+            if (item.stock && item.quantity > item.stock) {
+                item.quantity = item.stock;
+                showToast(`Only ${item.stock} units available.`, 'info', 'Stock Limit');
+            }
             saveCart();
             if (window.location.pathname.includes('cart.html')) {
                 renderCartPage();
@@ -58,7 +93,7 @@ function getCartSubtotal() {
 
 function getCartTotal() {
     const subtotal = getCartSubtotal();
-    const tax = subtotal * 0.05; // 5% mock tax
+    const tax = subtotal * 0.05; // 5% tax
     const delivery = subtotal > 1000 ? 0 : 99; // Free delivery over ₹1000
     return {
         subtotal,

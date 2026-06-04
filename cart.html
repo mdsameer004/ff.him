@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -236,23 +236,26 @@
 
             cart.forEach(item => {
                 const itemTotal = item.price * item.quantity;
+                // cartId is the stable key (could be MongoDB _id string or numeric id)
+                const cid = item.cartId || item._id || item.id;
+                const productLink = item._id ? `product.html?id=${item._id}` : `product.html?id=${item.id}`;
                 const div = document.createElement('div');
                 div.className = 'cart-item';
                 div.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                    <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=400'">
                     <div class="cart-item-details">
-                        <div class="cart-item-title"><a href="product.html?id=${item.id}">${item.name}</a></div>
+                        <div class="cart-item-title"><a href="${productLink}">${item.name}</a></div>
                         <div class="cart-item-price">₹${item.price.toLocaleString('en-IN')}</div>
                         <div class="qty-control">
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <button class="qty-btn" onclick="updateQuantity('${cid}', -1)">-</button>
                             <span>${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            <button class="qty-btn" onclick="updateQuantity('${cid}', 1)">+</button>
                         </div>
                     </div>
                     <div class="item-total">
                         ₹${itemTotal.toLocaleString('en-IN')}
                     </div>
-                    <button class="remove-btn" onclick="removeFromCart(${item.id})" title="Remove item">✖</button>
+                    <button class="remove-btn" onclick="removeFromCart('${cid}')" title="Remove item">✖</button>
                 `;
                 container.appendChild(div);
             });

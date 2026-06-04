@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -370,6 +370,7 @@
 
     <div id="footer-container"></div>
 
+    <script src="js/api-client.js"></script>
     <script src="js/products.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/app.js"></script>
@@ -697,29 +698,93 @@
             rpOverlay.classList.remove('active');
         }
 
-        function saveOrder(method) {
-            let orders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
-            const orderId = 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+        async function saveOrder(method) {
+            // ─── 1. Collect form data ─────────────────────────────────────────────────
+            const customerName    = (document.getElementById('name').value    || '').trim();
+            const customerEmail   = (document.getElementById('email').value   || '').trim();
+            const customerPhone   = (document.getElementById('phone').value   || '').trim();
+            const address         = (document.getElementById('address').value || '').trim();
+            const city            = (document.getElementById('city').value    || 'Hyderabad').trim();
+            const pincode         = (document.getElementById('pincode').value || '').trim();
+            const landmark        = (document.getElementById('landmark').value|| '').trim();
+
+            const deliveryAddress = [address, landmark, city, pincode].filter(Boolean).join(', ');
+
+            // ─── 2. Build items array for backend ────────────────────────────────────
+            const items = cart.map(item => ({
+                product:  item._id || item.id,      // MongoDB ObjectId string
+                name:     item.name,
+                quantity: item.quantity,
+                price:    item.price
+            }));
+
+            // ─── 3. Generate local order ID & build the order object ─────────────────
+            const orderId   = 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
             const orderDate = new Date().toLocaleDateString();
-            
-            const order = {
+
+            const localOrder = {
                 id: orderId,
                 date: orderDate,
+                customer: customerName,
                 items: cart,
                 total: finalTotalAmount,
                 discount: discountAmount,
                 coupon: appliedCoupon ? appliedCoupon.code : null,
                 deliveryCharge: calculatedDeliveryCharge,
                 method: method,
-                status: 'Processing'
+                status: method === 'Cash on Delivery' ? 'received' : 'processing',
+                deliveryDetails: { name: customerName, email: customerEmail, phone: customerPhone }
             };
-            
-            orders.unshift(order);
+
+            // ─── 4. Save to localStorage (always, as fallback) ───────────────────────
+            let orders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
+            orders.unshift(localOrder);
             localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
             localStorage.removeItem('friendsFloristCoupon');
-            
             localStorage.removeItem('friendsFloristCart');
-            
+
+            // ─── 5. POST to backend API ──────────────────────────────────────────────
+            try {
+                const apiPayload = {
+                    customerName,
+                    customerEmail,
+                    customerPhone,
+                    deliveryAddress,
+                    items,
+                    totalAmount: finalTotalAmount,
+                    paymentStatus: method === 'Cash on Delivery' ? 'pending' : 'paid'
+                };
+
+                const API_BASE = (typeof window.API_BASE_URL !== 'undefined')
+                    ? window.API_BASE_URL
+                    : 'https://floristbackend.onrender.com/api';
+
+                const response = await fetch(`${API_BASE}/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(apiPayload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Order saved to backend:', data);
+                    // Update the local order with the backend-assigned _id
+                    if (data.data && data.data._id) {
+                        localOrder.backendId = data.data._id;
+                        // Update the already-saved localStorage entry
+                        orders[0].backendId = data.data._id;
+                        localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
+                    }
+                } else {
+                    const err = await response.json().catch(() => ({}));
+                    console.warn('⚠️ Backend order save failed:', err.message || response.status);
+                    // Order is already in localStorage — user can still see it
+                }
+            } catch (err) {
+                console.warn('⚠️ Network error saving order to backend:', err.message);
+                // localStorage already saved — graceful degradation
+            }
+
             window.location.href = 'confirmation.html?method=' + encodeURIComponent(method) + '&id=' + orderId;
         }
 
@@ -732,12 +797,12 @@
                 <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
             `;
             
-            setTimeout(() => {
-                saveOrder(method);
+            setTimeout(async () => {
+                await saveOrder(method);
             }, 2000);
         }
 
-        function processCOD() {
+        async function processCOD() {
             if(!document.getElementById('checkout-form').checkValidity()) {
                 document.getElementById('checkout-form').reportValidity();
                 return;
@@ -746,8 +811,8 @@
                 showToast("Please provide a valid delivery location within 20km.", "error", "Location Error");
                 return;
             }
-            customConfirm("Place order via Cash on Delivery?", () => {
-                saveOrder('Cash on Delivery');
+            customConfirm("Place order via Cash on Delivery?", async () => {
+                await saveOrder('Cash on Delivery');
             });
         }
     </script>
