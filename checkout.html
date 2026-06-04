@@ -759,9 +759,14 @@
                     ? window.API_BASE_URL
                     : 'https://floristbackend.onrender.com/api';
 
+                // Attach JWT if user is logged in — links order to account
+                const userToken = localStorage.getItem('ff_user_token');
+                const headers = { 'Content-Type': 'application/json' };
+                if (userToken) headers['Authorization'] = `Bearer ${userToken}`;
+
                 const response = await fetch(`${API_BASE}/orders`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(apiPayload)
                 });
 

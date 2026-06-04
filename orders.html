@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -72,9 +72,11 @@
             letter-spacing: 1px;
         }
 
+        .status-received  { background: #e8f4fd; color: #1a5276; }
         .status-processing { background: #fff3cd; color: #856404; }
-        .status-shipped { background: #cce5ff; color: #004085; }
-        .status-delivered { background: #d4edda; color: #155724; }
+        .status-shipped    { background: #cce5ff; color: #004085; }
+        .status-delivered  { background: #d4edda; color: #155724; }
+        .status-cancelled  { background: #f8d7da; color: #721c24; }
 
         .order-body {
             padding: 30px;
@@ -177,161 +179,142 @@
     <script src="js/cart.js"></script>
     <script src="js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('orders-list');
-            const orders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
+        const API_BASE = 'https://floristbackend.onrender.com/api';
+        const TOKEN_KEY = 'ff_user_token';
+        const USER_KEY  = 'ff_user';
 
-            if (orders.length === 0) {
+        // ── Status badge helper ────────────────────────────────────────────────
+        const STATUS_LABELS = {
+            received:        { label: 'Order Received',    cls: 'status-received' },
+            processing:      { label: 'Processing',        cls: 'status-processing' },
+            out_for_delivery:{ label: 'Out for Delivery',  cls: 'status-shipped' },
+            delivered:       { label: 'Delivered',         cls: 'status-delivered' },
+            cancelled:       { label: 'Cancelled',         cls: 'status-cancelled' },
+        };
+
+        function statusBadge(s) {
+            const st = STATUS_LABELS[s] || { label: s || 'Processing', cls: 'status-processing' };
+            return `<span class="order-status ${st.cls}">${st.label}</span>`;
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        // ── Render orders list ─────────────────────────────────────────────────
+        function renderOrders(orders, container) {
+            if (!orders || orders.length === 0) {
                 container.innerHTML = `
                     <div class="empty-orders">
                         <div class="empty-icon">📦</div>
-                        <h2 style="font-family: var(--font-heading); color: var(--color-dark-green); margin-bottom: 15px;">No orders found</h2>
-                        <p style="color: var(--color-text-light); margin-bottom: 30px;">You haven't placed any orders with us yet.</p>
+                        <h2 style="font-family:var(--font-heading);color:var(--color-dark-green);margin-bottom:15px;">No orders yet</h2>
+                        <p style="color:var(--color-text-light);margin-bottom:30px;">You haven't placed any orders with us yet.</p>
                         <a href="shop.html" class="btn btn-primary">Start Shopping</a>
-                    </div>
-                `;
+                    </div>`;
                 return;
             }
 
-            let html = '';
-            orders.forEach(order => {
-                let itemsHtml = '';
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <li class="order-item">
-                            <img src="${item.image}" alt="${item.name}" class="item-img">
-                            <div class="item-details">
-                                <div class="item-name">${item.name}</div>
-                                <div class="item-meta">Qty: ${item.quantity} | ₹${item.price.toLocaleString('en-IN')} each</div>
-                            </div>
-                            <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
-                        </li>
-                    `;
-                });
+            container.innerHTML = orders.map(order => {
+                // Support both backend (order._id, order.items[].name) and localStorage formats
+                const orderId   = order._id || order.id || order.backendId || '—';
+                const date      = formatDate(order.createdAt || order.date);
+                const total     = order.totalAmount || order.total || 0;
+                const status    = order.orderStatus || order.status || 'received';
+                const items     = order.items || [];
 
-                html += `
+                const itemsHtml = items.map(item => `
+                    <li class="order-item">
+                        <img src="${item.image || (item.product && item.product.image) || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=80'}"
+                             alt="${item.name}" class="item-img"
+                             onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=80'">
+                        <div class="item-details">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-meta">Qty: ${item.quantity} &nbsp;|&nbsp; ₹${Number(item.price).toLocaleString('en-IN')} each</div>
+                        </div>
+                        <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
+                    </li>`).join('');
+
+                return `
                     <div class="order-card">
                         <div class="order-header">
                             <div class="order-info">
                                 <div class="info-block">
                                     <span class="info-label">Order ID</span>
-                                    <span class="info-value">#${order.id}</span>
+                                    <span class="info-value">#${String(orderId).slice(-8).toUpperCase()}</span>
                                 </div>
                                 <div class="info-block">
                                     <span class="info-label">Date Placed</span>
-                                    <span class="info-value">${order.date}</span>
+                                    <span class="info-value">${date}</span>
                                 </div>
                                 <div class="info-block">
                                     <span class="info-label">Total Amount</span>
-                                    <span class="info-value">₹${order.total.toLocaleString('en-IN')}</span>
+                                    <span class="info-value">₹${Number(total).toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
-                            <div class="order-status status-${order.status.toLowerCase()}">${order.status}</div>
+                            ${statusBadge(status)}
                         </div>
                         <div class="order-body">
-                            <h4 style="margin-bottom: 20px; font-size: 1.1rem; color: var(--color-dark-green);">Order Items</h4>
-                            <ul class="order-item-list">
-                                ${order.items.map(item => `
-                                    <li class="order-item">
-                                        <img src="${item.image}" alt="${item.name}" class="item-img">
-                                        <div class="item-details">
-                                            <div class="item-name">${item.name}</div>
-                                            <div class="item-meta">Qty: ${item.quantity} | ₹${item.price.toLocaleString('en-IN')} each</div>
-                                            ${order.status === 'Delivered' ? `
-                                                <button class="btn-review" onclick="openReviewModal(${item.id}, '${item.name.replace(/'/g, "\\'")}')">Write a Review</button>
-                                            ` : ''}
-                                        </div>
-                                        <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                            <div style="text-align: right;">
-                                <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 20px;" onclick="showToast('Viewing receipt for ${order.id}', 'info', 'Receipt')">View Receipt</button>
-                            </div>
+                            <h4 style="margin-bottom:20px;font-size:1.1rem;color:var(--color-dark-green);">Order Items</h4>
+                            <ul class="order-item-list">${itemsHtml}</ul>
                         </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        });
-
-        function openReviewModal(productId, productName) {
-            const modalHtml = `
-                <div id="review-modal" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:1000;">
-                    <div style="background:white; padding:40px; border-radius:15px; width:100%; max-width:500px; position:relative;">
-                        <button onclick="closeReviewModal()" style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-                        <h2 style="font-family: var(--font-heading); color: var(--color-dark-green); margin-bottom: 20px;">Review ${productName}</h2>
-                        <div style="margin-bottom:20px;">
-                            <p style="margin-bottom:10px; font-weight:600;">Rating:</p>
-                            <div id="star-rating" style="font-size:2rem; cursor:pointer; color:#ddd;">
-                                <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
-                            </div>
-                            <input type="hidden" id="selected-rating" value="0">
-                        </div>
-                        <div style="margin-bottom:20px;">
-                            <p style="margin-bottom:10px; font-weight:600;">Your Review:</p>
-                            <textarea id="review-text" style="width:100%; height:120px; padding:15px; border-radius:8px; border:1px solid #ddd; font-family:var(--font-body);" placeholder="Share your experience..."></textarea>
-                        </div>
-                        <button class="btn btn-primary" style="width:100%;" onclick="submitReview(${productId})">Submit Review</button>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    </div>`;
+            }).join('');
         }
 
-        function closeReviewModal() {
-            const modal = document.getElementById('review-modal');
-            if (modal) modal.remove();
-        }
+        // ── Main: load orders ──────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('orders-list');
+            const token     = localStorage.getItem(TOKEN_KEY);
+            const userJson  = localStorage.getItem(USER_KEY);
 
-        function setRating(val) {
-            document.getElementById('selected-rating').value = val;
-            const stars = document.getElementById('star-rating').children;
-            for(let i=0; i<stars.length; i++) {
-                stars[i].style.color = i < val ? '#f39c12' : '#ddd';
+            // Show loading state
+            container.innerHTML = `<div style="text-align:center;padding:60px;color:var(--color-text-light);">
+                <div style="font-size:2rem;margin-bottom:16px;">⏳</div>Loading your orders...</div>`;
+
+            if (token && userJson) {
+                // ── Logged-in user: fetch from backend ─────────────────────────
+                try {
+                    const res = await fetch(`${API_BASE}/orders/my-orders`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        renderOrders(data.data, container);
+                    } else if (res.status === 401) {
+                        // Token expired — clear and ask to login
+                        localStorage.removeItem(TOKEN_KEY);
+                        localStorage.removeItem(USER_KEY);
+                        container.innerHTML = `
+                            <div class="empty-orders">
+                                <div class="empty-icon">🔒</div>
+                                <h2 style="font-family:var(--font-heading);color:var(--color-dark-green);margin-bottom:15px;">Session Expired</h2>
+                                <p style="color:var(--color-text-light);margin-bottom:30px;">Please log in again to view your orders.</p>
+                                <a href="auth.html?return=orders.html" class="btn btn-primary">Login</a>
+                            </div>`;
+                    } else {
+                        throw new Error('Failed to fetch orders');
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch orders from backend:', err.message);
+                    // Fallback to localStorage
+                    const localOrders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
+                    renderOrders(localOrders, container);
+                }
+            } else {
+                // ── Guest: show login prompt ───────────────────────────────────
+                container.innerHTML = `
+                    <div class="empty-orders">
+                        <div class="empty-icon">👤</div>
+                        <h2 style="font-family:var(--font-heading);color:var(--color-dark-green);margin-bottom:15px;">Login to View Orders</h2>
+                        <p style="color:var(--color-text-light);margin-bottom:30px;">
+                            Your order history is saved to your account.<br>
+                            Please login to see all your past orders.
+                        </p>
+                        <a href="auth.html?return=orders.html" class="btn btn-primary">Login / Register</a>
+                    </div>`;
             }
-        }
-
-        function submitReview(productId) {
-            const rating = parseInt(document.getElementById('selected-rating').value);
-            const text = document.getElementById('review-text').value;
-            
-            if (rating === 0) {
-                showToast('Please select a rating', 'error', 'Incomplete Review');
-                return;
-            }
-            if (text.trim().length < 5) {
-                showToast('Please write a slightly longer review', 'error', 'Incomplete Review');
-                return;
-            }
-
-            const allReviews = JSON.parse(localStorage.getItem('friendsFloristReviews')) || {};
-            if (!allReviews[productId]) {
-                // Pre-populate with mock data if it's the first real review
-                allReviews[productId] = [
-                    { name: "Jane D.", rating: 5, text: "Perfect quality! Arrived exactly when expected.", date: "2026-03-01" },
-                    { name: "Mark T.", rating: 4, text: "Beautiful arrangement, very fresh.", date: "2026-02-28" }
-                ];
-            }
-
-            allReviews[productId].unshift({
-                name: "Customer Review", // In a real app, this would be the logged-in user's name
-                rating: rating,
-                text: text,
-                date: new Date().toISOString().split('T')[0]
-            });
-
-            localStorage.setItem('friendsFloristReviews', JSON.stringify(allReviews));
-            closeReviewModal();
-            openModal({
-                title: 'Review Submitted',
-                message: 'Thank you for your review!',
-                type: 'success',
-                onConfirm: () => { location.reload(); },
-                onCancel: () => { location.reload(); }
-            });
-        }
     </script>
 </body>
 </html>
