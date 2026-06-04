@@ -298,12 +298,12 @@
             showError('login-error', '');
             setLoading('login-btn', true);
 
-            const phone    = document.getElementById('login-phone').value.trim().replace(/[\s\-\(\)]/g, '');
+            const phone    = document.getElementById('login-phone').value.trim().replace(/[\s\-\+\(\)]/g, '');
             const password = document.getElementById('login-password').value;
 
-            // Client-side phone validation
-            if (!/^[6-9]\d{9}$/.test(phone)) {
-                showError('login-error', 'Please enter a valid 10-digit Indian mobile number.');
+            // Must be exactly 10 digits
+            if (!/^\d{10}$/.test(phone)) {
+                showError('login-error', 'Please enter a valid 10-digit mobile number.');
                 setLoading('login-btn', false);
                 return;
             }
@@ -344,12 +344,12 @@
             setLoading('register-btn', true);
 
             const name     = document.getElementById('reg-name').value.trim();
-            const phone    = document.getElementById('reg-phone').value.trim().replace(/[\s\-\(\)]/g, '');
+            const phone    = document.getElementById('reg-phone').value.trim().replace(/[\s\-\+\(\)]/g, '');
             const password = document.getElementById('reg-password').value;
 
-            // Client-side phone validation
-            if (!/^[6-9]\d{9}$/.test(phone)) {
-                showError('register-error', 'Please enter a valid 10-digit Indian mobile number.');
+            // Must be exactly 10 digits
+            if (!/^\d{10}$/.test(phone)) {
+                showError('register-error', 'Please enter a valid 10-digit mobile number.');
                 setLoading('register-btn', false);
                 return;
             }
