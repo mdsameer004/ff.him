@@ -340,7 +340,10 @@ class ApiClient {
     }
 
     async getOrders() {
-        return this.request('/orders', { method: 'GET' }, true);
+        const envelope = await this.request('/orders', { method: 'GET' }, true);
+        if (Array.isArray(envelope)) return envelope;
+        if (envelope && Array.isArray(envelope.data)) return envelope.data;
+        return [];
     }
 
     async createOrder(orderData) {

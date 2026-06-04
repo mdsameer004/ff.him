@@ -58,8 +58,56 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Here is a quick overview of Friends Florist performance today.</p>
         </div>
 
-        <!-- Extended Dynamic Statistics Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+        <!-- E-Commerce Analytics Statistics Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+            <!-- Total Orders Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/30 rounded-full flex items-center justify-center text-2xl">📦</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Total Orders</span>
+                    <span id="stat-orders-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                </div>
+            </div>
+
+            <!-- Pending Orders Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-2xl">⏳</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Pending Orders</span>
+                    <span id="stat-pending-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                </div>
+            </div>
+
+            <!-- Processing Orders Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">🔄</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Processing Orders</span>
+                    <span id="stat-processing-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                </div>
+            </div>
+
+            <!-- Delivered Orders Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-2xl">✅</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Delivered Orders</span>
+                    <span id="stat-delivered-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                </div>
+            </div>
+
+            <!-- Total Revenue Card -->
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center text-2xl">💰</div>
+                <div>
+                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Total Revenue</span>
+                    <span id="stat-revenue-total" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">₹0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Storefront Catalog & Settings Statistics Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <!-- Products Card -->
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
                 <div class="w-12 h-12 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center text-2xl">🌹</div>
@@ -84,24 +132,6 @@
                 <div>
                     <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Gallery Albums</span>
                     <span id="stat-albums-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
-                </div>
-            </div>
-
-            <!-- Total Orders Received Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/30 rounded-full flex items-center justify-center text-2xl">📦</div>
-                <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total Orders</span>
-                    <span id="stat-orders-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
-                </div>
-            </div>
-
-            <!-- Total Revenue Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center text-2xl">💰</div>
-                <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total Revenue</span>
-                    <span id="stat-revenue-total" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">₹0</span>
                 </div>
             </div>
 
@@ -260,15 +290,40 @@
                     globalOrders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
                 }
 
+                // Calculate Order metrics
+                let pendingCount = 0;
+                let processingCount = 0;
+                let deliveredCount = 0;
+                let totalRevenue = 0;
+
+                globalOrders.forEach(o => {
+                    const status = (o.orderStatus || o.status || 'received').toLowerCase().trim();
+                    const total = parseFloat(o.totalAmount || o.total || 0);
+
+                    if (status === 'received' || status === 'pending') {
+                        pendingCount++;
+                    } else if (status === 'processing') {
+                        processingCount++;
+                    } else if (status === 'delivered') {
+                        deliveredCount++;
+                    }
+
+                    if (status !== 'cancelled') {
+                        totalRevenue += total;
+                    }
+                });
+
                 document.getElementById('stat-products-count').textContent = products.length;
                 document.getElementById('stat-deals-count').textContent = deals.length;
                 document.getElementById('stat-albums-count').textContent = albums.length;
+                
                 document.getElementById('stat-orders-count').textContent = globalOrders.length;
+                document.getElementById('stat-pending-count').textContent = pendingCount;
+                document.getElementById('stat-processing-count').textContent = processingCount;
+                document.getElementById('stat-delivered-count').textContent = deliveredCount;
+                document.getElementById('stat-revenue-total').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+                
                 document.getElementById('orders-count-badge').textContent = `${globalOrders.length} orders total`;
-
-                // Calculate total revenue from all orders
-                const allTimeRevenue = globalOrders.reduce((acc, order) => acc + (parseFloat(order.total) || 0), 0);
-                document.getElementById('stat-revenue-total').textContent = `₹${allTimeRevenue.toLocaleString('en-IN')}`;
 
                 // 2. Render Revenue Charts & Data Summary
                 renderRevenueAnalytics();
@@ -424,7 +479,8 @@
             const sortedOrders = [...globalOrders].sort((a, b) => b.date.localeCompare(a.date));
 
             sortedOrders.forEach(o => {
-                const badgeColor = getStatusBadgeStyle(o.status);
+                const statusVal = o.orderStatus || o.status || 'received';
+                const badgeColor = getStatusBadgeStyle(statusVal);
                 
                 // Construct ordered items summary
                 let itemsSummary = '';
@@ -446,17 +502,18 @@
                     <td class="px-6 py-4">
                         <div class="text-2xs text-gray-600 dark:text-gray-300 max-w-[200px] truncate font-medium" title="${itemsSummary}">${itemsSummary}</div>
                     </td>
-                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white text-xs">₹${Number(o.total || 0).toLocaleString('en-IN')}</td>
+                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white text-xs">₹${Number(o.totalAmount || o.total || 0).toLocaleString('en-IN')}</td>
                     <td class="px-6 py-4">
-                        <span class="px-2.5 py-0.5 text-3xs font-extrabold rounded-full tracking-wider uppercase ${badgeColor}">${o.status}</span>
+                        <span class="px-2.5 py-0.5 text-3xs font-extrabold rounded-full tracking-wider uppercase ${badgeColor}">${statusVal.replace(/_/g, ' ')}</span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <!-- Sages dropdown change selector -->
+                        <!-- Dropdown status selector matching DB schema -->
                         <select onchange="updateOrderStatus('${o.id}', this.value)" class="text-xs bg-transparent border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 font-semibold cursor-pointer">
-                            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                            <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                            <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="received" ${statusVal.toLowerCase() === 'received' || statusVal.toLowerCase() === 'pending' ? 'selected' : ''}>Pending / Received</option>
+                            <option value="processing" ${statusVal.toLowerCase() === 'processing' ? 'selected' : ''}>Processing</option>
+                            <option value="out_for_delivery" ${statusVal.toLowerCase() === 'out_for_delivery' || statusVal.toLowerCase() === 'out for delivery' || statusVal.toLowerCase() === 'shipped' ? 'selected' : ''}>Out for Delivery</option>
+                            <option value="delivered" ${statusVal.toLowerCase() === 'delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="cancelled" ${statusVal.toLowerCase() === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
                     </td>
                 `;
@@ -466,15 +523,21 @@
 
         // Returns styled CSS tags based on status value
         function getStatusBadgeStyle(status) {
-            switch (status) {
-                case 'Pending':
+            const s = (status || '').toLowerCase().trim();
+            switch (s) {
+                case 'pending':
+                case 'received':
                     return 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-250';
-                case 'Processing':
+                case 'processing':
                     return 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-250';
-                case 'Shipped':
+                case 'shipped':
+                case 'out_for_delivery':
+                case 'out for delivery':
                     return 'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-250';
-                case 'Delivered':
+                case 'delivered':
                     return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-250';
+                case 'cancelled':
+                    return 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-450 border border-rose-250';
                 default:
                     return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
             }
@@ -496,7 +559,7 @@
                 }
                 
                 // Show dynamic premium toast
-                showToast(`Order #${orderId} successfully transitioned to [${newStatus}]!`, 'success');
+                showToast(`Order #${orderId} successfully transitioned to [${newStatus.replace(/_/g, ' ')}]!`, 'success');
                 
                 // Reload dashboard data instantly
                 await reloadDashboardData();
