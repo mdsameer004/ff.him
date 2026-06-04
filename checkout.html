@@ -712,11 +712,16 @@
 
             // ─── 2. Build items array for backend ────────────────────────────────────
             const items = cart.map(item => ({
-                product:  item._id || item.id,      // MongoDB ObjectId string
+                product:  item._id || item.id || null,
                 name:     item.name,
+                image:    item.image || '',
                 quantity: item.quantity,
                 price:    item.price
             }));
+
+            // Phone fallback: if checkout form has no phone, use the logged-in user's phone
+            const userSession = JSON.parse(localStorage.getItem('ff_user') || '{}');
+            const resolvedPhone = customerPhone || userSession.phone || '';
 
             // ─── 3. Generate local order ID & build the order object ─────────────────
             const orderId   = 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
@@ -748,7 +753,7 @@
                 const apiPayload = {
                     customerName,
                     customerEmail,
-                    customerPhone,
+                    customerPhone: resolvedPhone,
                     deliveryAddress,
                     items,
                     totalAmount: finalTotalAmount,
