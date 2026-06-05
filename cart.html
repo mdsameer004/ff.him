@@ -143,22 +143,46 @@
         @media (max-width: 900px) {
             .cart-container {
                 flex-direction: column;
-            }
-            .cart-item {
-                flex-direction: column;
-                position: relative;
-            }
-            .cart-item-img {
-                margin: 0 0 15px 0;
-                width: 100%;
-                height: 200px;
-            }
-            .item-total {
-                margin: 15px 0 0 0;
-                text-align: left;
+                gap: 20px;
             }
             .cart-summary {
                 position: static;
+            }
+        }
+        @media (max-width: 600px) {
+            .cart-item {
+                padding: 12px;
+                align-items: center;
+            }
+            .cart-item-img {
+                width: 70px;
+                height: 70px;
+                margin-right: 12px;
+            }
+            .cart-item-title {
+                font-size: 0.95rem;
+                padding-right: 20px;
+            }
+            .qty-control {
+                gap: 6px;
+            }
+            .qty-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 1rem;
+            }
+            .item-total {
+                font-size: 1rem;
+                margin-left: 10px;
+                min-width: unset;
+                flex-shrink: 0;
+            }
+            .remove-btn {
+                top: 12px;
+                right: 12px;
+            }
+            .cart-summary {
+                padding: 20px;
             }
         }
     </style>
@@ -264,8 +288,15 @@
             const totals = getCartTotal();
             document.getElementById('summary-subtotal').textContent = `₹${totals.subtotal.toLocaleString('en-IN')}`;
             document.getElementById('summary-tax').textContent = `₹${totals.tax.toLocaleString('en-IN')}`;
-            document.getElementById('summary-delivery').textContent = totals.delivery === 0 ? 'Free' : `₹${totals.delivery.toLocaleString('en-IN')}`;
-            document.getElementById('summary-total').textContent = `₹${totals.total.toLocaleString('en-IN')}`;
+            
+            const deliveryEl = document.getElementById('summary-delivery');
+            deliveryEl.textContent = 'will be calculated at payment';
+            deliveryEl.style.fontSize = '0.9rem';
+            deliveryEl.style.color = 'var(--color-dark-green)';
+            deliveryEl.style.textAlign = 'right';
+            deliveryEl.style.maxWidth = '75%';
+            
+            document.getElementById('summary-total').textContent = `₹${totals.subtotal.toLocaleString('en-IN')}`;
         }
 
         // Wait to ensure cart is parsed before rendering
