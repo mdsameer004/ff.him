@@ -1,5 +1,36 @@
 const fallbackImage = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&h=800&auto=format&fit=crop";
 
+/* ---------- Cache helpers (5-minute TTL) ---------- */
+const CACHE_KEY = 'ff_products_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in ms
+
+function getCachedProducts() {
+    try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return null;
+        const { data, ts } = JSON.parse(raw);
+        if (Date.now() - ts > CACHE_TTL) return null; // expired
+        return Array.isArray(data) && data.length > 0 ? data : null;
+    } catch (e) { return null; }
+}
+
+function setCachedProducts(data) {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    } catch (e) { /* storage full — ignore */ }
+}
+
+/* ---------- Background wake-up ping (Render cold-start fix) ---------- */
+// Pings the backend silently as soon as this script loads so the server
+// is warm by the time the real /products fetch fires.
+(function pingBackend() {
+    const BASE = (typeof window.API_BASE_URL !== 'undefined')
+        ? window.API_BASE_URL
+        : 'https://floristbackend.onrender.com/api';
+    fetch(BASE + '/health', { method: 'GET', cache: 'no-store' })
+        .catch(() => { /* server still asleep — main fetch will wait */ });
+})();
+
 /* ---------------- REVIEWS ---------------- */
 
 const getProductReviews = (productId) => {
@@ -31,7 +62,23 @@ window.onProductsLoaded = function(callback) {
 
 /* ---------------- LOAD PRODUCTS FROM BACKEND ---------------- */
 
-window.loadProducts = async function() {
+window.loadProducts = async function(skipCache = false) {
+    // ── Serve from cache if fresh ─────────────────────────────────────────────
+    if (!skipCache) {
+        const cached = getCachedProducts();
+        if (cached) {
+            window.products = cached;
+            if (typeof _onProductsLoaded === 'function') {
+                _onProductsLoaded(window.products);
+            }
+            console.log('⚡ Products from cache:', cached.length);
+            // Still refresh in the background so cache stays warm
+            setTimeout(() => window.loadProducts(true), 100);
+            return window.products;
+        }
+    }
+
+    // ── Fetch from network ────────────────────────────────────────────────────
     try {
         const BASE = (typeof window.API_BASE_URL !== 'undefined')
             ? window.API_BASE_URL
@@ -44,16 +91,31 @@ window.loadProducts = async function() {
             const data = Array.isArray(envelope) ? envelope : (envelope.data || []);
 
             window.products = data;
+            setCachedProducts(data); // store for next visit
 
             if (typeof _onProductsLoaded === 'function') {
                 _onProductsLoaded(window.products);
             }
 
-            console.log("🟢 Products loaded:", data.length);
+            console.log('🟢 Products loaded from network:', data.length);
             return window.products;
         }
     } catch (err) {
-        console.error("❌ Product load failed:", err);
+        console.error('❌ Product load failed:', err);
+        // If network fails, try showing stale cache rather than nothing
+        const stale = getCachedProducts();
+        if (!stale) {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (raw) {
+                try {
+                    const { data } = JSON.parse(raw);
+                    if (Array.isArray(data) && data.length > 0) {
+                        window.products = data;
+                        if (typeof _onProductsLoaded === 'function') _onProductsLoaded(window.products);
+                    }
+                } catch (e) { /* ignore */ }
+            }
+        }
     }
 
     return window.products;
