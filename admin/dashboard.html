@@ -484,75 +484,108 @@
 
         // Renders active e-commerce orders dynamic list
         function renderOrdersTable() {
-            const tableBody = document.getElementById('orders-table-body');
-            tableBody.innerHTML = '';
+            try {
+                const tableBody = document.getElementById('orders-table-body');
+                if (!tableBody) {
+                    console.error("orders-table-body element not found!");
+                    return;
+                }
+                tableBody.innerHTML = '';
 
-            if (globalOrders.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-xs">No orders have been received yet.</td></tr>`;
-                return;
-            }
-
-            // Sort orders with latest at top (using timestamps)
-            const sortedOrders = [...globalOrders].sort((a, b) => {
-                const timeA = new Date(a.createdAt || a.date).getTime() || 0;
-                const timeB = new Date(b.createdAt || b.date).getTime() || 0;
-                return timeB - timeA;
-            });
-
-            sortedOrders.forEach(o => {
-                const statusVal = o.orderStatus || o.status || 'received';
-                const badgeColor = getStatusBadgeStyle(statusVal);
-                
-                // Construct ordered items summary
-                let itemsSummary = '';
-                if (Array.isArray(o.items)) {
-                    itemsSummary = o.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
-                } else {
-                    itemsSummary = 'Custom order';
+                if (globalOrders.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-xs">No orders have been received yet.</td></tr>`;
+                    return;
                 }
 
-                const displayId = o._id ? o._id.slice(-8).toUpperCase() : (o.id || 'N/A');
-                const uniqueId = o._id || o.id || '';
-                const customerName = o.customerName || o.customer || o.deliveryDetails?.name || 'Storefront Guest';
-                
-                let orderDateLabel = o.date || 'N/A';
-                if (o.createdAt) {
+                // Sort orders with latest at top (using timestamps)
+                let sortedOrders = [];
+                try {
+                    sortedOrders = [...globalOrders].sort((a, b) => {
+                        const timeA = new Date(a.createdAt || a.date).getTime() || 0;
+                        const timeB = new Date(b.createdAt || b.date).getTime() || 0;
+                        return timeB - timeA;
+                    });
+                } catch (sortErr) {
+                    console.error("Sorting orders failed, using unsorted:", sortErr);
+                    sortedOrders = globalOrders;
+                }
+
+                sortedOrders.forEach(o => {
                     try {
-                        orderDateLabel = new Date(o.createdAt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
-                    } catch (e) {
-                        orderDateLabel = new Date(o.createdAt).toLocaleString();
-                    }
-                }
+                        if (!o) return;
+                        
+                        const statusVal = o.orderStatus || o.status || 'received';
+                        const badgeColor = getStatusBadgeStyle(statusVal);
+                        
+                        // Construct ordered items summary
+                        let itemsSummary = '';
+                        if (Array.isArray(o.items)) {
+                            itemsSummary = o.items.map(item => {
+                                if (!item) return 'Unknown Item';
+                                const name = item.name || 'Unknown Item';
+                                const qty = item.quantity || 1;
+                                return `${name} (x${qty})`;
+                            }).join(', ');
+                        } else {
+                            itemsSummary = 'Custom order';
+                        }
 
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
-                tr.innerHTML = `
-                    <td class="px-6 py-4 font-mono font-bold text-xs text-rose-500 dark:text-rose-400">#${displayId}</td>
-                    <td class="px-6 py-4">
-                        <span class="block font-bold text-gray-800 dark:text-white text-xs">${customerName}</span>
-                        <span class="block text-3xs text-gray-400 max-w-[150px] truncate">${o.deliveryDetails?.email || 'Guest checkout'}</span>
-                    </td>
-                    <td class="px-6 py-4 text-2xs text-gray-500 dark:text-gray-400">${orderDateLabel}</td>
-                    <td class="px-6 py-4">
-                        <div class="text-2xs text-gray-600 dark:text-gray-300 max-w-[200px] truncate font-medium" title="${itemsSummary}">${itemsSummary}</div>
-                    </td>
-                    <td class="px-6 py-4 font-bold text-gray-800 dark:text-white text-xs">₹${Number(o.totalAmount || o.total || 0).toLocaleString('en-IN')}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2.5 py-0.5 text-3xs font-extrabold rounded-full tracking-wider uppercase ${badgeColor}">${statusVal.replace(/_/g, ' ')}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <!-- Dropdown status selector matching DB schema -->
-                        <select onchange="updateOrderStatus('${uniqueId}', this.value)" class="text-xs bg-transparent border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 font-semibold cursor-pointer">
-                            <option value="received" ${statusVal.toLowerCase() === 'received' || statusVal.toLowerCase() === 'pending' ? 'selected' : ''}>Pending / Received</option>
-                            <option value="processing" ${statusVal.toLowerCase() === 'processing' ? 'selected' : ''}>Processing</option>
-                            <option value="out_for_delivery" ${statusVal.toLowerCase() === 'out_for_delivery' || statusVal.toLowerCase() === 'out for delivery' || statusVal.toLowerCase() === 'shipped' ? 'selected' : ''}>Out for Delivery</option>
-                            <option value="delivered" ${statusVal.toLowerCase() === 'delivered' ? 'selected' : ''}>Delivered</option>
-                            <option value="cancelled" ${statusVal.toLowerCase() === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                        </select>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
+                        const displayId = o._id ? String(o._id).slice(-8).toUpperCase() : String(o.id || 'N/A');
+                        const uniqueId = o._id || o.id || '';
+                        const customerName = o.customerName || o.customer || (o.deliveryDetails && o.deliveryDetails.name) || 'Storefront Guest';
+                        const email = o.customerEmail || (o.deliveryDetails && o.deliveryDetails.email) || 'Guest checkout';
+                        
+                        let orderDateLabel = o.date || 'N/A';
+                        if (o.createdAt) {
+                            try {
+                                const d = new Date(o.createdAt);
+                                if (!isNaN(d.getTime())) {
+                                    orderDateLabel = d.toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+                                }
+                            } catch (e) {
+                                try {
+                                    orderDateLabel = new Date(o.createdAt).toLocaleString();
+                                } catch (e2) {
+                                    orderDateLabel = String(o.createdAt);
+                                }
+                            }
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
+                        tr.innerHTML = `
+                            <td class="px-6 py-4 font-mono font-bold text-xs text-rose-500 dark:text-rose-400">#${displayId}</td>
+                            <td class="px-6 py-4">
+                                <span class="block font-bold text-gray-800 dark:text-white text-xs">${customerName}</span>
+                                <span class="block text-3xs text-gray-400 max-w-[150px] truncate">${email}</span>
+                            </td>
+                            <td class="px-6 py-4 text-2xs text-gray-500 dark:text-gray-400">${orderDateLabel}</td>
+                            <td class="px-6 py-4">
+                                <div class="text-2xs text-gray-600 dark:text-gray-300 max-w-[200px] truncate font-medium" title="${itemsSummary}">${itemsSummary}</div>
+                            </td>
+                            <td class="px-6 py-4 font-bold text-gray-800 dark:text-white text-xs">₹${Number(o.totalAmount || o.total || 0).toLocaleString('en-IN')}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-0.5 text-3xs font-extrabold rounded-full tracking-wider uppercase ${badgeColor}">${String(statusVal).replace(/_/g, ' ')}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <!-- Dropdown status selector matching DB schema -->
+                                <select onchange="updateOrderStatus('${uniqueId}', this.value)" class="text-xs bg-transparent border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 font-semibold cursor-pointer">
+                                    <option value="received" ${statusVal.toLowerCase() === 'received' || statusVal.toLowerCase() === 'pending' ? 'selected' : ''}>Pending / Received</option>
+                                    <option value="processing" ${statusVal.toLowerCase() === 'processing' ? 'selected' : ''}>Processing</option>
+                                    <option value="out_for_delivery" ${statusVal.toLowerCase() === 'out_for_delivery' || statusVal.toLowerCase() === 'out for delivery' || statusVal.toLowerCase() === 'shipped' ? 'selected' : ''}>Out for Delivery</option>
+                                    <option value="delivered" ${statusVal.toLowerCase() === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                    <option value="cancelled" ${statusVal.toLowerCase() === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                </select>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                    } catch (innerErr) {
+                        console.error("Failed to render individual order row:", innerErr, o);
+                    }
+                });
+            } catch (err) {
+                console.error("Failed to render orders table:", err);
+            }
         }
 
         // Returns styled CSS tags based on status value
