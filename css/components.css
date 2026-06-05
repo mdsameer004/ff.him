@@ -790,7 +790,9 @@
         display: block; /* Show only on mobile dropdown */
     }
     
-    #nav-auth-area, .nav-actions .wishlist-nav-icon {
+    #nav-auth-area,
+    .nav-actions #nav-auth-area,
+    .nav-actions .wishlist-nav-icon {
         display: none !important; /* Hide top user area and wishlist icon on mobile */
     }
 

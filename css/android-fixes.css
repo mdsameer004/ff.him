@@ -333,3 +333,12 @@ body {
         max-width: 110px !important;
     }
 }
+
+/* ── 16. Hide congested user greeting on mobile/Android headers ── */
+@media screen and (max-width: 768px) {
+    #nav-auth-area,
+    .nav-actions #nav-auth-area {
+        display: none !important;
+    }
+}
+
