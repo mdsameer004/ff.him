@@ -183,12 +183,20 @@
 
         <!-- Manage Customer Orders Panel -->
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
-            <div class="border-b border-rose-50 dark:border-gray-700 pb-4 flex items-center justify-between">
+            <div class="border-b border-rose-50 dark:border-gray-700 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Customer Orders & Fulfillment</h3>
                     <p class="text-xs text-gray-400 mt-1">Track purchase records and dynamically manage fulfillment pipeline statuses.</p>
                 </div>
-                <span class="px-2.5 py-1 text-2xs font-bold bg-rose-50 text-rose-600 dark:bg-gray-700 dark:text-rose-400 rounded-lg" id="orders-count-badge">0 orders</span>
+                <div class="flex items-center gap-3 self-end sm:self-auto">
+                    <!-- Date Filter -->
+                    <div class="flex items-center gap-2">
+                        <label for="order-date-filter" class="text-2xs font-bold text-gray-500 uppercase tracking-wider">Filter Date:</label>
+                        <input type="date" id="order-date-filter" onchange="filterOrdersByDate()" class="text-xs border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 cursor-pointer">
+                        <button onclick="clearDateFilter()" id="clear-date-btn" class="hidden text-3xs font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 focus:outline-none">Clear</button>
+                    </div>
+                    <span class="px-2.5 py-1 text-2xs font-bold bg-rose-50 text-rose-600 dark:bg-gray-700 dark:text-rose-400 rounded-lg whitespace-nowrap" id="orders-count-badge">0 orders</span>
+                </div>
             </div>
 
             <!-- Orders Table -->
@@ -269,6 +277,7 @@
     <script>
         let globalOrders = [];
         let activeRevenueFilter = 'day'; // Default granularity
+        let activeDateFilter = ''; // Filter table by date
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Load all metric cards
@@ -322,8 +331,6 @@
                 document.getElementById('stat-processing-count').textContent = processingCount;
                 document.getElementById('stat-delivered-count').textContent = deliveredCount;
                 document.getElementById('stat-revenue-total').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
-                
-                document.getElementById('orders-count-badge').textContent = `${globalOrders.length} orders total`;
 
                 // 2. Render Revenue Charts & Data Summary
                 renderRevenueAnalytics();
@@ -492,22 +499,49 @@
                 }
                 tableBody.innerHTML = '';
 
-                if (globalOrders.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-xs">No orders have been received yet.</td></tr>`;
+                // Apply activeDateFilter if set
+                let filteredOrders = globalOrders;
+                if (activeDateFilter) {
+                    filteredOrders = globalOrders.filter(o => {
+                        let orderDateStr = '';
+                        if (o.createdAt) {
+                            orderDateStr = o.createdAt.split('T')[0];
+                        } else if (o.date) {
+                            try {
+                                const d = new Date(o.date);
+                                if (!isNaN(d.getTime())) {
+                                    orderDateStr = d.toISOString().split('T')[0];
+                                }
+                            } catch (e) {}
+                        }
+                        return orderDateStr === activeDateFilter;
+                    });
+                }
+
+                // Update badge count
+                const countBadge = document.getElementById('orders-count-badge');
+                if (activeDateFilter) {
+                    countBadge.textContent = `${filteredOrders.length} matching order${filteredOrders.length === 1 ? '' : 's'}`;
+                } else {
+                    countBadge.textContent = `${globalOrders.length} orders total`;
+                }
+
+                if (filteredOrders.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 text-xs">No orders found for the selected date.</td></tr>`;
                     return;
                 }
 
                 // Sort orders with latest at top (using timestamps)
                 let sortedOrders = [];
                 try {
-                    sortedOrders = [...globalOrders].sort((a, b) => {
+                    sortedOrders = [...filteredOrders].sort((a, b) => {
                         const timeA = new Date(a.createdAt || a.date).getTime() || 0;
                         const timeB = new Date(b.createdAt || b.date).getTime() || 0;
                         return timeB - timeA;
                     });
                 } catch (sortErr) {
                     console.error("Sorting orders failed, using unsorted:", sortErr);
-                    sortedOrders = globalOrders;
+                    sortedOrders = filteredOrders;
                 }
 
                 sortedOrders.forEach(o => {
@@ -586,6 +620,29 @@
             } catch (err) {
                 console.error("Failed to render orders table:", err);
             }
+        }
+
+        // Date filter functions
+        function filterOrdersByDate() {
+            const dateInput = document.getElementById('order-date-filter');
+            activeDateFilter = dateInput.value;
+            
+            const clearBtn = document.getElementById('clear-date-btn');
+            if (activeDateFilter) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            
+            renderOrdersTable();
+        }
+
+        function clearDateFilter() {
+            const dateInput = document.getElementById('order-date-filter');
+            dateInput.value = '';
+            activeDateFilter = '';
+            document.getElementById('clear-date-btn').classList.add('hidden');
+            renderOrdersTable();
         }
 
         // Returns styled CSS tags based on status value
