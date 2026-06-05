@@ -12,7 +12,7 @@ const Cart = () => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
 
-  const tax = subtotal * 0.18; // 18% GST mock
+  const tax = 0; // Tax removed
   const shipping = subtotal > 2000 ? 0 : 150; // Free shipping over 2000
   const total = subtotal + tax + shipping;
 
@@ -120,12 +120,6 @@ const Cart = () => {
               <span>Subtotal</span>
               <span>₹{subtotal.toLocaleString()}</span>
             </div>
-            
-            <div className="summary-row">
-              <span>Estimated GST (18%)</span>
-              <span>₹{tax.toFixed(0)}</span>
-            </div>
-            
             <div className="summary-row">
               <span>Delivery Charges</span>
               <span>{shipping === 0 ? <span className="free-text">Free</span> : `₹${shipping}`}</span>

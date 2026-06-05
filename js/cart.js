@@ -93,7 +93,7 @@ function getCartSubtotal() {
 
 function getCartTotal() {
     const subtotal = getCartSubtotal();
-    const tax = subtotal * 0.05; // 5% tax
+    const tax = 0; // Tax removed
     const delivery = subtotal > 1000 ? 0 : 99; // Free delivery over ₹1000
     return {
         subtotal,
