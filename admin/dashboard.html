@@ -530,7 +530,7 @@
                             itemsSummary = 'Custom order';
                         }
 
-                        const displayId = o._id ? String(o._id).slice(-8).toUpperCase() : String(o.id || 'N/A');
+                        const displayId = o.orderId || (o._id ? String(o._id).slice(-8).toUpperCase() : String(o.id || 'N/A'));
                         const uniqueId = o._id || o.id || '';
                         const customerName = o.customerName || o.customer || (o.deliveryDetails && o.deliveryDetails.name) || 'Storefront Guest';
                         const email = o.customerEmail || (o.deliveryDetails && o.deliveryDetails.email) || 'Guest checkout';
@@ -554,7 +554,7 @@
                         const tr = document.createElement('tr');
                         tr.className = 'hover:bg-rose-50/10 dark:hover:bg-gray-750/30 transition-colors';
                         tr.innerHTML = `
-                            <td class="px-6 py-4 font-mono font-bold text-xs text-rose-500 dark:text-rose-400">#${displayId}</td>
+                            <td class="px-6 py-4 font-mono font-bold text-xs text-rose-500 dark:text-rose-400">${displayId.startsWith('ORD-') ? displayId : '#' + displayId}</td>
                             <td class="px-6 py-4">
                                 <span class="block font-bold text-gray-800 dark:text-white text-xs">${customerName}</span>
                                 <span class="block text-3xs text-gray-400 max-w-[150px] truncate">${email}</span>

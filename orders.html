@@ -216,8 +216,7 @@
             }
 
             container.innerHTML = orders.map(order => {
-                // Support both backend (order._id, order.items[].name) and localStorage formats
-                const orderId   = order._id || order.id || order.backendId || '—';
+                const orderId   = order.orderId || order._id || order.id || order.backendId || '—';
                 const date      = formatDate(order.createdAt || order.date);
                 const total     = order.totalAmount || order.total || 0;
                 const status    = order.orderStatus || order.status || 'received';
@@ -241,7 +240,7 @@
                             <div class="order-info">
                                 <div class="info-block">
                                     <span class="info-label">Order ID</span>
-                                    <span class="info-value">#${String(orderId).slice(-8).toUpperCase()}</span>
+                                    <span class="info-value">${String(orderId).startsWith('ORD-') ? orderId : '#' + String(orderId).slice(-8).toUpperCase()}</span>
                                 </div>
                                 <div class="info-block">
                                     <span class="info-label">Date Placed</span>
