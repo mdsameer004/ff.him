@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,70 +39,103 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
         }
+
         /* Custom dynamic bar transition */
         .revenue-bar {
             transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
         }
     </style>
 </head>
+
 <body>
     <!-- Main Content Container for admin-common.js to capture -->
     <div id="admin-content" class="space-y-8">
         <!-- Dashboard Greetings banner -->
         <div class="mb-4">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Welcome back, Admin 👋</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Here is a quick overview of Friends Florist performance today.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Here is a quick overview of Friends Florist
+                performance today.</p>
         </div>
 
         <!-- E-Commerce Analytics Statistics Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
             <!-- Total Orders Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/30 rounded-full flex items-center justify-center text-2xl">📦</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/30 rounded-full flex items-center justify-center text-2xl">
+                    📦</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Total Orders</span>
+                    <span
+                        class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Total
+                        Orders</span>
                     <span id="stat-orders-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Pending Orders Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-2xl">⏳</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-2xl">
+                    ⏳</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Pending Orders</span>
-                    <span id="stat-pending-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                    <span
+                        class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Pending
+                        Orders</span>
+                    <span id="stat-pending-count"
+                        class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Processing Orders Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">🔄</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">
+                    🔄</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Processing Orders</span>
-                    <span id="stat-processing-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                    <span
+                        class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Processing
+                        Orders</span>
+                    <span id="stat-processing-count"
+                        class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Delivered Orders Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-2xl">✅</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-2xl">
+                    ✅</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Delivered Orders</span>
-                    <span id="stat-delivered-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                    <span
+                        class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Delivered
+                        Orders</span>
+                    <span id="stat-delivered-count"
+                        class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Total Revenue Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center text-2xl">💰</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center text-2xl">
+                    💰</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Total Revenue</span>
-                    <span id="stat-revenue-total" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">₹0</span>
+                    <span
+                        class="block text-3xs font-semibold text-gray-400 dark:text-gray-450 uppercase tracking-wider">Total
+                        Revenue</span>
+                    <span id="stat-revenue-total"
+                        class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">₹0</span>
                 </div>
             </div>
         </div>
@@ -109,38 +143,56 @@
         <!-- Storefront Catalog & Settings Statistics Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <!-- Products Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center text-2xl">🌹</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-rose-50 dark:bg-rose-950/30 rounded-full flex items-center justify-center text-2xl">
+                    🌹</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total Products</span>
-                    <span id="stat-products-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Total
+                        Products</span>
+                    <span id="stat-products-count"
+                        class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Deals Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-2xl">⚡</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center text-2xl">
+                    ⚡</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Active Deals</span>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Active
+                        Deals</span>
                     <span id="stat-deals-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Albums Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-2xl">🖼️</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center text-2xl">
+                    🖼️</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Gallery Albums</span>
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Gallery
+                        Albums</span>
                     <span id="stat-albums-count" class="text-xl font-bold text-gray-800 dark:text-white mt-0.5">0</span>
                 </div>
             </div>
 
             <!-- Status Card -->
-            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
-                <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">🌐</div>
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all">
+                <div
+                    class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">
+                    🌐</div>
                 <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Website Status</span>
-                    <button onclick="toggleWebsiteStatus()" id="website-status-btn" class="mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors">
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Website
+                        Status</span>
+                    <button onclick="toggleWebsiteStatus()" id="website-status-btn"
+                        class="mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors">
                         Online
                     </button>
                 </div>
@@ -148,23 +200,30 @@
         </div>
 
         <!-- Interactive Revenue Analytics Panel -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-rose-50 dark:border-gray-700 pb-4 gap-4">
+        <div
+            class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+            <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-rose-50 dark:border-gray-700 pb-4 gap-4">
                 <div>
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Revenue Distribution & Analysis</h3>
-                    <p class="text-xs text-gray-400 mt-1">Interactive overview of cash receipts filtered across multiple scopes.</p>
+                    <p class="text-xs text-gray-400 mt-1">Interactive overview of cash receipts filtered across multiple
+                        scopes.</p>
                 </div>
                 <!-- Filter Tabs -->
                 <div class="flex bg-rose-50/40 dark:bg-gray-750 p-1 rounded-xl border border-rose-100/30">
-                    <button onclick="changeRevenueFilter('day')" id="filter-day" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-rose-500 text-white shadow-sm">Daily</button>
-                    <button onclick="changeRevenueFilter('month')" id="filter-month" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500">Monthly</button>
-                    <button onclick="changeRevenueFilter('year')" id="filter-year" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500">Yearly</button>
+                    <button onclick="changeRevenueFilter('day')" id="filter-day"
+                        class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-rose-500 text-white shadow-sm">Daily</button>
+                    <button onclick="changeRevenueFilter('month')" id="filter-month"
+                        class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500">Monthly</button>
+                    <button onclick="changeRevenueFilter('year')" id="filter-year"
+                        class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-500 dark:text-gray-300 hover:text-rose-500">Yearly</button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Visual CSS Bar Graph (2 Cols) -->
-                <div class="lg:col-span-2 bg-rose-50/5 dark:bg-gray-750/10 border border-rose-50/30 dark:border-gray-750 rounded-2xl p-6 flex flex-col justify-between">
+                <div
+                    class="lg:col-span-2 bg-rose-50/5 dark:bg-gray-750/10 border border-rose-50/30 dark:border-gray-750 rounded-2xl p-6 flex flex-col justify-between">
                     <!-- Graph Plot Area -->
                     <div class="flex items-end justify-between gap-3 h-56 pt-6 px-2" id="revenue-chart-bars">
                         <!-- Plotted dynamically by JavaScript -->
@@ -172,9 +231,13 @@
                 </div>
 
                 <!-- Numerical Data Listing (1 Col) -->
-                <div class="bg-rose-50/5 dark:bg-gray-750/10 border border-rose-50/30 dark:border-gray-750 rounded-2xl p-5 flex flex-col">
-                    <h4 class="text-xs font-bold uppercase text-gray-450 tracking-wider mb-4 border-b border-rose-50/20 pb-2">Metrics Summary</h4>
-                    <div class="flex-1 overflow-y-auto max-h-56 divide-y divide-rose-50/20 dark:divide-gray-750" id="revenue-summary-table">
+                <div
+                    class="bg-rose-50/5 dark:bg-gray-750/10 border border-rose-50/30 dark:border-gray-750 rounded-2xl p-5 flex flex-col">
+                    <h4
+                        class="text-xs font-bold uppercase text-gray-450 tracking-wider mb-4 border-b border-rose-50/20 pb-2">
+                        Metrics Summary</h4>
+                    <div class="flex-1 overflow-y-auto max-h-56 divide-y divide-rose-50/20 dark:divide-gray-750"
+                        id="revenue-summary-table">
                         <!-- Summary table populated dynamically -->
                     </div>
                 </div>
@@ -182,20 +245,28 @@
         </div>
 
         <!-- Manage Customer Orders Panel -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
-            <div class="border-b border-rose-50 dark:border-gray-700 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div
+            class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+            <div
+                class="border-b border-rose-50 dark:border-gray-700 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Customer Orders & Fulfillment</h3>
-                    <p class="text-xs text-gray-400 mt-1">Track purchase records and dynamically manage fulfillment pipeline statuses.</p>
+                    <p class="text-xs text-gray-400 mt-1">Track purchase records and dynamically manage fulfillment
+                        pipeline statuses.</p>
                 </div>
                 <div class="flex items-center gap-3 self-end sm:self-auto">
                     <!-- Date Filter -->
                     <div class="flex items-center gap-2">
-                        <label for="order-date-filter" class="text-2xs font-bold text-gray-500 uppercase tracking-wider">Filter Date:</label>
-                        <input type="date" id="order-date-filter" onchange="filterOrdersByDate()" class="text-xs border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 cursor-pointer">
-                        <button onclick="clearDateFilter()" id="clear-date-btn" class="hidden text-3xs font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 focus:outline-none">Clear</button>
+                        <label for="order-date-filter"
+                            class="text-2xs font-bold text-gray-500 uppercase tracking-wider">Filter Date:</label>
+                        <input type="date" id="order-date-filter" onchange="filterOrdersByDate()"
+                            class="text-xs border border-rose-100 rounded-lg p-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 cursor-pointer">
+                        <button onclick="clearDateFilter()" id="clear-date-btn"
+                            class="hidden text-3xs font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 focus:outline-none">Clear</button>
                     </div>
-                    <span class="px-2.5 py-1 text-2xs font-bold bg-rose-50 text-rose-600 dark:bg-gray-700 dark:text-rose-400 rounded-lg whitespace-nowrap" id="orders-count-badge">0 orders</span>
+                    <span
+                        class="px-2.5 py-1 text-2xs font-bold bg-rose-50 text-rose-600 dark:bg-gray-700 dark:text-rose-400 rounded-lg whitespace-nowrap"
+                        id="orders-count-badge">0 orders</span>
                 </div>
             </div>
 
@@ -203,7 +274,8 @@
             <div class="overflow-x-auto border border-rose-50/30 dark:border-gray-700 rounded-2xl">
                 <table class="w-full text-left text-sm">
                     <thead>
-                        <tr class="bg-rose-50/20 dark:bg-gray-750/40 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase border-b border-rose-50 dark:border-gray-700">
+                        <tr
+                            class="bg-rose-50/20 dark:bg-gray-750/40 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase border-b border-rose-50 dark:border-gray-700">
                             <th class="px-6 py-4">Order ID</th>
                             <th class="px-6 py-4">Customer</th>
                             <th class="px-6 py-4">Date Placed</th>
@@ -223,10 +295,12 @@
         <!-- Side-by-Side: Recent Activity & Shortcuts -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Side: Recent Activity Feed (2 Cols) -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 lg:col-span-2 space-y-6">
+            <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 lg:col-span-2 space-y-6">
                 <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Recent Portal Activity</h3>
-                    <p class="text-xs text-gray-400 mt-1">Logs of the latest administrative operations on this storefront.</p>
+                    <p class="text-xs text-gray-400 mt-1">Logs of the latest administrative operations on this
+                        storefront.</p>
                 </div>
 
                 <div class="space-y-4" id="activity-log">
@@ -235,31 +309,38 @@
             </div>
 
             <!-- Right Side: Quick Action Panel (1 Col) -->
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
+            <div
+                class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-rose-100/40 dark:border-gray-700 space-y-6">
                 <div class="border-b border-rose-50 dark:border-gray-700 pb-4">
                     <h3 class="font-bold text-gray-800 dark:text-white text-base">Quick Shortcuts</h3>
                     <p class="text-xs text-gray-400 mt-1">Direct options to modify details instantly.</p>
                 </div>
 
                 <div class="flex flex-col gap-3">
-                    <a href="products.html" class="flex items-center gap-3 p-4 bg-rose-50/50 hover:bg-rose-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
+                    <a href="products.html"
+                        class="flex items-center gap-3 p-4 bg-rose-50/50 hover:bg-rose-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
                         <span class="text-2xl group-hover:scale-110 transition-transform">➕</span>
                         <div class="text-left">
-                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Add New Product</span>
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Add New
+                                Product</span>
                             <span class="block text-2xs text-gray-400">Add name, prices, and stock</span>
                         </div>
                     </a>
-                    <a href="flash-deals.html" class="flex items-center gap-3 p-4 bg-amber-50/50 hover:bg-amber-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
+                    <a href="flash-deals.html"
+                        class="flex items-center gap-3 p-4 bg-amber-50/50 hover:bg-amber-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
                         <span class="text-2xl group-hover:scale-110 transition-transform">⚡</span>
                         <div class="text-left">
-                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Modify Flash Deals</span>
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Modify Flash
+                                Deals</span>
                             <span class="block text-2xs text-gray-400">Edit homepage discount banners</span>
                         </div>
                     </a>
-                    <a href="gallery.html" class="flex items-center gap-3 p-4 bg-emerald-50/50 hover:bg-emerald-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
+                    <a href="gallery.html"
+                        class="flex items-center gap-3 p-4 bg-emerald-50/50 hover:bg-emerald-50 dark:bg-gray-700 dark:hover:bg-gray-650 rounded-xl transition-all group">
                         <span class="text-2xl group-hover:scale-110 transition-transform">🖼️</span>
                         <div class="text-left">
-                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Upload Album Photos</span>
+                            <span class="block text-sm font-semibold text-gray-700 dark:text-gray-200">Upload Album
+                                Photos</span>
                             <span class="block text-2xs text-gray-400">Add stunning florist setups</span>
                         </div>
                     </a>
@@ -291,7 +372,7 @@
                 const products = await getProducts();
                 const deals = await getDeals();
                 const albums = await getAlbums();
-                
+
                 // Fetch Orders via apiClient
                 if (window.apiClient) {
                     globalOrders = await window.apiClient.getOrders();
@@ -325,7 +406,7 @@
                 document.getElementById('stat-products-count').textContent = products.length;
                 document.getElementById('stat-deals-count').textContent = deals.length;
                 document.getElementById('stat-albums-count').textContent = albums.length;
-                
+
                 document.getElementById('stat-orders-count').textContent = globalOrders.length;
                 document.getElementById('stat-pending-count').textContent = pendingCount;
                 document.getElementById('stat-processing-count').textContent = processingCount;
@@ -374,7 +455,7 @@
         function renderRevenueAnalytics() {
             const barContainer = document.getElementById('revenue-chart-bars');
             const summaryTable = document.getElementById('revenue-summary-table');
-            
+
             barContainer.innerHTML = '';
             summaryTable.innerHTML = '';
 
@@ -405,9 +486,9 @@
                 } else {
                     orderDateStr = new Date().toISOString().split('T')[0];
                 }
-                
+
                 const dateObj = new Date(orderDateStr);
-                
+
                 let groupKey = '';
                 let label = '';
 
@@ -436,7 +517,7 @@
 
             // Sort grouped arrays chronologically
             const sortedGroups = Object.values(groups).sort((a, b) => a.key.localeCompare(b.key));
-            
+
             // Find max revenue value for flex height drawing calculation
             const maxRevenue = Math.max(...sortedGroups.map(g => g.total), 1);
 
@@ -475,7 +556,7 @@
         // Swaps granular revenue chart filter scopes
         function changeRevenueFilter(type) {
             activeRevenueFilter = type;
-            
+
             // Toggle active style triggers
             ['day', 'month', 'year'].forEach(filter => {
                 const btn = document.getElementById(`filter-${filter}`);
@@ -512,7 +593,7 @@
                                 if (!isNaN(d.getTime())) {
                                     orderDateStr = d.toISOString().split('T')[0];
                                 }
-                            } catch (e) {}
+                            } catch (e) { }
                         }
                         return orderDateStr === activeDateFilter;
                     });
@@ -547,10 +628,10 @@
                 sortedOrders.forEach(o => {
                     try {
                         if (!o) return;
-                        
+
                         const statusVal = o.orderStatus || o.status || 'received';
                         const badgeColor = getStatusBadgeStyle(statusVal);
-                        
+
                         // Construct ordered items summary
                         let itemsSummary = '';
                         if (Array.isArray(o.items)) {
@@ -568,7 +649,7 @@
                         const uniqueId = o._id || o.id || '';
                         const customerName = o.customerName || o.customer || (o.deliveryDetails && o.deliveryDetails.name) || 'Storefront Guest';
                         const phone = o.customerPhone || (o.deliveryDetails && o.deliveryDetails.phone) || '—';
-                        
+
                         let orderDateLabel = o.date || 'N/A';
                         if (o.createdAt) {
                             try {
@@ -626,14 +707,14 @@
         function filterOrdersByDate() {
             const dateInput = document.getElementById('order-date-filter');
             activeDateFilter = dateInput.value;
-            
+
             const clearBtn = document.getElementById('clear-date-btn');
             if (activeDateFilter) {
                 clearBtn.classList.remove('hidden');
             } else {
                 clearBtn.classList.add('hidden');
             }
-            
+
             renderOrdersTable();
         }
 
@@ -681,10 +762,10 @@
                         localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
                     }
                 }
-                
+
                 // Show dynamic premium toast
                 showToast(`Order #${orderId} successfully transitioned to [${newStatus.replace(/_/g, ' ')}]!`, 'success');
-                
+
                 // Reload dashboard data instantly
                 await reloadDashboardData();
             } catch (err) {
@@ -697,17 +778,16 @@
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `flex items-center gap-3 p-4 rounded-2xl shadow-xl border text-xs font-semibold translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto bg-white dark:bg-gray-800 ${
-                type === 'success' 
-                    ? 'border-emerald-200 dark:border-emerald-900/60 text-[#1e3f2d] dark:text-emerald-400' 
+            toast.className = `flex items-center gap-3 p-4 rounded-2xl shadow-xl border text-xs font-semibold translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto bg-white dark:bg-gray-800 ${type === 'success'
+                    ? 'border-emerald-200 dark:border-emerald-900/60 text-[#1e3f2d] dark:text-emerald-400'
                     : 'border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-450'
-            }`;
-            
+                }`;
+
             toast.innerHTML = `
                 <span>${type === 'success' ? '✨' : '⚠️'}</span>
                 <span>${message}</span>
             `;
-            
+
             container.appendChild(toast);
 
             // Animate in
@@ -726,7 +806,7 @@
         function toggleWebsiteStatus() {
             const statusBtn = document.getElementById('website-status-btn');
             const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
-            
+
             if (confirm(`Are you sure you want to switch the website status to ${!isMaintenance ? 'Maintenance Mode' : 'Online Mode'}?`)) {
                 localStorage.setItem('ff_maintenance_mode', (!isMaintenance).toString());
                 if (!isMaintenance) {
@@ -742,4 +822,5 @@
         }
     </script>
 </body>
+
 </html>
