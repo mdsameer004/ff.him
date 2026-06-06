@@ -274,14 +274,7 @@
         let appliedCoupon = null;
         let discountAmount = 0;
         
-        const coupons = {
-            'SAVE10': { type: 'percent', value: 10, minOrder: 1000, errorMsg: 'SAVE10 is valid only on orders above ₹999' },
-            'BIGSAVE': { type: 'fixed', value: 150, minOrder: 2000, errorMsg: 'BIGSAVE is valid only on orders above ₹2000' },
-            'FLOWER50': { type: 'fixed', value: 50 },
-            'WELCOME15': { type: 'percent', value: 15 }
-        };
-
-        function applyCoupon() {
+        async function applyCoupon() {
             const input = document.getElementById('coupon-input');
             const code = input.value.trim().toUpperCase();
             const msgEl = document.getElementById('coupon-message');
@@ -289,30 +282,45 @@
             
             if (!code) return;
 
-            if (coupons[code]) {
-                const subtotal = getCartTotal().subtotal;
-                if (coupons[code].minOrder && subtotal < coupons[code].minOrder) {
-                    msgEl.innerHTML = `<span style="color: #e74c3c; font-weight: 500;">✕ ${coupons[code].errorMsg}</span>`;
-                    showToast(coupons[code].errorMsg, 'error', 'Minimum Order Requirement');
-                    return;
-                }
+            btn.textContent = 'Applying...';
+            btn.disabled = true;
+            msgEl.innerHTML = '';
 
-                appliedCoupon = { code: code, ...coupons[code] };
-                localStorage.setItem('friendsFloristCoupon', JSON.stringify(appliedCoupon));
+            try {
+                const subtotal = getCartTotal().subtotal;
+                const API_BASE = (typeof window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : 'https://floristbackend.onrender.com/api';
                 
-                msgEl.innerHTML = '<span style="color: #27ae60; font-weight: 500;">✓ Coupon Applied</span>';
-                showToast(`Coupon ${code} applied successfully`, 'success', 'Coupon Applied');
-                
-                input.value = code;
-                input.disabled = true;
-                
-                btn.textContent = 'Remove';
-                btn.onclick = removeCoupon;
-                
-                updateCheckoutTotals();
-            } else {
-                msgEl.innerHTML = '<span style="color: #e74c3c; font-weight: 500;">✕ Invalid Coupon</span>';
-                showToast('Invalid coupon code', 'error', 'Coupon Error');
+                const response = await fetch(`${API_BASE}/orders/validate-coupon`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, subtotal })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    appliedCoupon = result.data;
+                    localStorage.setItem('friendsFloristCoupon', JSON.stringify(appliedCoupon));
+                    
+                    msgEl.innerHTML = `<span style="color: #27ae60; font-weight: 500;">✓ ${result.data.message || 'Coupon Applied'}</span>`;
+                    showToast(`Coupon ${code} applied successfully`, 'success', 'Coupon Applied');
+                    
+                    input.value = code;
+                    input.disabled = true;
+                    
+                    btn.textContent = 'Remove';
+                    btn.disabled = false;
+                    btn.onclick = removeCoupon;
+                    
+                    updateCheckoutTotals();
+                } else {
+                    throw new Error(result.message || 'Invalid coupon code');
+                }
+            } catch (error) {
+                msgEl.innerHTML = `<span style="color: #e74c3c; font-weight: 500;">✕ ${error.message}</span>`;
+                showToast(error.message, 'error', 'Coupon Error');
+                btn.textContent = 'Apply';
+                btn.disabled = false;
             }
         }
         
@@ -351,7 +359,7 @@
 
             // Load saved coupon
             const savedCoupon = JSON.parse(localStorage.getItem('friendsFloristCoupon'));
-            if (savedCoupon && coupons[savedCoupon.code]) {
+            if (savedCoupon && savedCoupon.code) {
                 const input = document.getElementById('coupon-input');
                 if (input) {
                     input.value = savedCoupon.code;
@@ -523,10 +531,12 @@
                     discountAmount = subtotal * (appliedCoupon.value / 100);
                 } else if (appliedCoupon.type === 'fixed') {
                     discountAmount = appliedCoupon.value;
+                } else if (appliedCoupon.type === 'free_delivery') {
+                    discountAmount = deliveryFee;
                 }
                 
-                // Ensure discount doesn't exceed subtotal
-                if (discountAmount > subtotal) discountAmount = subtotal;
+                // Ensure discount doesn't exceed subtotal (unless it's a free delivery coupon)
+                if (appliedCoupon.type !== 'free_delivery' && discountAmount > subtotal) discountAmount = subtotal;
                 
                 document.getElementById('discount-row').style.display = 'flex';
                 document.getElementById('applied-coupon-code').textContent = appliedCoupon.code;
