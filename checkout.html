@@ -523,7 +523,8 @@
             const subtotal = totals.subtotal;
             const tax = totals.tax;
             
-            const deliveryFee = locationCalculated ? calculatedDeliveryCharge : 0;
+            let displayDeliveryFee = locationCalculated ? calculatedDeliveryCharge : 0;
+            let actualDeliveryFee = displayDeliveryFee;
             
             discountAmount = 0;
             if (appliedCoupon) {
@@ -532,20 +533,24 @@
                 } else if (appliedCoupon.type === 'fixed') {
                     discountAmount = appliedCoupon.value;
                 } else if (appliedCoupon.type === 'free_delivery') {
-                    discountAmount = deliveryFee;
+                    actualDeliveryFee = 0;
                 }
                 
-                // Ensure discount doesn't exceed subtotal (unless it's a free delivery coupon)
+                // Ensure discount doesn't exceed subtotal
                 if (appliedCoupon.type !== 'free_delivery' && discountAmount > subtotal) discountAmount = subtotal;
                 
-                document.getElementById('discount-row').style.display = 'flex';
-                document.getElementById('applied-coupon-code').textContent = appliedCoupon.code;
-                document.getElementById('chk-discount').textContent = `-₹${discountAmount.toLocaleString('en-IN')}`;
+                if (appliedCoupon.type !== 'free_delivery') {
+                    document.getElementById('discount-row').style.display = 'flex';
+                    document.getElementById('applied-coupon-code').textContent = appliedCoupon.code;
+                    document.getElementById('chk-discount').textContent = `-₹${discountAmount.toLocaleString('en-IN')}`;
+                } else {
+                    document.getElementById('discount-row').style.display = 'none';
+                }
             } else {
                 document.getElementById('discount-row').style.display = 'none';
             }
 
-            const newTotal = subtotal + tax + deliveryFee - discountAmount;
+            const newTotal = subtotal + tax + actualDeliveryFee - discountAmount;
             finalTotalAmount = newTotal > 0 ? newTotal : 0;
 
             document.getElementById('chk-subtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
@@ -554,7 +559,11 @@
             if (!locationCalculated) {
                 document.getElementById('chk-delivery').textContent = 'Enter address...';
             } else {
-                document.getElementById('chk-delivery').textContent = isDeliverable ? `₹${deliveryFee.toLocaleString('en-IN')}` : 'Not Deliverable';
+                if (appliedCoupon && appliedCoupon.type === 'free_delivery' && isDeliverable) {
+                    document.getElementById('chk-delivery').innerHTML = `<del style="color: #999; margin-right: 8px;">₹${displayDeliveryFee.toLocaleString('en-IN')}</del> <span style="color: #27ae60; font-weight: bold;">Free</span>`;
+                } else {
+                    document.getElementById('chk-delivery').textContent = isDeliverable ? `₹${actualDeliveryFee.toLocaleString('en-IN')}` : 'Not Deliverable';
+                }
             }
             
             document.getElementById('chk-total').textContent = `₹${finalTotalAmount.toLocaleString('en-IN')}`;
