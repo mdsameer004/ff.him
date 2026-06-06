@@ -184,7 +184,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="landmark">Landmark</label>
-                                <input type="text" id="landmark" required placeholder="Near Apollo Hospital" onblur="calculateDelivery()">
+                                <input type="text" id="landmark" required placeholder="Near Apollo Hospital">
                             </div>
                             <div class="form-group">
                                 <label for="city">City</label>
@@ -193,7 +193,7 @@
                             <div class="form-group">
                                 <label for="pincode">Pincode</label>
                                 <div style="display: flex; gap: 8px;">
-                                    <input type="text" id="pincode" required placeholder="500029" onblur="calculateDelivery()" style="flex: 1;">
+                                    <input type="text" id="pincode" required placeholder="500029" style="flex: 1;">
                                     <button type="button" class="btn-location-icon" id="loc-btn" onclick="useCurrentLocation()" title="Detect Current Location">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="10"></circle>
@@ -667,7 +667,9 @@
 
                             if (verifyData.success) {
                                 // ── Step 5: Persist locally + redirect ────────
-                                const orderId = 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+                                const orderId = (verifyData.data && verifyData.data.orderId)
+                                    ? verifyData.data.orderId
+                                    : 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
                                 const localOrder = {
                                     id:               orderId,
                                     backendId:        verifyData.data?._id || null,
@@ -689,7 +691,7 @@
                                 localStorage.removeItem('friendsFloristCoupon');
                                 localStorage.removeItem('friendsFloristCart');
 
-                                window.location.href = 'confirmation.html?method=Razorpay&id=' + orderId;
+                                window.location.href = 'confirmation.html?method=Razorpay&id=' + encodeURIComponent(orderId);
                             } else {
                                 showToast('Payment verification failed. Please contact support.', 'error', 'Verification Failed');
                                 payBtn.disabled    = false;
@@ -756,11 +758,11 @@
             const resolvedPhone = customerPhone || userSession.phone || '';
 
             // ─── 3. Generate local order ID & build the order object ─────────────────
-            const orderId   = 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-            const orderDate = new Date().toLocaleDateString();
+            const tempOrderId = 'ORD-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            const orderDate   = new Date().toLocaleDateString();
 
             const localOrder = {
-                id: orderId,
+                id: tempOrderId,
                 date: orderDate,
                 customer: customerName,
                 items: cart,
@@ -779,6 +781,8 @@
             localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
             localStorage.removeItem('friendsFloristCoupon');
             localStorage.removeItem('friendsFloristCart');
+
+            let finalOrderId = tempOrderId;
 
             // ─── 5. POST to backend API ──────────────────────────────────────────────
             try {
@@ -810,11 +814,18 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log('✅ Order saved to backend:', data);
-                    // Update the local order with the backend-assigned _id
-                    if (data.data && data.data._id) {
-                        localOrder.backendId = data.data._id;
+                    // Update the local order with the backend-assigned sequential orderId and _id
+                    if (data.data) {
+                        const backendDbId = data.data._id || null;
+                        const backendSeqId = data.data.orderId || tempOrderId;
+
+                        localOrder.backendId = backendDbId;
+                        localOrder.id = backendSeqId;
+                        finalOrderId = backendSeqId;
+
                         // Update the already-saved localStorage entry
-                        orders[0].backendId = data.data._id;
+                        orders[0].backendId = backendDbId;
+                        orders[0].id = backendSeqId;
                         localStorage.setItem('friendsFloristOrders', JSON.stringify(orders));
                     }
                 } else {
@@ -827,7 +838,7 @@
                 // localStorage already saved — graceful degradation
             }
 
-            window.location.href = 'confirmation.html?method=' + encodeURIComponent(method) + '&id=' + orderId;
+            window.location.href = 'confirmation.html?method=' + encodeURIComponent(method) + '&id=' + encodeURIComponent(finalOrderId);
         }
 
 
