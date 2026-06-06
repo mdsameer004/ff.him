@@ -109,16 +109,16 @@
                         <input type="text" id="a-title" required placeholder="e.g. Engagement Arrangements" class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
                     </div>
 
-                    <!-- Cover URL -->
+                    <!-- Upload Folder -->
                     <div>
-                        <label for="a-cover" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Cover Image URL *</label>
-                        <input type="url" id="a-cover" required placeholder="https://images.unsplash.com/photo-..." class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                        <label for="a-folder" class="block text-xs font-semibold text-gray-500 uppercase mb-2">Upload Folder *</label>
+                        <input type="file" id="a-folder" webkitdirectory directory multiple required class="w-full px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-rose-50/10 dark:bg-gray-750/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
                     </div>
 
                     <!-- Form CTA -->
                     <div class="flex justify-end gap-3 pt-4 border-t border-rose-50 dark:border-gray-700 mt-6">
                         <button type="button" onclick="closeAlbumModal()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-gray-700 dark:hover:bg-gray-650 text-gray-600 dark:text-gray-300 font-semibold text-xs rounded-xl transition-all">Cancel</button>
-                        <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Create Album</button>
+                        <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Add images to album</button>
                     </div>
                 </form>
             </div>
@@ -189,12 +189,12 @@
         document.getElementById('album-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const title = document.getElementById('a-title').value.trim();
-            const cover = document.getElementById('a-cover').value.trim();
+            const folderInput = document.getElementById('a-folder');
             const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating...';
+            submitBtn.textContent = 'Processing...';
 
             try {
                 const albums = await getAlbums();
@@ -204,11 +204,26 @@
                     return;
                 }
 
+                let images = [];
+                let cover = '';
+
+                if (folderInput.files && folderInput.files.length > 0) {
+                    for (let i = 0; i < folderInput.files.length; i++) {
+                        const file = folderInput.files[i];
+                        if (file.type.startsWith('image/')) {
+                            images.push(`images/gallery/${id}/${file.name}`);
+                        }
+                    }
+                    if (images.length > 0) {
+                        cover = images[0];
+                    }
+                }
+
                 const newAlbum = {
                     id,
                     title,
                     cover,
-                    images: [cover] // Set cover photo as first image
+                    images
                 };
 
                 albums.push(newAlbum);
@@ -219,7 +234,7 @@
                 alert('Error creating album: ' + err.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Album';
+                submitBtn.textContent = 'Add images to album';
             }
         });
 
