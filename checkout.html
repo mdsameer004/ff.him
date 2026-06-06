@@ -447,44 +447,71 @@
             const locBtn = document.getElementById('loc-btn');
             const statusContainer = document.getElementById('delivery-status-container');
             const statusText = document.getElementById('delivery-status-text');
-            
-            if (navigator.geolocation) {
-                if (locBtn) locBtn.classList.add('loading');
-                statusContainer.style.display = 'block';
-                statusText.textContent = 'Detecting precise location...';
-                statusText.style.color = '#666';
 
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        try {
-                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                            const data = await res.json();
-                            if (data && data.address) {
-                                if (data.address.postcode) {
-                                    document.getElementById('pincode').value = data.address.postcode;
-                                }
-                                if (data.address.road || data.address.suburb) {
-                                    let addy = `${data.address.road || ''} ${data.address.suburb || ''}`.trim();
-                                    if (addy) document.getElementById('address').value = addy;
-                                }
-                            }
-                        } catch(e) { console.error('Reverse geocode failed', e); }
-
-                        if (locBtn) locBtn.classList.remove('loading');
-                        processCoordinates(lat, lng, false);
-                    },
-                    (error) => {
-                        if (locBtn) locBtn.classList.remove('loading');
-                        statusText.textContent = 'Unable to get your location. Please enter pincode manually.';
-                        statusText.style.color = '#d9534f';
-                    }
-                );
-            } else {
+            if (!navigator.geolocation) {
                 showToast("Geolocation is not supported by this browser.", "error", "Error");
+                return;
             }
+
+            if (locBtn) locBtn.classList.add('loading');
+            statusContainer.style.display = 'block';
+            statusText.textContent = 'Detecting your exact location...';
+            statusText.style.color = '#666';
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    statusText.textContent = 'Fetching address details...';
+
+                    try {
+                        const res = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
+                        );
+                        const data = await res.json();
+
+                        if (data && data.address) {
+                            const a = data.address;
+
+                            // ── Street Address ────────────────────────────────
+                            const streetParts = [
+                                a.house_number,
+                                a.road || a.pedestrian || a.footway
+                            ].filter(Boolean);
+                            const street = streetParts.join(', ');
+                            if (street) document.getElementById('address').value = street;
+
+                            // ── Landmark / Area ───────────────────────────────
+                            const area = a.neighbourhood || a.suburb || a.quarter || a.residential || '';
+                            if (area) document.getElementById('landmark').value = area;
+
+                            // ── City ──────────────────────────────────────────
+                            const city = a.city || a.town || a.village || a.county || a.state_district || '';
+                            if (city) document.getElementById('city').value = city;
+
+                            // ── Pincode ───────────────────────────────────────
+                            if (a.postcode) document.getElementById('pincode').value = a.postcode;
+                        }
+                    } catch (e) {
+                        console.error('Reverse geocode failed', e);
+                        statusText.textContent = 'Could not fetch address. Calculating delivery from GPS coordinates...';
+                    }
+
+                    if (locBtn) locBtn.classList.remove('loading');
+                    processCoordinates(lat, lng, false);
+                },
+                (error) => {
+                    if (locBtn) locBtn.classList.remove('loading');
+                    let msg = 'Unable to get your location. Please enter pincode manually.';
+                    if (error.code === 1) msg = 'Location permission denied. Please allow access and try again.';
+                    else if (error.code === 2) msg = 'Location unavailable. Please enter your pincode manually.';
+                    else if (error.code === 3) msg = 'Location request timed out. Please try again.';
+                    statusText.textContent = msg;
+                    statusText.style.color = '#d9534f';
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         }
 
         function processCoordinates(lat, lng, isHydPincode = false) {
