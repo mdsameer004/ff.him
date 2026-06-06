@@ -76,9 +76,9 @@
                 </div>
 
                 <!-- Add Photo Form -->
-                <form id="photo-add-form" class="flex gap-3 mb-6 bg-rose-50/20 dark:bg-gray-750/30 p-3.5 rounded-2xl border border-rose-50 dark:border-gray-700/50">
-                    <input type="url" id="new-photo-url" required placeholder="Paste absolute Image URL (https://...)" class="flex-1 px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
-                    <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all whitespace-nowrap">➕ Add Photo</button>
+                <form id="photo-add-form" class="flex flex-col sm:flex-row gap-3 mb-6 bg-rose-50/20 dark:bg-gray-750/30 p-3.5 rounded-2xl border border-rose-50 dark:border-gray-700/50">
+                    <input type="file" id="new-photo-file" accept="image/*" multiple required class="flex-1 px-4 py-2.5 rounded-xl border border-rose-50 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/40 text-gray-800 dark:text-gray-100">
+                    <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md transition-all whitespace-nowrap">➕ Add Photos</button>
                 </form>
 
                 <!-- Photos Grid container -->
@@ -309,8 +309,8 @@
         // Submit photo addition
         document.getElementById('photo-add-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const url = document.getElementById('new-photo-url').value.trim();
-            if (!activeAlbumId || !url) return;
+            const fileInput = document.getElementById('new-photo-file');
+            if (!activeAlbumId || !fileInput.files || fileInput.files.length === 0) return;
 
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
@@ -323,8 +323,18 @@
 
                 if (!albums[aIdx].images) albums[aIdx].images = [];
                 
-                // Append URL
-                albums[aIdx].images.push(url);
+                // Append file paths
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const file = fileInput.files[i];
+                    if (file.type.startsWith('image/')) {
+                        albums[aIdx].images.push(`images/gallery/${activeAlbumId}/${file.name}`);
+                    }
+                }
+
+                // If cover is empty and we added images, set the cover
+                if (!albums[aIdx].cover && albums[aIdx].images.length > 0) {
+                    albums[aIdx].cover = albums[aIdx].images[0];
+                }
 
                 await saveAlbums(albums);
                 document.getElementById('photo-add-form').reset();
@@ -334,7 +344,7 @@
                 alert('Error adding photo: ' + err.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = '➕ Add Photo';
+                submitBtn.textContent = '➕ Add Photos';
             }
         });
 
