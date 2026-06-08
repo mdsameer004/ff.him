@@ -1,35 +1,4 @@
-const defaultAlbumsData = [
-    {
-        id: 'hall-decorations',
-        title: 'Hall Decoration',
-        cover: '',
-        images: []
-    },
-    {
-        id: 'anniversary',
-        title: 'Anniversary',
-        cover: '',
-        images: []
-    },
-    {
-        id: 'birthday',
-        title: 'Birthday',
-        cover: '',
-        images: []
-    },
-    {
-        id: 'sangeet',
-        title: 'Sangeet',
-        cover: '',
-        images: []
-    },
-    {
-        id: 'floral-welcome',
-        title: 'Floral Welcome Setup',
-        cover: '',
-        images: []
-    }
-];
+const defaultAlbumsData = [];
 
 // Always use the hardcoded defaultAlbumsData as the source of truth.
 // localStorage is NOT used for display — every visitor sees the same albums.
