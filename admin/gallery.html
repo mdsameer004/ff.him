@@ -197,37 +197,20 @@
             submitBtn.textContent = 'Processing...';
 
             try {
-                const albums = await getAlbums();
-                
-                if (albums.some(a => a.id === id)) {
-                    alert('An album with a similar name already exists. Please choose a different title.');
-                    return;
-                }
-
-                let images = [];
-                let cover = '';
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('id', id);
 
                 if (folderInput.files && folderInput.files.length > 0) {
                     for (let i = 0; i < folderInput.files.length; i++) {
                         const file = folderInput.files[i];
                         if (file.type.startsWith('image/')) {
-                            images.push(`images/gallery/${id}/${file.name}`);
+                            formData.append('images', file);
                         }
-                    }
-                    if (images.length > 0) {
-                        cover = images[0];
                     }
                 }
 
-                const newAlbum = {
-                    id,
-                    title,
-                    cover,
-                    images
-                };
-
-                albums.push(newAlbum);
-                await saveAlbums(albums);
+                await window.apiClient.createAlbum(formData);
                 closeAlbumModal();
                 renderAlbums();
             } catch (err) {
@@ -241,11 +224,8 @@
         // Delete entire album
         async function deleteAlbum(id) {
             try {
-                const albums = await getAlbums();
-                const a = albums.find(alb => alb.id === id);
-                if (a && confirm(`Are you absolutely sure you want to delete the album "${a.title}"? All internal photo listings will be deleted from the database.`)) {
-                    const filtered = albums.filter(alb => alb.id !== id);
-                    await saveAlbums(filtered);
+                if (confirm(`Are you absolutely sure you want to delete this album? All photos will be deleted.`)) {
+                    await window.apiClient.deleteAlbumAPI(id);
                     renderAlbums();
                 }
             } catch (err) {
@@ -317,28 +297,17 @@
             submitBtn.textContent = 'Adding...';
 
             try {
-                const albums = await getAlbums();
-                const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
-                if (aIdx === -1) return;
-
-                if (!albums[aIdx].images) albums[aIdx].images = [];
-                
-                // Append file paths
+                const formData = new FormData();
                 for (let i = 0; i < fileInput.files.length; i++) {
                     const file = fileInput.files[i];
                     if (file.type.startsWith('image/')) {
-                        albums[aIdx].images.push(`images/gallery/${activeAlbumId}/${file.name}`);
+                        formData.append('images', file);
                     }
                 }
 
-                // If cover is empty and we added images, set the cover
-                if (!albums[aIdx].cover && albums[aIdx].images.length > 0) {
-                    albums[aIdx].cover = albums[aIdx].images[0];
-                }
-
-                await saveAlbums(albums);
+                const response = await window.apiClient.addPhotosToAlbum(activeAlbumId, formData);
                 document.getElementById('photo-add-form').reset();
-                renderPhotosGrid(albums[aIdx]);
+                renderPhotosGrid(response.data || response);
                 renderAlbums();
             } catch (err) {
                 alert('Error adding photo: ' + err.message);
@@ -352,22 +321,9 @@
         window.deletePhoto = async function(index) {
             if (!activeAlbumId) return;
             try {
-                const albums = await getAlbums();
-                const aIdx = albums.findIndex(alb => alb.id === activeAlbumId);
-                if (aIdx === -1) return;
-
-                const a = albums[aIdx];
-                if (a.images && confirm(`Are you sure you want to remove this photo from the album?`)) {
-                    // Delete photo URL at index
-                    a.images.splice(index, 1);
-                    
-                    // Keep cover updated if deleting cover or cover was first photo
-                    if (index === 0 && a.images.length > 0) {
-                        a.cover = a.images[0];
-                    }
-
-                    await saveAlbums(albums);
-                    renderPhotosGrid(a);
+                if (confirm(`Are you sure you want to remove this photo from the album?`)) {
+                    const response = await window.apiClient.deletePhotoFromAlbum(activeAlbumId, index);
+                    renderPhotosGrid(response.data || response);
                     renderAlbums();
                 }
             } catch (err) {

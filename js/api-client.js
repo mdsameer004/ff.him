@@ -51,6 +51,11 @@ class ApiClient {
         const url = `${window.API_BASE_URL}${path}`;
         options.headers = { ...this.getHeaders(secured), ...options.headers };
 
+        // If body is FormData, we must let the browser set the Content-Type automatically (with boundary)
+        if (options.body instanceof FormData) {
+            delete options.headers['Content-Type'];
+        }
+
         // Attempt live backend API call
         const response = await fetch(url, options);
 
@@ -329,13 +334,42 @@ class ApiClient {
     }
 
     async getAlbums() {
-        return this.request('/albums', { method: 'GET' });
+        const envelope = await this.request('/albums', { method: 'GET' });
+        if (Array.isArray(envelope)) return envelope;
+        if (envelope && Array.isArray(envelope.data)) return envelope.data;
+        return [];
     }
 
     async saveAlbums(albumsData) {
         return this.request('/albums', {
             method: 'POST',
             body: JSON.stringify(albumsData)
+        }, true);
+    }
+
+    async createAlbum(formData) {
+        return this.request('/albums', {
+            method: 'POST',
+            body: formData
+        }, true);
+    }
+
+    async deleteAlbumAPI(id) {
+        return this.request(`/albums/${id}`, {
+            method: 'DELETE'
+        }, true);
+    }
+
+    async addPhotosToAlbum(id, formData) {
+        return this.request(`/albums/${id}/photos`, {
+            method: 'POST',
+            body: formData
+        }, true);
+    }
+
+    async deletePhotoFromAlbum(id, index) {
+        return this.request(`/albums/${id}/photos/${index}`, {
+            method: 'DELETE'
         }, true);
     }
 
