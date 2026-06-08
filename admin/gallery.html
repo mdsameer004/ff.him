@@ -204,7 +204,8 @@
                 if (folderInput.files && folderInput.files.length > 0) {
                     for (let i = 0; i < folderInput.files.length; i++) {
                         const file = folderInput.files[i];
-                        if (file.type.startsWith('image/')) {
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                        if (allowedTypes.includes(file.type)) {
                             formData.append('images', file);
                         }
                     }
@@ -300,7 +301,8 @@
                 const formData = new FormData();
                 for (let i = 0; i < fileInput.files.length; i++) {
                     const file = fileInput.files[i];
-                    if (file.type.startsWith('image/')) {
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                    if (allowedTypes.includes(file.type)) {
                         formData.append('images', file);
                     }
                 }
