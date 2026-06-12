@@ -581,18 +581,35 @@
             }
         }
 
-        function setupLandmarkAutocomplete() {
+        async function setupLandmarkAutocomplete() {
             const landmarkInput = document.getElementById('landmark');
             const suggestionsEl = document.getElementById('landmark-suggestions');
             if (!landmarkInput || !suggestionsEl) return;
 
-            // If a valid Google Maps API Key is provided, load Google Places Autocomplete
+            try {
+                const API_BASE = (typeof window.API_BASE_URL !== 'undefined')
+                    ? window.API_BASE_URL
+                    : 'https://floristbackend.onrender.com/api';
+                
+                const response = await fetch(`${API_BASE}/config/google-maps-key`);
+                const data = await response.json();
+                
+                if (data && data.success && data.key && data.key !== 'YOUR_GOOGLE_MAPS_API_KEY') {
+                    window.GOOGLE_MAPS_API_KEY = data.key;
+                    loadGooglePlacesAutocomplete(landmarkInput);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Failed to fetch Google Maps API key from backend. Falling back to OpenStreetMap.");
+            }
+
+            // Fallback: OpenStreetMap Autocomplete if no key config is fetched
             if (typeof GOOGLE_MAPS_API_KEY !== 'undefined' && GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY') {
+                window.GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY;
                 loadGooglePlacesAutocomplete(landmarkInput);
                 return;
             }
 
-            // Fallback: OpenStreetMap Nominatim Autocomplete
             setupOSMNominatimAutocomplete(landmarkInput, suggestionsEl);
         }
 
@@ -602,8 +619,9 @@
                 return;
             }
 
+            const apiKey = window.GOOGLE_MAPS_API_KEY || (typeof GOOGLE_MAPS_API_KEY !== 'undefined' ? GOOGLE_MAPS_API_KEY : '');
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
             script.async = true;
             script.defer = true;
             script.onload = () => {
