@@ -344,6 +344,8 @@
         let calculatedDeliveryCharge = 0;
         let isDeliverable = false;
         let locationCalculated = false;
+        let selectedLat = null;
+        let selectedLng = null;
 
         // Coupon Logic
         let appliedCoupon = null;
@@ -679,6 +681,8 @@
         }
 
         function processCoordinates(lat, lng, isHydPincode = false) {
+            selectedLat = lat;
+            selectedLng = lng;
             const statusText = document.getElementById('delivery-status-text');
             const distance = calculateDistance(SHOP_LAT, SHOP_LNG, lat, lng);
             const price = getDeliveryPricing(distance);
@@ -857,6 +861,9 @@
                                     deliveryAddress,
                                     items,
                                     totalAmount: finalTotalAmount,
+                                    landmark,
+                                    latitude: selectedLat,
+                                    longitude: selectedLng,
                                 })
                             });
 
@@ -880,6 +887,9 @@
                                     method:           'Razorpay',
                                     status:           'processing',
                                     razorpayPaymentId: response.razorpay_payment_id,
+                                    landmark,
+                                    latitude:         selectedLat,
+                                    longitude:        selectedLng,
                                 };
 
                                 let orders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
