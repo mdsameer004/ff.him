@@ -597,15 +597,11 @@
                 debounceTimer = setTimeout(async () => {
                     try {
                         const city = (document.getElementById('city') && document.getElementById('city').value.trim()) || 'Hyderabad';
-                        const pincode = document.getElementById('pincode').value.trim();
                         
-                        let q = `${query}`;
-                        if (pincode && pincode.startsWith('500')) {
-                            q += ` ${pincode}`;
-                        }
-                        q += `, ${city}, India`;
+                        // We do not append the pincode to keep query broad (OSM postcode mapping is highly incomplete)
+                        let q = `${query}, ${city}, India`;
 
-                        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=in`;
+                        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=12&countrycodes=in`;
                         
                         const response = await fetch(url, {
                             headers: {
