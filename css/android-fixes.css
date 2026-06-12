@@ -334,11 +334,38 @@ body {
     }
 }
 
-/* ── 16. Hide congested user greeting on mobile/Android headers ── */
+/* ── 16. Hide congested user greeting and adjust page header spacings on mobile/Android headers ── */
 @media screen and (max-width: 768px) {
     #nav-auth-area,
     .nav-actions #nav-auth-area {
         display: none !important;
+    }
+
+    /* Reduce excessive vertical spacing on page headers in mobile view */
+    .page-header, .info-page-header {
+        padding: 50px 0 30px !important;
+        margin-bottom: 24px !important;
+    }
+
+    .page-header h1, .info-page-header h1 {
+        font-size: 2rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .page-header p, .info-page-header p {
+        font-size: 0.95rem !important;
+        padding: 0 16px;
+    }
+
+    /* Reduce spacing below main container slightly on mobile */
+    .shop-container, .wishlist-container, .info-content {
+        padding-bottom: 40px !important;
+        margin-bottom: 40px !important;
+    }
+
+    .products-header {
+        margin-bottom: 20px !important;
+        padding-bottom: 15px !important;
     }
 }
 
