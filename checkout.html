@@ -337,9 +337,6 @@
     <script src="js/cart.js?v=2.2.0"></script>
     <script src="js/app.js"></script>
     <script>
-        // Configure your Google Maps API Key here to enable Google Places Autocomplete.
-        // If left as default, the application will fallback to OpenStreetMap Nominatim automatically.
-        const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
 
         const SHOP_LAT = 17.4043;
         const SHOP_LNG = 78.4823;
@@ -581,106 +578,11 @@
             }
         }
 
-        async function setupLandmarkAutocomplete() {
+        function setupLandmarkAutocomplete() {
             const landmarkInput = document.getElementById('landmark');
             const suggestionsEl = document.getElementById('landmark-suggestions');
             if (!landmarkInput || !suggestionsEl) return;
 
-            try {
-                const API_BASE = (typeof window.API_BASE_URL !== 'undefined')
-                    ? window.API_BASE_URL
-                    : 'https://floristbackend.onrender.com/api';
-                
-                const response = await fetch(`${API_BASE}/config/google-maps-key`);
-                const data = await response.json();
-                
-                if (data && data.success && data.key && data.key !== 'YOUR_GOOGLE_MAPS_API_KEY') {
-                    window.GOOGLE_MAPS_API_KEY = data.key;
-                    loadGooglePlacesAutocomplete(landmarkInput);
-                    return;
-                }
-            } catch (err) {
-                console.warn("Failed to fetch Google Maps API key from backend. Falling back to OpenStreetMap.");
-            }
-
-            // Fallback: OpenStreetMap Autocomplete if no key config is fetched
-            if (typeof GOOGLE_MAPS_API_KEY !== 'undefined' && GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY') {
-                window.GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY;
-                loadGooglePlacesAutocomplete(landmarkInput);
-                return;
-            }
-
-            setupOSMNominatimAutocomplete(landmarkInput, suggestionsEl);
-        }
-
-        function loadGooglePlacesAutocomplete(landmarkInput) {
-            if (window.google && window.google.maps && window.google.maps.places) {
-                initGoogleAutocomplete(landmarkInput);
-                return;
-            }
-
-            const apiKey = window.GOOGLE_MAPS_API_KEY || (typeof GOOGLE_MAPS_API_KEY !== 'undefined' ? GOOGLE_MAPS_API_KEY : '');
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-            script.async = true;
-            script.defer = true;
-            script.onload = () => {
-                initGoogleAutocomplete(landmarkInput);
-            };
-            script.onerror = () => {
-                console.error("Failed to load Google Maps script. Falling back to OpenStreetMap.");
-                const suggestionsEl = document.getElementById('landmark-suggestions');
-                if (suggestionsEl) setupOSMNominatimAutocomplete(landmarkInput, suggestionsEl);
-            };
-            document.head.appendChild(script);
-        }
-
-        function initGoogleAutocomplete(landmarkInput) {
-            const autocomplete = new google.maps.places.Autocomplete(landmarkInput, {
-                componentRestrictions: { country: 'in' },
-                bounds: new google.maps.LatLngBounds(
-                    new google.maps.LatLng(17.18, 78.25), // Southwest boundary of Hyderabad ORR limits
-                    new google.maps.LatLng(17.58, 78.68)  // Northeast boundary of Hyderabad ORR limits
-                ),
-                strictBounds: true,
-                fields: ['name', 'formatted_address', 'geometry', 'address_components']
-            });
-
-            autocomplete.addListener('place_changed', () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) {
-                    console.warn("No geometry details available for the selected place.");
-                    return;
-                }
-
-                // Fill landmark input
-                landmarkInput.value = place.name;
-
-                // Try to extract pincode
-                let pincode = '';
-                if (place.address_components) {
-                    for (const component of place.address_components) {
-                        if (component.types.includes('postal_code')) {
-                            pincode = component.long_name;
-                            break;
-                        }
-                    }
-                }
-
-                if (pincode && pincode.startsWith('500') && pincode.length >= 6) {
-                    document.getElementById('pincode').value = pincode;
-                }
-
-                const lat = place.geometry.location.lat();
-                const lng = place.geometry.location.lng();
-                const pincodeVal = document.getElementById('pincode').value.trim();
-                const isHydPincode = pincodeVal.startsWith('500') && pincodeVal.length >= 6;
-
-                processCoordinates(lat, lng, isHydPincode);
-            });
-        }
-
-        function setupOSMNominatimAutocomplete(landmarkInput, suggestionsEl) {
             let debounceTimer = null;
 
             landmarkInput.addEventListener('input', () => {
@@ -697,30 +599,36 @@
                     try {
                         const city = (document.getElementById('city') && document.getElementById('city').value.trim()) || 'Hyderabad';
                         
-                        // We do not append the pincode to keep query broad (OSM postcode mapping is highly incomplete)
-                        let q = `${query}, ${city}, India`;
-
-                        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=12&countrycodes=in`;
+                        // Photon API provides typeahead OSM search.
+                        // We query the typed name biased by the lat/lng coords of Hyderabad
+                        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query + ', ' + city)}&lat=17.4043&lon=78.4823&limit=12`;
                         
-                        const response = await fetch(url, {
-                            headers: {
-                                'Accept-Language': 'en'
-                            }
-                        });
+                        const response = await fetch(url);
                         const data = await response.json();
 
-                        if (data && data.length > 0) {
-                            suggestionsEl.innerHTML = data.map(item => {
-                                const parts = item.display_name.split(',');
-                                const mainName = parts[0].trim();
-                                const subtitle = parts.slice(1, 4).map(p => p.trim()).join(', ');
+                        if (data && data.features && data.features.length > 0) {
+                            suggestionsEl.innerHTML = data.features.map(feature => {
+                                const props = feature.properties;
+                                const mainName = props.name || props.street || 'Location';
                                 
+                                // Build address description
+                                const addressParts = [];
+                                if (props.street && props.street !== mainName) addressParts.push(props.street);
+                                if (props.locality) addressParts.push(props.locality);
+                                if (props.city) addressParts.push(props.city);
+                                if (props.postcode) addressParts.push(props.postcode);
+                                const subtitle = addressParts.join(', ') || 'Hyderabad, India';
+
+                                // Coordinates in GeoJSON features are stored in longitude first, then latitude [lng, lat]
+                                const [lng, lat] = feature.geometry.coordinates;
+
                                 return `
                                     <div class="landmark-suggestion-item" 
                                          data-name="${mainName.replace(/"/g, '&quot;')}" 
-                                         data-fullname="${item.display_name.replace(/"/g, '&quot;')}" 
-                                         data-lat="${item.lat}" 
-                                         data-lon="${item.lon}">
+                                         data-fullname="${subtitle.replace(/"/g, '&quot;')}" 
+                                         data-postcode="${(props.postcode || '').replace(/"/g, '&quot;')}"
+                                         data-lat="${lat}" 
+                                         data-lon="${lng}">
                                         <strong>${mainName}</strong>
                                         <small>${subtitle}</small>
                                     </div>
@@ -742,7 +650,7 @@
                 if (!item) return;
 
                 const name = item.getAttribute('data-name');
-                const fullName = item.getAttribute('data-fullname');
+                const postcode = item.getAttribute('data-postcode');
                 const lat = parseFloat(item.getAttribute('data-lat'));
                 const lon = parseFloat(item.getAttribute('data-lon'));
 
@@ -750,9 +658,8 @@
                 suggestionsEl.innerHTML = '';
                 suggestionsEl.style.display = 'none';
 
-                const pincodeMatch = fullName.match(/\b500\d{3}\b/);
-                if (pincodeMatch) {
-                    document.getElementById('pincode').value = pincodeMatch[0];
+                if (postcode && postcode.startsWith('500') && postcode.length >= 6) {
+                    document.getElementById('pincode').value = postcode;
                 }
 
                 if (lat && lon) {
