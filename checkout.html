@@ -565,22 +565,30 @@
                             if (window.google && window.google.maps) {
                                 const geocoder = new google.maps.Geocoder();
                                 geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                                    if (status === google.maps.GeocoderStatus.OK && results && results.length > 0) {
-                                        const result = results[0];
-                                        if (result.formatted_address) {
-                                            document.getElementById('address').value = result.formatted_address;
-                                        }
-                                        if (result.address_components) {
-                                            for (const component of result.address_components) {
-                                                if (component.types.includes('postal_code')) {
-                                                    document.getElementById('pincode').value = component.long_name;
-                                                    break;
+                                    try {
+                                        const okStatus = (window.google && window.google.maps && window.google.maps.GeocoderStatus) 
+                                            ? window.google.maps.GeocoderStatus.OK 
+                                            : 'OK';
+                                        if (status === okStatus && results && results.length > 0) {
+                                            const result = results[0];
+                                            if (result.formatted_address) {
+                                                document.getElementById('address').value = result.formatted_address;
+                                            }
+                                            if (result.address_components) {
+                                                for (const component of result.address_components) {
+                                                    if (component.types && component.types.includes('postal_code')) {
+                                                        document.getElementById('pincode').value = component.long_name;
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
+                                    } catch (innerErr) {
+                                        console.error('Error parsing geocoding response:', innerErr);
+                                    } finally {
+                                        if (locBtn) locBtn.classList.remove('loading');
+                                        processCoordinates(lat, lng, false);
                                     }
-                                    if (locBtn) locBtn.classList.remove('loading');
-                                    processCoordinates(lat, lng, false);
                                 });
                             } else {
                                 if (locBtn) locBtn.classList.remove('loading');
@@ -593,10 +601,12 @@
                         }
                     },
                     (error) => {
+                        console.warn('Geolocation failed:', error);
                         if (locBtn) locBtn.classList.remove('loading');
                         statusText.textContent = 'Unable to get your location. Please enter pincode manually.';
                         statusText.style.color = '#d9534f';
-                    }
+                    },
+                    { timeout: 8000, enableHighAccuracy: true, maximumAge: 60000 }
                 );
             } else {
                 showToast("Geolocation is not supported by this browser.", "error", "Error");
@@ -645,8 +655,144 @@
                 return;
             }
 
-            const autocompleteService = new google.maps.places.AutocompleteService();
-            const placesService = new google.maps.places.PlacesService(document.createElement('div'));
+            let autocompleteService = null;
+            try {
+                if (google.maps.places.AutocompleteService) {
+                    autocompleteService = new google.maps.places.AutocompleteService();
+                }
+            } catch (e) {
+                console.warn("Could not instantiate legacy AutocompleteService:", e);
+            }
+
+            let placesService = null;
+            try {
+                if (google.maps.places.PlacesService) {
+                    placesService = new google.maps.places.PlacesService(document.createElement('div'));
+                }
+            } catch (e) {
+                console.warn("Could not instantiate legacy PlacesService:", e);
+            }
+
+            async function fetchSuggestions(query) {
+                // Try new AutocompleteSuggestion API first
+                if (google.maps.places && google.maps.places.AutocompleteSuggestion) {
+                    try {
+                        const { suggestions } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+                            input: query,
+                            includedRegionCodes: ['in'],
+                            locationBias: {
+                                circle: {
+                                    center: { latitude: 17.4043, longitude: 78.4823 },
+                                    radius: 25000
+                                }
+                            }
+                        });
+
+                        if (suggestions && suggestions.length > 0) {
+                            return suggestions.map(s => {
+                                const prediction = s.placePrediction;
+                                return {
+                                    placeId: prediction.placeId,
+                                    mainText: prediction.structuredFormat.mainText.text,
+                                    secondaryText: prediction.structuredFormat.secondaryText.text || ''
+                                };
+                            });
+                        }
+                    } catch (err) {
+                        console.warn("New Autocomplete API fetch failed, trying legacy:", err);
+                    }
+                }
+
+                // Legacy fallback
+                if (autocompleteService) {
+                    return new Promise((resolve) => {
+                        autocompleteService.getPlacePredictions({
+                            input: query,
+                            componentRestrictions: { country: 'in' },
+                            locationBias: new google.maps.LatLng(17.4043, 78.4823),
+                            radius: 25000
+                        }, (predictions, status) => {
+                            const okStatus = (google.maps.places.PlacesServiceStatus && google.maps.places.PlacesServiceStatus.OK) || 'OK';
+                            if (status !== okStatus || !predictions) {
+                                resolve([]);
+                                return;
+                            }
+                            resolve(predictions.map(p => ({
+                                placeId: p.place_id,
+                                mainText: p.structured_formatting.main_text,
+                                secondaryText: p.structured_formatting.secondary_text || ''
+                            })));
+                        });
+                    });
+                }
+
+                return [];
+            }
+
+            async function fetchDetails(placeId) {
+                if (google.maps.places && google.maps.places.Place) {
+                    try {
+                        const place = new google.maps.places.Place({ id: placeId });
+                        await place.fetchFields({
+                            fields: ['displayName', 'location', 'formattedAddress', 'addressComponents']
+                        });
+
+                        // Extract pincode
+                        let pincode = '';
+                        if (place.addressComponents) {
+                            for (const component of place.addressComponents) {
+                                if (component.types && component.types.includes('postal_code')) {
+                                    pincode = component.longText || component.shortText || '';
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Extract formatted address
+                        const formattedAddress = place.formattedAddress || '';
+                        const lat = place.location ? ((typeof place.location.lat === 'function') ? place.location.lat() : place.location.latitude) : null;
+                        const lng = place.location ? ((typeof place.location.lng === 'function') ? place.location.lng() : place.location.longitude) : null;
+
+                        return { pincode, formattedAddress, lat, lng };
+                    } catch (err) {
+                        console.warn("New Place details fetch failed, trying legacy:", err);
+                    }
+                }
+
+                // Legacy fallback
+                if (placesService) {
+                    return new Promise((resolve) => {
+                        placesService.getDetails({
+                            placeId: placeId,
+                            fields: ['name', 'geometry', 'formatted_address', 'address_components']
+                        }, (place, status) => {
+                            const okStatus = (google.maps.places.PlacesServiceStatus && google.maps.places.PlacesServiceStatus.OK) || 'OK';
+                            if (status !== okStatus || !place) {
+                                resolve(null);
+                                return;
+                            }
+
+                            let pincode = '';
+                            if (place.address_components) {
+                                for (const component of place.address_components) {
+                                    if (component.types && component.types.includes('postal_code')) {
+                                        pincode = component.long_name;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            const formattedAddress = place.formatted_address || '';
+                            const lat = place.geometry && place.geometry.location ? place.geometry.location.lat() : null;
+                            const lng = place.geometry && place.geometry.location ? place.geometry.location.lng() : null;
+
+                            resolve({ pincode, formattedAddress, lat, lng });
+                        });
+                    });
+                }
+
+                return null;
+            }
 
             let debounceTimer = null;
 
@@ -661,28 +807,24 @@
                     return;
                 }
 
-                debounceTimer = setTimeout(() => {
-                    autocompleteService.getPlacePredictions({
-                        input: query,
-                        componentRestrictions: { country: 'in' },
-                        locationBias: new google.maps.LatLng(17.4043, 78.4823), // Hyderabad central coordinates
-                        radius: 25000 // 25 km radius
-                    }, (predictions, status) => {
-                        if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const items = await fetchSuggestions(query);
+                        if (!items || items.length === 0) {
                             suggestionsEl.innerHTML = '';
                             suggestionsEl.style.display = 'none';
                             return;
                         }
 
                         // Limit to 10 suggestions
-                        const limitedPredictions = predictions.slice(0, 10);
+                        const limited = items.slice(0, 10);
 
-                        suggestionsEl.innerHTML = limitedPredictions.map(prediction => {
-                            const mainName = prediction.structured_formatting.main_text;
-                            const subtitle = prediction.structured_formatting.secondary_text || '';
+                        suggestionsEl.innerHTML = limited.map(item => {
+                            const mainName = item.mainText;
+                            const subtitle = item.secondaryText || '';
                             return `
                                 <div class="landmark-suggestion-item" 
-                                     data-place-id="${prediction.place_id}" 
+                                     data-place-id="${item.placeId}" 
                                      data-name="${mainName.replace(/"/g, '&quot;')}">
                                     <strong>${mainName}</strong>
                                     <small>${subtitle}</small>
@@ -690,11 +832,15 @@
                             `;
                         }).join('');
                         suggestionsEl.style.display = 'block';
-                    });
+                    } catch (err) {
+                        console.error("Suggestions fetch error:", err);
+                        suggestionsEl.innerHTML = '';
+                        suggestionsEl.style.display = 'none';
+                    }
                 }, 300); // Debounce autocomplete requests by 300ms
             });
 
-            suggestionsEl.addEventListener('click', (e) => {
+            suggestionsEl.addEventListener('click', async (e) => {
                 const item = e.target.closest('.landmark-suggestion-item');
                 if (!item) return;
 
@@ -706,49 +852,33 @@
                 suggestionsEl.style.display = 'none';
 
                 if (placeId) {
-                    placesService.getDetails({
-                        placeId: placeId,
-                        fields: ['name', 'geometry', 'formatted_address', 'address_components']
-                    }, (place, status) => {
-                        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+                    try {
+                        const details = await fetchDetails(placeId);
+                        if (details) {
                             selectedPlaceId = placeId;
 
-                            // Extract pincode
-                            let pincode = '';
-                            if (place.address_components) {
-                                for (const component of place.address_components) {
-                                    if (component.types.includes('postal_code')) {
-                                        pincode = component.long_name;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // Extract formatted address
-                            const formattedAddress = place.formatted_address || '';
-
                             // Autofill relevant checkout fields
-                            if (pincode) {
-                                document.getElementById('pincode').value = pincode;
+                            if (details.pincode) {
+                                document.getElementById('pincode').value = details.pincode;
                             }
-                            if (formattedAddress) {
-                                document.getElementById('address').value = formattedAddress;
+                            if (details.formattedAddress) {
+                                document.getElementById('address').value = details.formattedAddress;
                             }
 
-                            if (place.geometry && place.geometry.location) {
-                                const lat = place.geometry.location.lat();
-                                const lng = place.geometry.location.lng();
+                            if (details.lat != null && details.lng != null) {
                                 const pincodeVal = document.getElementById('pincode').value.trim();
                                 const isHydPincode = pincodeVal.startsWith('500') && pincodeVal.length >= 6;
-                                processCoordinates(lat, lng, isHydPincode);
+                                processCoordinates(details.lat, details.lng, isHydPincode);
                             } else {
                                 calculateDelivery();
                             }
                         } else {
-                            console.error("Places details query failed:", status);
                             calculateDelivery();
                         }
-                    });
+                    } catch (err) {
+                        console.error("Details fetch error:", err);
+                        calculateDelivery();
+                    }
                 } else {
                     calculateDelivery();
                 }
