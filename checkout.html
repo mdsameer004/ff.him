@@ -580,10 +580,21 @@
             }
         }
 
-        function setupLandmarkAutocomplete() {
+        async function setupLandmarkAutocomplete() {
             const landmarkInput = document.getElementById('landmark');
             const suggestionsEl = document.getElementById('landmark-suggestions');
             if (!landmarkInput || !suggestionsEl) return;
+
+            try {
+                const API_BASE = (typeof window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : 'https://floristbackend.onrender.com/api';
+                const res = await fetch(`${API_BASE}/config/locationiq-key`);
+                const data = await res.json();
+                if (data && data.success && data.key) {
+                    window.LOCATIONIQ_API_KEY = data.key;
+                }
+            } catch (err) {
+                console.warn("Failed to fetch LocationIQ key from backend.", err);
+            }
 
             let debounceTimer = null;
 
@@ -599,37 +610,43 @@
 
                 debounceTimer = setTimeout(async () => {
                     try {
-                        // Photon API provides typeahead OSM search.
-                        // We do not append the city text to the query since place names rarely contain "Hyderabad" in their name tag.
-                        // Instead, we strictly filter results using a bounding box covering the Hyderabad ORR limits.
-                        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&bbox=78.20,17.15,78.70,17.65&limit=15`;
+                        const apiKey = window.LOCATIONIQ_API_KEY;
+                        if (!apiKey || apiKey === 'YOUR_LOCATIONIQ_API_KEY') {
+                            suggestionsEl.innerHTML = '<div style="padding:12px;color:#d9534f;font-size:0.85rem;">LocationIQ API Key not configured in backend .env.</div>';
+                            suggestionsEl.style.display = 'block';
+                            return;
+                        }
+
+                        // Query LocationIQ Autocomplete API.
+                        // Restrict to India (countrycodes=in) and prioritize/bias Hyderabad (location=17.4043,78.4823).
+                        const url = `https://api.locationiq.com/v1/autocomplete.php?key=${apiKey}&q=${encodeURIComponent(query)}&countrycodes=in&location=17.4043,78.4823&limit=10&format=json`;
                         
                         const response = await fetch(url);
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => ({}));
+                            console.warn("LocationIQ error:", response.status, errData);
+                            suggestionsEl.innerHTML = '';
+                            suggestionsEl.style.display = 'none';
+                            return;
+                        }
                         const data = await response.json();
 
-                        if (data && data.features && data.features.length > 0) {
-                            suggestionsEl.innerHTML = data.features.map(feature => {
-                                const props = feature.properties;
-                                const mainName = props.name || props.street || 'Location';
-                                
-                                // Build address description
-                                const addressParts = [];
-                                if (props.street && props.street !== mainName) addressParts.push(props.street);
-                                if (props.locality) addressParts.push(props.locality);
-                                if (props.city) addressParts.push(props.city);
-                                if (props.postcode) addressParts.push(props.postcode);
-                                const subtitle = addressParts.join(', ') || 'Hyderabad, India';
-
-                                // Coordinates in GeoJSON features are stored in longitude first, then latitude [lng, lat]
-                                const [lng, lat] = feature.geometry.coordinates;
+                        if (data && data.length > 0) {
+                            suggestionsEl.innerHTML = data.map(item => {
+                                const mainName = item.address && (item.address.name || item.address.road || item.address.suburb)
+                                    ? (item.address.name || item.address.road || item.address.suburb)
+                                    : item.display_name.split(',')[0].trim();
+                                const parts = item.display_name.split(',');
+                                const subtitle = parts.slice(1, 4).map(p => p.trim()).join(', ');
+                                const postcode = item.address ? (item.address.postcode || '') : '';
 
                                 return `
                                     <div class="landmark-suggestion-item" 
                                          data-name="${mainName.replace(/"/g, '&quot;')}" 
-                                         data-fullname="${subtitle.replace(/"/g, '&quot;')}" 
-                                         data-postcode="${(props.postcode || '').replace(/"/g, '&quot;')}"
-                                         data-lat="${lat}" 
-                                         data-lon="${lng}">
+                                         data-fullname="${item.display_name.replace(/"/g, '&quot;')}" 
+                                         data-postcode="${postcode.replace(/"/g, '&quot;')}"
+                                         data-lat="${item.lat}" 
+                                         data-lon="${item.lon}">
                                         <strong>${mainName}</strong>
                                         <small>${subtitle}</small>
                                     </div>
