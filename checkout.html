@@ -599,11 +599,10 @@
 
                 debounceTimer = setTimeout(async () => {
                     try {
-                        const city = (document.getElementById('city') && document.getElementById('city').value.trim()) || 'Hyderabad';
-                        
                         // Photon API provides typeahead OSM search.
-                        // We query the typed name biased by the lat/lng coords of Hyderabad
-                        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query + ', ' + city)}&lat=17.4043&lon=78.4823&limit=12`;
+                        // We do not append the city text to the query since place names rarely contain "Hyderabad" in their name tag.
+                        // Instead, we strictly filter results using a bounding box covering the Hyderabad ORR limits.
+                        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&bbox=78.20,17.15,78.70,17.65&limit=15`;
                         
                         const response = await fetch(url);
                         const data = await response.json();
