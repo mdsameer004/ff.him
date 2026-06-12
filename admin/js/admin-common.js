@@ -492,6 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="flash-deals.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${currentFile === 'flash-deals.html' ? 'bg-rose-500 text-white shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-gray-700 hover:text-rose-600'}">
                     ⚡ <span>Flash Deals</span>
                 </a>
+                <a href="coupons.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${currentFile === 'coupons.html' ? 'bg-rose-500 text-white shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-gray-700 hover:text-rose-600'}">
+                    🎟️ <span>Coupon Codes</span>
+                </a>
                 <a href="gallery.html" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${currentFile === 'gallery.html' ? 'bg-rose-500 text-white shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-gray-700 hover:text-rose-600'}">
                     🖼️ <span>Gallery Albums</span>
                 </a>

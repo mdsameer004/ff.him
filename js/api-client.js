@@ -393,7 +393,42 @@ class ApiClient {
             body: JSON.stringify(orderData)
         }, true);
     }
+
+    // ── Coupon Management ─────────────────────────────────────────────────────
+    async getCoupons() {
+        const envelope = await this.request('/coupons', { method: 'GET' }, true);
+        if (Array.isArray(envelope)) return envelope;
+        if (envelope && Array.isArray(envelope.data)) return envelope.data;
+        return [];
+    }
+
+    async createCoupon(couponData) {
+        return this.request('/coupons', {
+            method: 'POST',
+            body: JSON.stringify(couponData)
+        }, true);
+    }
+
+    async toggleCoupon(id) {
+        return this.request(`/coupons/${id}/toggle`, {
+            method: 'PATCH'
+        }, true);
+    }
+
+    async updateCoupon(id, couponData) {
+        return this.request(`/coupons/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(couponData)
+        }, true);
+    }
+
+    async deleteCoupon(id) {
+        return this.request(`/coupons/${id}`, {
+            method: 'DELETE'
+        }, true);
+    }
 }
+
 
 // Instantiate and expose globally
 window.apiClient = new ApiClient();
