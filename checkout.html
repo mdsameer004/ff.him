@@ -145,6 +145,53 @@
                 justify-content: center;
             }
         }
+        .landmark-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .landmark-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            margin-top: 4px;
+        }
+        .landmark-suggestion-item {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
+            text-align: left;
+            line-height: 1.4;
+            color: var(--color-text-main);
+        }
+        .landmark-suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .landmark-suggestion-item:hover {
+            background: var(--color-light-pink);
+            color: var(--color-dark-green);
+        }
+        .landmark-suggestion-item strong {
+            display: block;
+            font-weight: 600;
+            color: var(--color-dark-green);
+            margin-bottom: 2px;
+        }
+        .landmark-suggestion-item small {
+            display: block;
+            color: var(--color-text-light);
+            font-size: 0.78rem;
+        }
     </style>
     <link rel="stylesheet" href="css/android-fixes.css">
 
@@ -198,7 +245,10 @@
                             </div>
                             <div class="form-group">
                                 <label for="landmark">Landmark</label>
-                                <input type="text" id="landmark" required placeholder="Near Apollo Hospital">
+                                <div class="landmark-wrapper">
+                                    <input type="text" id="landmark" required placeholder="Near Apollo Hospital" autocomplete="off">
+                                    <div id="landmark-suggestions" class="landmark-suggestions"></div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="city">City</label>
@@ -390,6 +440,14 @@
                     applyCoupon();
                 }
             }
+
+            // Setup landmark autocomplete and manual pincode calculations
+            setupLandmarkAutocomplete();
+            const pincodeInput = document.getElementById('pincode');
+            if (pincodeInput) {
+                pincodeInput.addEventListener('change', calculateDelivery);
+                pincodeInput.addEventListener('blur', calculateDelivery);
+            }
         });
 
         function renderInitialCart() {
@@ -517,6 +575,105 @@
             } else {
                 showToast("Geolocation is not supported by this browser.", "error", "Error");
             }
+        }
+
+        function setupLandmarkAutocomplete() {
+            const landmarkInput = document.getElementById('landmark');
+            const suggestionsEl = document.getElementById('landmark-suggestions');
+            if (!landmarkInput || !suggestionsEl) return;
+
+            let debounceTimer = null;
+
+            landmarkInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                const query = landmarkInput.value.trim();
+                
+                if (query.length < 3) {
+                    suggestionsEl.innerHTML = '';
+                    suggestionsEl.style.display = 'none';
+                    return;
+                }
+
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const city = (document.getElementById('city') && document.getElementById('city').value.trim()) || 'Hyderabad';
+                        const pincode = document.getElementById('pincode').value.trim();
+                        
+                        let q = `${query}`;
+                        if (pincode && pincode.startsWith('500')) {
+                            q += ` ${pincode}`;
+                        }
+                        q += `, ${city}, India`;
+
+                        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=in`;
+                        
+                        const response = await fetch(url, {
+                            headers: {
+                                'Accept-Language': 'en'
+                            }
+                        });
+                        const data = await response.json();
+
+                        if (data && data.length > 0) {
+                            suggestionsEl.innerHTML = data.map(item => {
+                                const parts = item.display_name.split(',');
+                                const mainName = parts[0].trim();
+                                const subtitle = parts.slice(1, 4).map(p => p.trim()).join(', ');
+                                
+                                return `
+                                    <div class="landmark-suggestion-item" 
+                                         data-name="${mainName.replace(/"/g, '&quot;')}" 
+                                         data-fullname="${item.display_name.replace(/"/g, '&quot;')}" 
+                                         data-lat="${item.lat}" 
+                                         data-lon="${item.lon}">
+                                        <strong>${mainName}</strong>
+                                        <small>${subtitle}</small>
+                                    </div>
+                                `;
+                            }).join('');
+                            suggestionsEl.style.display = 'block';
+                        } else {
+                            suggestionsEl.innerHTML = '';
+                            suggestionsEl.style.display = 'none';
+                        }
+                    } catch (error) {
+                        console.error('Landmark autocomplete error:', error);
+                    }
+                }, 400);
+            });
+
+            suggestionsEl.addEventListener('click', (e) => {
+                const item = e.target.closest('.landmark-suggestion-item');
+                if (!item) return;
+
+                const name = item.getAttribute('data-name');
+                const fullName = item.getAttribute('data-fullname');
+                const lat = parseFloat(item.getAttribute('data-lat'));
+                const lon = parseFloat(item.getAttribute('data-lon'));
+
+                landmarkInput.value = name;
+                suggestionsEl.innerHTML = '';
+                suggestionsEl.style.display = 'none';
+
+                const pincodeMatch = fullName.match(/\b500\d{3}\b/);
+                if (pincodeMatch) {
+                    document.getElementById('pincode').value = pincodeMatch[0];
+                }
+
+                if (lat && lon) {
+                    const pincodeVal = document.getElementById('pincode').value.trim();
+                    const isHydPincode = pincodeVal.startsWith('500') && pincodeVal.length >= 6;
+                    processCoordinates(lat, lon, isHydPincode);
+                } else {
+                    calculateDelivery();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target !== landmarkInput && e.target !== suggestionsEl && !suggestionsEl.contains(e.target)) {
+                    suggestionsEl.style.display = 'none';
+                }
+            });
         }
 
         function processCoordinates(lat, lng, isHydPincode = false) {
