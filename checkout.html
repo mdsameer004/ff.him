@@ -145,53 +145,6 @@
                 justify-content: center;
             }
         }
-        .landmark-wrapper {
-            position: relative;
-            width: 100%;
-        }
-        .landmark-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid var(--color-border);
-            border-radius: 4px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            max-height: 240px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            margin-top: 4px;
-        }
-        .landmark-suggestion-item {
-            padding: 12px 16px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.2s ease;
-            text-align: left;
-            line-height: 1.4;
-            color: var(--color-text-main);
-        }
-        .landmark-suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .landmark-suggestion-item:hover {
-            background: var(--color-light-pink);
-            color: var(--color-dark-green);
-        }
-        .landmark-suggestion-item strong {
-            display: block;
-            font-weight: 600;
-            color: var(--color-dark-green);
-            margin-bottom: 2px;
-        }
-        .landmark-suggestion-item small {
-            display: block;
-            color: var(--color-text-light);
-            font-size: 0.78rem;
-        }
     </style>
     <link rel="stylesheet" href="css/android-fixes.css">
 
@@ -245,10 +198,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="landmark">Landmark</label>
-                                <div class="landmark-wrapper">
-                                    <input type="text" id="landmark" required placeholder="Near Apollo Hospital" autocomplete="off">
-                                    <div id="landmark-suggestions" class="landmark-suggestions"></div>
-                                </div>
+                                <input type="text" id="landmark" required placeholder="Near Apollo Hospital">
                             </div>
                             <div class="form-group">
                                 <label for="city">City</label>
@@ -337,16 +287,12 @@
     <script src="js/cart.js?v=2.2.0"></script>
     <script src="js/app.js"></script>
     <script>
-
         const SHOP_LAT = 17.4043;
         const SHOP_LNG = 78.4823;
         let finalTotalAmount = 0;
         let calculatedDeliveryCharge = 0;
         let isDeliverable = false;
         let locationCalculated = false;
-        let selectedLat = null;
-        let selectedLng = null;
-        let selectedPlaceId = null;
 
         // Coupon Logic
         let appliedCoupon = null;
@@ -444,14 +390,6 @@
                     applyCoupon();
                 }
             }
-
-            // Setup landmark autocomplete and manual pincode calculations
-            setupLandmarkAutocomplete();
-            const pincodeInput = document.getElementById('pincode');
-            if (pincodeInput) {
-                pincodeInput.addEventListener('change', calculateDelivery);
-                pincodeInput.addEventListener('blur', calculateDelivery);
-            }
         });
 
         function renderInitialCart() {
@@ -490,29 +428,21 @@
             return -1; // Not deliverable
         }
 
-        // Google Maps Geocoding
+        // Nominatim Geocoding
         async function geocodeAddress(pincode, landmark) {
             try {
-                if (!window.google || !window.google.maps) {
-                    console.warn("Google Maps JS SDK not loaded yet.");
-                    return null;
+                let url = `https://nominatim.openstreetmap.org/search?format=json&country=India&limit=1`;
+                if (landmark) {
+                    url += `&q=${encodeURIComponent(landmark + ' ' + pincode)}`;
+                } else {
+                    url += `&postalcode=${encodeURIComponent(pincode)}`;
                 }
-                const geocoder = new google.maps.Geocoder();
-                const address = landmark ? `${landmark}, ${pincode}, India` : `${pincode}, India`;
-                return new Promise((resolve) => {
-                    geocoder.geocode({ 
-                        address: address,
-                        componentRestrictions: { country: 'IN' }
-                    }, (results, status) => {
-                        if (status === google.maps.GeocoderStatus.OK && results && results.length > 0) {
-                            const loc = results[0].geometry.location;
-                            resolve({ lat: loc.lat(), lng: loc.lng() });
-                        } else {
-                            console.warn("Geocoding failed for:", address, status);
-                            resolve(null);
-                        }
-                    });
-                });
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                }
+                return null;
             } catch (error) {
                 console.error("Geocoding error:", error);
                 return null;
@@ -562,338 +492,34 @@
                         const lng = position.coords.longitude;
                         
                         try {
-                            if (window.google && window.google.maps) {
-                                const geocoder = new google.maps.Geocoder();
-                                geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-                                    try {
-                                        const okStatus = (window.google && window.google.maps && window.google.maps.GeocoderStatus) 
-                                            ? window.google.maps.GeocoderStatus.OK 
-                                            : 'OK';
-                                        if (status === okStatus && results && results.length > 0) {
-                                            const result = results[0];
-                                            if (result.formatted_address) {
-                                                document.getElementById('address').value = result.formatted_address;
-                                            }
-                                            if (result.address_components) {
-                                                for (const component of result.address_components) {
-                                                    if (component.types && component.types.includes('postal_code')) {
-                                                        document.getElementById('pincode').value = component.long_name;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } catch (innerErr) {
-                                        console.error('Error parsing geocoding response:', innerErr);
-                                    } finally {
-                                        if (locBtn) locBtn.classList.remove('loading');
-                                        processCoordinates(lat, lng, false);
-                                    }
-                                });
-                            } else {
-                                if (locBtn) locBtn.classList.remove('loading');
-                                processCoordinates(lat, lng, false);
+                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                            const data = await res.json();
+                            if (data && data.address) {
+                                if (data.address.postcode) {
+                                    document.getElementById('pincode').value = data.address.postcode;
+                                }
+                                if (data.address.road || data.address.suburb) {
+                                    let addy = `${data.address.road || ''} ${data.address.suburb || ''}`.trim();
+                                    if (addy) document.getElementById('address').value = addy;
+                                }
                             }
-                        } catch(e) {
-                            console.error('Reverse geocode failed', e);
-                            if (locBtn) locBtn.classList.remove('loading');
-                            processCoordinates(lat, lng, false);
-                        }
+                        } catch(e) { console.error('Reverse geocode failed', e); }
+
+                        if (locBtn) locBtn.classList.remove('loading');
+                        processCoordinates(lat, lng, false);
                     },
                     (error) => {
-                        console.warn('Geolocation failed:', error);
                         if (locBtn) locBtn.classList.remove('loading');
                         statusText.textContent = 'Unable to get your location. Please enter pincode manually.';
                         statusText.style.color = '#d9534f';
-                    },
-                    { timeout: 8000, enableHighAccuracy: true, maximumAge: 60000 }
+                    }
                 );
             } else {
                 showToast("Geolocation is not supported by this browser.", "error", "Error");
             }
         }
 
-        async function setupLandmarkAutocomplete() {
-            const landmarkInput = document.getElementById('landmark');
-            const suggestionsEl = document.getElementById('landmark-suggestions');
-            if (!landmarkInput || !suggestionsEl) return;
-
-            try {
-                if (!window.google || !window.google.maps || !window.google.maps.places) {
-                    const API_BASE = (typeof window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : 'https://floristbackend.onrender.com/api';
-                    const res = await fetch(`${API_BASE}/config/google-maps-key`);
-                    const data = await res.json();
-                    if (data && data.success && data.key) {
-                        const apiKey = data.key;
-                        if (apiKey && apiKey !== 'YOUR_GOOGLE_MAPS_API_KEY') {
-                            await new Promise((resolve, reject) => {
-                                const script = document.createElement('script');
-                                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-                                script.async = true;
-                                script.defer = true;
-                                script.onload = () => resolve();
-                                script.onerror = (err) => reject(err);
-                                document.head.appendChild(script);
-                            });
-                        } else {
-                            suggestionsEl.innerHTML = '<div style="padding:12px;color:#d9534f;font-size:0.85rem;">Google Maps API Key not configured in backend .env.</div>';
-                            suggestionsEl.style.display = 'block';
-                            return;
-                        }
-                    } else {
-                        console.warn("Failed to fetch Google Maps key from backend.");
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.warn("Error loading Google Maps SDK:", err);
-                return;
-            }
-
-            if (!window.google || !window.google.maps || !window.google.maps.places) {
-                console.error("Google Maps SDK failed to load.");
-                return;
-            }
-
-            let autocompleteService = null;
-            try {
-                if (google.maps.places.AutocompleteService) {
-                    autocompleteService = new google.maps.places.AutocompleteService();
-                }
-            } catch (e) {
-                console.warn("Could not instantiate legacy AutocompleteService:", e);
-            }
-
-            let placesService = null;
-            try {
-                if (google.maps.places.PlacesService) {
-                    placesService = new google.maps.places.PlacesService(document.createElement('div'));
-                }
-            } catch (e) {
-                console.warn("Could not instantiate legacy PlacesService:", e);
-            }
-
-            async function fetchSuggestions(query) {
-                // Try new AutocompleteSuggestion API first
-                if (google.maps.places && google.maps.places.AutocompleteSuggestion) {
-                    try {
-                        const { suggestions } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-                            input: query,
-                            includedRegionCodes: ['in'],
-                            locationBias: {
-                                circle: {
-                                    center: { latitude: 17.4043, longitude: 78.4823 },
-                                    radius: 25000
-                                }
-                            }
-                        });
-
-                        if (suggestions && suggestions.length > 0) {
-                            return suggestions.map(s => {
-                                const prediction = s.placePrediction;
-                                return {
-                                    placeId: prediction.placeId,
-                                    mainText: prediction.structuredFormat.mainText.text,
-                                    secondaryText: prediction.structuredFormat.secondaryText.text || ''
-                                };
-                            });
-                        }
-                    } catch (err) {
-                        console.warn("New Autocomplete API fetch failed, trying legacy:", err);
-                    }
-                }
-
-                // Legacy fallback
-                if (autocompleteService) {
-                    return new Promise((resolve) => {
-                        autocompleteService.getPlacePredictions({
-                            input: query,
-                            componentRestrictions: { country: 'in' },
-                            locationBias: new google.maps.LatLng(17.4043, 78.4823),
-                            radius: 25000
-                        }, (predictions, status) => {
-                            const okStatus = (google.maps.places.PlacesServiceStatus && google.maps.places.PlacesServiceStatus.OK) || 'OK';
-                            if (status !== okStatus || !predictions) {
-                                resolve([]);
-                                return;
-                            }
-                            resolve(predictions.map(p => ({
-                                placeId: p.place_id,
-                                mainText: p.structured_formatting.main_text,
-                                secondaryText: p.structured_formatting.secondary_text || ''
-                            })));
-                        });
-                    });
-                }
-
-                return [];
-            }
-
-            async function fetchDetails(placeId) {
-                if (google.maps.places && google.maps.places.Place) {
-                    try {
-                        const place = new google.maps.places.Place({ id: placeId });
-                        await place.fetchFields({
-                            fields: ['displayName', 'location', 'formattedAddress', 'addressComponents']
-                        });
-
-                        // Extract pincode
-                        let pincode = '';
-                        if (place.addressComponents) {
-                            for (const component of place.addressComponents) {
-                                if (component.types && component.types.includes('postal_code')) {
-                                    pincode = component.longText || component.shortText || '';
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Extract formatted address
-                        const formattedAddress = place.formattedAddress || '';
-                        const lat = place.location ? ((typeof place.location.lat === 'function') ? place.location.lat() : place.location.latitude) : null;
-                        const lng = place.location ? ((typeof place.location.lng === 'function') ? place.location.lng() : place.location.longitude) : null;
-
-                        return { pincode, formattedAddress, lat, lng };
-                    } catch (err) {
-                        console.warn("New Place details fetch failed, trying legacy:", err);
-                    }
-                }
-
-                // Legacy fallback
-                if (placesService) {
-                    return new Promise((resolve) => {
-                        placesService.getDetails({
-                            placeId: placeId,
-                            fields: ['name', 'geometry', 'formatted_address', 'address_components']
-                        }, (place, status) => {
-                            const okStatus = (google.maps.places.PlacesServiceStatus && google.maps.places.PlacesServiceStatus.OK) || 'OK';
-                            if (status !== okStatus || !place) {
-                                resolve(null);
-                                return;
-                            }
-
-                            let pincode = '';
-                            if (place.address_components) {
-                                for (const component of place.address_components) {
-                                    if (component.types && component.types.includes('postal_code')) {
-                                        pincode = component.long_name;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            const formattedAddress = place.formatted_address || '';
-                            const lat = place.geometry && place.geometry.location ? place.geometry.location.lat() : null;
-                            const lng = place.geometry && place.geometry.location ? place.geometry.location.lng() : null;
-
-                            resolve({ pincode, formattedAddress, lat, lng });
-                        });
-                    });
-                }
-
-                return null;
-            }
-
-            let debounceTimer = null;
-
-            landmarkInput.addEventListener('input', () => {
-                selectedPlaceId = null; // Clear selected place ID on manual input change
-                clearTimeout(debounceTimer);
-                const query = landmarkInput.value.trim();
-                
-                if (query.length < 3) {
-                    suggestionsEl.innerHTML = '';
-                    suggestionsEl.style.display = 'none';
-                    return;
-                }
-
-                debounceTimer = setTimeout(async () => {
-                    try {
-                        const items = await fetchSuggestions(query);
-                        if (!items || items.length === 0) {
-                            suggestionsEl.innerHTML = '';
-                            suggestionsEl.style.display = 'none';
-                            return;
-                        }
-
-                        // Limit to 10 suggestions
-                        const limited = items.slice(0, 10);
-
-                        suggestionsEl.innerHTML = limited.map(item => {
-                            const mainName = item.mainText;
-                            const subtitle = item.secondaryText || '';
-                            return `
-                                <div class="landmark-suggestion-item" 
-                                     data-place-id="${item.placeId}" 
-                                     data-name="${mainName.replace(/"/g, '&quot;')}">
-                                    <strong>${mainName}</strong>
-                                    <small>${subtitle}</small>
-                                </div>
-                            `;
-                        }).join('');
-                        suggestionsEl.style.display = 'block';
-                    } catch (err) {
-                        console.error("Suggestions fetch error:", err);
-                        suggestionsEl.innerHTML = '';
-                        suggestionsEl.style.display = 'none';
-                    }
-                }, 300); // Debounce autocomplete requests by 300ms
-            });
-
-            suggestionsEl.addEventListener('click', async (e) => {
-                const item = e.target.closest('.landmark-suggestion-item');
-                if (!item) return;
-
-                const name = item.getAttribute('data-name');
-                const placeId = item.getAttribute('data-place-id');
-
-                landmarkInput.value = name;
-                suggestionsEl.innerHTML = '';
-                suggestionsEl.style.display = 'none';
-
-                if (placeId) {
-                    try {
-                        const details = await fetchDetails(placeId);
-                        if (details) {
-                            selectedPlaceId = placeId;
-
-                            // Autofill relevant checkout fields
-                            if (details.pincode) {
-                                document.getElementById('pincode').value = details.pincode;
-                            }
-                            if (details.formattedAddress) {
-                                document.getElementById('address').value = details.formattedAddress;
-                            }
-
-                            if (details.lat != null && details.lng != null) {
-                                const pincodeVal = document.getElementById('pincode').value.trim();
-                                const isHydPincode = pincodeVal.startsWith('500') && pincodeVal.length >= 6;
-                                processCoordinates(details.lat, details.lng, isHydPincode);
-                            } else {
-                                calculateDelivery();
-                            }
-                        } else {
-                            calculateDelivery();
-                        }
-                    } catch (err) {
-                        console.error("Details fetch error:", err);
-                        calculateDelivery();
-                    }
-                } else {
-                    calculateDelivery();
-                }
-            });
-
-            document.addEventListener('click', (e) => {
-                if (e.target !== landmarkInput && e.target !== suggestionsEl && !suggestionsEl.contains(e.target)) {
-                    suggestionsEl.style.display = 'none';
-                }
-            });
-        }
-
         function processCoordinates(lat, lng, isHydPincode = false) {
-            selectedLat = lat;
-            selectedLng = lng;
             const statusText = document.getElementById('delivery-status-text');
             const distance = calculateDistance(SHOP_LAT, SHOP_LNG, lat, lng);
             const price = getDeliveryPricing(distance);
@@ -1072,10 +698,6 @@
                                     deliveryAddress,
                                     items,
                                     totalAmount: finalTotalAmount,
-                                    landmark,
-                                    latitude: selectedLat,
-                                    longitude: selectedLng,
-                                    googlePlaceId: selectedPlaceId,
                                 })
                             });
 
@@ -1099,10 +721,6 @@
                                     method:           'Razorpay',
                                     status:           'processing',
                                     razorpayPaymentId: response.razorpay_payment_id,
-                                    landmark,
-                                    latitude:         selectedLat,
-                                    longitude:        selectedLng,
-                                    googlePlaceId:    selectedPlaceId,
                                 };
 
                                 let orders = JSON.parse(localStorage.getItem('friendsFloristOrders')) || [];
