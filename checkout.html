@@ -67,7 +67,8 @@
             font-weight: 500;
             color: var(--color-text-main);
         }
-        .form-group input {
+        .form-group input,
+        .form-group textarea {
             padding: 12px 15px;
             border: 1px solid var(--color-border);
             border-radius: 4px;
@@ -76,8 +77,25 @@
             outline: none;
             transition: border-color 0.3s;
         }
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group textarea:focus {
             border-color: var(--color-dark-green);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 90px;
+            line-height: 1.6;
+        }
+        .optional-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: #999;
+            background: #f3f4f6;
+            border-radius: 4px;
+            padding: 1px 6px;
+            margin-left: 6px;
+            vertical-align: middle;
         }
 
         /* (Razorpay Checkout SDK handles the payment popup natively) */
@@ -245,6 +263,19 @@
                             </div>
                             <div class="form-group full" id="delivery-status-container" style="display:none; padding: 12px; border-radius: 6px; background: #f8f9fa; border: 1px solid #e9ecef; margin-top: 5px;">
                                 <div id="delivery-status-text" style="font-size: 0.95rem; font-weight: 500;">Calculating delivery...</div>
+                            </div>
+
+                            <div class="form-group full">
+                                <label for="delivery-note">
+                                    Delivery Instructions
+                                    <span class="optional-badge">Optional</span>
+                                </label>
+                                <textarea
+                                    id="delivery-note"
+                                    placeholder="e.g. Please deliver on 5th July between 10 AM – 12 PM. Ring the bell twice."
+                                    rows="3"
+                                ></textarea>
+                                <span style="font-size:0.78rem; color:#aaa; margin-top:2px;">Mention preferred date, time, or any special instructions for delivery.</span>
                             </div>
                         </div>
                     </div>
@@ -696,6 +727,7 @@
             const city            = (document.getElementById('city').value.trim()) || 'Hyderabad';
             const pincode         = document.getElementById('pincode').value.trim();
             const landmark        = document.getElementById('landmark').value.trim();
+            const deliveryNote    = document.getElementById('delivery-note').value.trim();
             const deliveryAddress = [address, landmark, city, pincode].filter(Boolean).join(', ');
 
             const payBtn = document.querySelector('button[type="submit"]');
@@ -769,6 +801,7 @@
                                     customerPhone,
                                     customerEmail,
                                     deliveryAddress,
+                                    deliveryNote: deliveryNote || null,
                                     items,
                                     totalAmount: finalTotalAmount,
                                     couponCode:  appliedCoupon ? appliedCoupon.code : null,
@@ -792,6 +825,7 @@
                                     discount:         discountAmount,
                                     coupon:           appliedCoupon ? appliedCoupon.code : null,
                                     deliveryCharge:   calculatedDeliveryCharge,
+                                    deliveryNote:     deliveryNote || null,
                                     method:           'Razorpay',
                                     status:           'processing',
                                     razorpayPaymentId: response.razorpay_payment_id,
