@@ -96,33 +96,6 @@
             padding-right: 10px;
         }
 
-        .btn-location-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            background: white;
-            border: 1px solid var(--color-border);
-            border-radius: 4px;
-            color: var(--color-text-main);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .btn-location-icon:hover {
-            background: #f0fdf4;
-            border-color: var(--color-dark-green);
-            color: var(--color-dark-green);
-        }
-        .btn-location-icon.loading svg {
-            animation: pulse-icon 1s infinite;
-            color: var(--color-dark-green);
-        }
-        @keyframes pulse-icon {
-            0% { transform: scale(0.85); opacity: 0.6; }
-            50% { transform: scale(1.15); opacity: 1; }
-            100% { transform: scale(0.85); opacity: 0.6; }
-        }
-
         @media (max-width: 900px) {
             .checkout-container {
                 flex-direction: column-reverse;
@@ -131,19 +104,67 @@
                 grid-template-columns: 1fr;
             }
         }
-        .pincode-wrapper {
-            display: flex;
-            gap: 8px;
+
+        /* Pincode Dropdown */
+        .pincode-autocomplete-wrapper {
+            position: relative;
         }
-        @media (max-width: 500px) {
-            .pincode-wrapper {
-                flex-direction: column;
-            }
-            #loc-btn {
-                width: 100% !important;
-                padding: 12px !important;
-                justify-content: center;
-            }
+        .pincode-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            max-height: 240px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1.5px solid var(--color-dark-green, #2d5016);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+            z-index: 9999;
+            scrollbar-width: thin;
+            scrollbar-color: #b5cfa0 #f4f4f4;
+        }
+        .pincode-dropdown.open {
+            display: block;
+            animation: dropFadeIn 0.18s ease;
+        }
+        @keyframes dropFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .pincode-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.15s;
+        }
+        .pincode-dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .pincode-dropdown-item:hover,
+        .pincode-dropdown-item.highlighted {
+            background: #f0fdf4;
+        }
+        .pincode-dropdown-item .pdc-code {
+            font-weight: 600;
+            color: var(--color-dark-green, #2d5016);
+            min-width: 60px;
+            font-size: 0.85rem;
+        }
+        .pincode-dropdown-item .pdc-area {
+            color: #444;
+            flex: 1;
+        }
+        .pincode-dropdown-empty {
+            padding: 14px;
+            text-align: center;
+            color: #999;
+            font-size: 0.9rem;
         }
     </style>
     <link rel="stylesheet" href="css/android-fixes.css">
@@ -206,15 +227,20 @@
                             </div>
                             <div class="form-group">
                                 <label for="pincode">Pincode</label>
-                                <div class="pincode-wrapper">
-                                    <input type="text" id="pincode" required placeholder="500029" style="flex: 1;">
-                                    <button type="button" class="btn-location-icon" id="loc-btn" onclick="useCurrentLocation()" title="Detect Current Location" style="width: auto; padding: 0 15px; font-size: 0.85rem; font-weight: 500; gap: 6px;">
-                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-                                        </svg>
-                                        Locate to continue payment
-                                    </button>
+                                <div class="pincode-autocomplete-wrapper">
+                                    <input
+                                        type="text"
+                                        id="pincode"
+                                        required
+                                        placeholder="Type pincode or area name..."
+                                        maxlength="6"
+                                        autocomplete="off"
+                                        onfocus="showPincodeDropdown()"
+                                        oninput="filterPincodeDropdown(this); onPincodeInput(this)"
+                                        onblur="closePincodeDropdown()"
+                                        onkeydown="handlePincodeKey(event)"
+                                    >
+                                    <div id="pincode-dropdown" class="pincode-dropdown" role="listbox"></div>
                                 </div>
                             </div>
                             <div class="form-group full" id="delivery-status-container" style="display:none; padding: 12px; border-radius: 6px; background: #f8f9fa; border: 1px solid #e9ecef; margin-top: 5px;">
@@ -287,12 +313,111 @@
     <script src="js/cart.js?v=2.2.0"></script>
     <script src="js/app.js"></script>
     <script>
-        const SHOP_LAT = 17.4043;
-        const SHOP_LNG = 78.4823;
+        // ── Deliverable Pincodes Whitelist ──────────────────────────────────
+        const DELIVERABLE_PINCODES = {
+            '500001': 'Abids, Nampally',
+            '500002': 'Charminar',
+            '500003': 'Secunderabad',
+            '500004': 'Khairatabad',
+            '500005': 'Chandrayangutta',
+            '500006': 'Karwan',
+            '500007': 'Tarnaka, Habsiguda',
+            '500008': 'Tolichowki',
+            '500009': 'Bowenpally',
+            '500010': 'Alwal',
+            '500011': 'Begumpet Cantonment',
+            '500012': 'Mozamjahi Market',
+            '500013': 'Amberpet',
+            '500014': 'Hakimpet',
+            '500015': 'Trimulgherry',
+            '500016': 'Begumpet',
+            '500017': 'Lalaguda',
+            '500018': 'Sanath Nagar',
+            '500020': 'Musheerabad',
+            '500023': 'Yakutpura',
+            '500024': 'Saidabad',
+            '500025': 'Paradise',
+            '500026': 'West Marredpally',
+            '500027': 'Afzalgunj',
+            '500028': 'Humayun Nagar',
+            '500029': 'Himayatnagar',
+            '500030': 'Rajendranagar',
+            '500031': 'Road No. 12, Banjara Hills',
+            '500032': 'Gachibowli',
+            '500033': 'Jubilee Hills',
+            '500034': 'Banjara Hills',
+            '500035': 'Saroor Nagar',
+            '500036': 'Malakpet',
+            '500037': 'Balanagar',
+            '500038': 'Ameerpet',
+            '500039': 'Uppal',
+            '500040': 'Moulali',
+            '500041': 'Raj Bhavan Road',
+            '500042': 'ECIL',
+            '500043': 'Air Force Academy',
+            '500044': 'Ambernagar',
+            '500045': 'Yousufguda',
+            '500046': 'University of Hyderabad',
+            '500047': 'Malkajgiri, Anandbagh',
+            '500048': 'Attapur',
+            '500049': 'Miyapur',
+            '500050': 'Chandanagar',
+            '500051': 'New Bowenpally',
+            '500052': 'Katedan',
+            '500053': 'Falaknuma',
+            '500054': 'HMT Township',
+            '500055': 'Jeedimetla',
+            '500056': 'Ramakrishnapuram',
+            '500057': 'IDPL',
+            '500058': 'Kanchanbagh',
+            '500059': 'Santosh Nagar',
+            '500060': 'Dilsukhnagar',
+            '500061': 'Sitaphalmandi',
+            '500062': 'AS Rao Nagar',
+            '500063': 'Basheerbagh',
+            '500064': 'Bahadurpura',
+            '500065': 'Shah Ali Banda',
+            '500066': 'High Court',
+            '500067': 'Bandlaguda',
+            '500068': 'Nagole',
+            '500069': 'Mansoorabad',
+            '500070': 'Vanasthalipuram',
+            '500072': 'Kukatpally',
+            '500073': 'Srinagar Colony',
+            '500074': 'LB Nagar',
+            '500075': 'Manikonda',
+            '500076': 'Durgam Cheruvu / ICRISAT region',
+            '500077': 'Kothaguda',
+            '500079': 'Hayathnagar',
+            '500081': 'Madhapur',
+            '500084': 'Kothaguda, Kondapur',
+            '500089': 'Narsingi',
+            '500090': 'Nizampet',
+            '500091': 'AP Police Academy',
+            '500092': 'Nallakunta',
+            '500094': 'Sainikpuri',
+            '500095': 'Koti',
+            '500096': 'Film Nagar',
+            '500097': 'Meerpet',
+            '500098': 'Gopanpally',
+            '500100': 'Chintal',
+        };
+
         let finalTotalAmount = 0;
         let calculatedDeliveryCharge = 0;
         let isDeliverable = false;
-        let locationCalculated = false;
+        let pincodeCalculated = false;
+
+        function onPincodeInput(input) {
+            // Reset delivery when pincode is edited
+            if (pincodeCalculated) {
+                pincodeCalculated = false;
+                isDeliverable = false;
+                calculatedDeliveryCharge = 0;
+                document.getElementById('delivery-status-container').style.display = 'none';
+                updateCheckoutTotals();
+            }
+        }
 
         // Coupon Logic
         let appliedCoupon = null;
@@ -407,136 +532,84 @@
             container.innerHTML = html;
         }
 
-        // Distance Calculation (Haversine Formula)
+        // ── Haversine distance formula ─────────────────────────────────────────
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radius of the earth in km
-            const dLat = (lat2 - lat1) * Math.PI / 180;  
-            const dLon = (lon2 - lon1) * Math.PI / 180; 
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2); 
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            return R * c; 
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
-        // Pricing Rules
-        function getDeliveryPricing(distance) {
-            if (distance <= 5) return 60;
-            if (distance <= 10) return 100;
-            if (distance <= 20) return 180;
-            return -1; // Not deliverable
+        // ── Tiered pricing by distance from shop ──────────────────────────────
+        function getDeliveryCharge(distanceKm) {
+            if (distanceKm <= 5)  return 60;
+            if (distanceKm <= 10) return 100;
+            if (distanceKm <= 20) return 180;
+            return 180; // Still deliverable (whitelisted), charge max tier
         }
 
-        // Nominatim Geocoding
-        async function geocodeAddress(pincode, landmark) {
+        // ── Geocode pincode via Nominatim ─────────────────────────────────────
+        async function geocodePincode(pincode) {
             try {
-                let url = `https://nominatim.openstreetmap.org/search?format=json&country=India&limit=1`;
-                if (landmark) {
-                    url += `&q=${encodeURIComponent(landmark + ' ' + pincode)}`;
-                } else {
-                    url += `&postalcode=${encodeURIComponent(pincode)}`;
-                }
-                const response = await fetch(url);
-                const data = await response.json();
+                const url = `https://nominatim.openstreetmap.org/search?format=json&country=India&postalcode=${encodeURIComponent(pincode)}&limit=1`;
+                const res = await fetch(url);
+                const data = await res.json();
                 if (data && data.length > 0) {
                     return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
                 }
                 return null;
-            } catch (error) {
-                console.error("Geocoding error:", error);
+            } catch (e) {
+                console.error('Geocode error:', e);
                 return null;
             }
         }
 
+        // ── Hybrid delivery check: whitelist gate + distance-based pricing ─────
         async function calculateDelivery() {
             const pincode = document.getElementById('pincode').value.trim();
-            const landmark = document.getElementById('landmark').value.trim();
             const statusContainer = document.getElementById('delivery-status-container');
             const statusText = document.getElementById('delivery-status-text');
-            
-            if (!pincode) return;
+
+            if (!pincode || pincode.length < 6) return;
+
+            const area = DELIVERABLE_PINCODES[pincode];
 
             statusContainer.style.display = 'block';
-            statusText.textContent = 'Calculating delivery distance...';
+
+            // Step 1: Whitelist check — instant
+            if (!area) {
+                statusText.innerHTML = `❌ Sorry, we currently do not deliver to pincode <strong>${pincode}</strong>. Please check if your pincode is correct or contact us.`;
+                statusText.style.color = '#d9534f';
+                isDeliverable = false;
+                pincodeCalculated = true;
+                calculatedDeliveryCharge = 0;
+                updateCheckoutTotals();
+                return;
+            }
+
+            // Step 2: Geocode to get distance-based charge
+            statusText.innerHTML = `⏳ <strong>${area}</strong> — Calculating delivery charge...`;
             statusText.style.color = '#666';
 
-            let coords = await geocodeAddress(pincode, landmark);
-            let isHydPincode = pincode.startsWith('500') && pincode.length >= 6;
+            const coords = await geocodePincode(pincode);
+            pincodeCalculated = true;
+            isDeliverable = true;
 
             if (coords) {
-                processCoordinates(coords.lat, coords.lng, isHydPincode);
-            } else {
-                statusText.textContent = 'Unable to detect location for this pincode.';
-                statusText.style.color = '#d9534f';
-                isDeliverable = false;
-                locationCalculated = false;
-                updateCheckoutTotals();
-            }
-        }
-
-        function useCurrentLocation() {
-            const locBtn = document.getElementById('loc-btn');
-            const statusContainer = document.getElementById('delivery-status-container');
-            const statusText = document.getElementById('delivery-status-text');
-            
-            if (navigator.geolocation) {
-                if (locBtn) locBtn.classList.add('loading');
-                statusContainer.style.display = 'block';
-                statusText.textContent = 'Detecting precise location...';
-                statusText.style.color = '#666';
-
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        try {
-                            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                            const data = await res.json();
-                            if (data && data.address) {
-                                if (data.address.postcode) {
-                                    document.getElementById('pincode').value = data.address.postcode;
-                                }
-                                if (data.address.road || data.address.suburb) {
-                                    let addy = `${data.address.road || ''} ${data.address.suburb || ''}`.trim();
-                                    if (addy) document.getElementById('address').value = addy;
-                                }
-                            }
-                        } catch(e) { console.error('Reverse geocode failed', e); }
-
-                        if (locBtn) locBtn.classList.remove('loading');
-                        processCoordinates(lat, lng, false);
-                    },
-                    (error) => {
-                        if (locBtn) locBtn.classList.remove('loading');
-                        statusText.textContent = 'Unable to get your location. Please enter pincode manually.';
-                        statusText.style.color = '#d9534f';
-                    }
-                );
-            } else {
-                showToast("Geolocation is not supported by this browser.", "error", "Error");
-            }
-        }
-
-        function processCoordinates(lat, lng, isHydPincode = false) {
-            const statusText = document.getElementById('delivery-status-text');
-            const distance = calculateDistance(SHOP_LAT, SHOP_LNG, lat, lng);
-            const price = getDeliveryPricing(distance);
-
-            locationCalculated = true;
-            let prefix = isHydPincode ? "Hyderabad service area detected. " : "";
-
-            if (price === -1) {
-                statusText.textContent = `${prefix}Distance: ${distance.toFixed(1)} km. Sorry, we do not deliver beyond 20 km.`;
-                statusText.style.color = '#d9534f';
-                isDeliverable = false;
-                calculatedDeliveryCharge = 0;
-            } else {
-                statusText.textContent = `${prefix}Distance: ${distance.toFixed(1)} km. Delivery Charge: ₹${price}`;
+                const SHOP_LAT = 17.4043;
+                const SHOP_LNG = 78.4823;
+                const distKm = calculateDistance(SHOP_LAT, SHOP_LNG, coords.lat, coords.lng);
+                calculatedDeliveryCharge = getDeliveryCharge(distKm);
+                statusText.innerHTML = `✅ <strong>${area}</strong> — ${distKm.toFixed(1)} km from store. Delivery Charge: <strong>₹${calculatedDeliveryCharge}</strong>`;
                 statusText.style.color = '#28a745';
-                isDeliverable = true;
-                calculatedDeliveryCharge = price;
+            } else {
+                // Fallback: pincode is whitelisted but geocoding failed — use flat ₹60
+                calculatedDeliveryCharge = 60;
+                statusText.innerHTML = `✅ <strong>${area}</strong> — Delivery available! Charge: <strong>₹${calculatedDeliveryCharge}</strong>`;
+                statusText.style.color = '#28a745';
             }
 
             updateCheckoutTotals();
@@ -547,7 +620,7 @@
             const subtotal = totals.subtotal;
             const tax = totals.tax;
             
-            let displayDeliveryFee = locationCalculated ? calculatedDeliveryCharge : 0;
+            let displayDeliveryFee = pincodeCalculated ? calculatedDeliveryCharge : 0;
             let actualDeliveryFee = displayDeliveryFee;
             
             discountAmount = 0;
@@ -580,8 +653,8 @@
             document.getElementById('chk-subtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
             document.getElementById('chk-tax').textContent = `₹${tax.toLocaleString('en-IN')}`;
             
-            if (!locationCalculated) {
-                document.getElementById('chk-delivery').textContent = 'Enter address...';
+            if (!pincodeCalculated) {
+                document.getElementById('chk-delivery').textContent = 'Enter pincode...';
             } else {
                 if (appliedCoupon && appliedCoupon.type === 'free_delivery' && isDeliverable) {
                     document.getElementById('chk-delivery').innerHTML = `<del style="color: #999; margin-right: 8px;">₹${displayDeliveryFee.toLocaleString('en-IN')}</del> <span style="color: #27ae60; font-weight: bold;">Free</span>`;
@@ -594,7 +667,7 @@
 
             const payBtn = document.querySelector('button[type="submit"]');
             
-            if (!isDeliverable || !locationCalculated) {
+            if (!isDeliverable || !pincodeCalculated) {
                 payBtn.disabled = true;
                 payBtn.style.opacity = '0.5';
                 payBtn.style.cursor = 'not-allowed';
@@ -610,8 +683,8 @@
                 document.getElementById('checkout-form').reportValidity();
                 return;
             }
-            if (!locationCalculated || !isDeliverable) {
-                showToast('Please provide a valid delivery location within 20km.', 'error', 'Location Error');
+            if (!pincodeCalculated || !isDeliverable) {
+                showToast('Please enter a valid deliverable pincode to continue.', 'error', 'Delivery Error');
                 return;
             }
 
@@ -769,6 +842,86 @@
                 payBtn.disabled    = false;
                 payBtn.textContent = 'Pay Securely Now';
             }
+        }
+
+        // ── Pincode Dropdown Logic ─────────────────────────────────────────────
+        let _dropdownHighlight = -1;
+
+        function _renderDropdownItems(entries) {
+            const dd = document.getElementById('pincode-dropdown');
+            if (!entries.length) {
+                dd.innerHTML = `<div class="pincode-dropdown-empty">No matching areas found</div>`;
+                return;
+            }
+            dd.innerHTML = entries.map(([code, area]) => `
+                <div class="pincode-dropdown-item"
+                     role="option"
+                     onmousedown="selectPincode('${code}')"
+                     data-code="${code}">
+                    <span class="pdc-code">${code}</span>
+                    <span class="pdc-area">${area}</span>
+                </div>
+            `).join('');
+            _dropdownHighlight = -1;
+        }
+
+        function showPincodeDropdown() {
+            const query = document.getElementById('pincode').value.trim().toLowerCase();
+            const entries = Object.entries(DELIVERABLE_PINCODES).filter(([code, area]) =>
+                !query || code.includes(query) || area.toLowerCase().includes(query)
+            );
+            _renderDropdownItems(entries);
+            document.getElementById('pincode-dropdown').classList.add('open');
+        }
+
+        function filterPincodeDropdown(input) {
+            const query = input.value.trim().toLowerCase();
+            const entries = Object.entries(DELIVERABLE_PINCODES).filter(([code, area]) =>
+                !query || code.includes(query) || area.toLowerCase().includes(query)
+            );
+            _renderDropdownItems(entries);
+            document.getElementById('pincode-dropdown').classList.add('open');
+        }
+
+        function selectPincode(code) {
+            document.getElementById('pincode').value = code;
+            document.getElementById('pincode-dropdown').classList.remove('open');
+            // Trigger delivery calculation immediately
+            calculateDelivery();
+        }
+
+        function closePincodeDropdown() {
+            // Small delay so onmousedown fires before blur hides the list
+            setTimeout(() => {
+                document.getElementById('pincode-dropdown').classList.remove('open');
+                // Also trigger delivery calc on manual blur if 6 digits entered
+                const val = document.getElementById('pincode').value.trim();
+                if (val.length === 6) calculateDelivery();
+            }, 150);
+        }
+
+        function handlePincodeKey(e) {
+            const dd = document.getElementById('pincode-dropdown');
+            const items = dd.querySelectorAll('.pincode-dropdown-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                _dropdownHighlight = Math.min(_dropdownHighlight + 1, items.length - 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                _dropdownHighlight = Math.max(_dropdownHighlight - 1, 0);
+            } else if (e.key === 'Enter' && _dropdownHighlight >= 0) {
+                e.preventDefault();
+                selectPincode(items[_dropdownHighlight].dataset.code);
+                return;
+            } else if (e.key === 'Escape') {
+                dd.classList.remove('open');
+                return;
+            } else { return; }
+
+            items.forEach((el, i) => el.classList.toggle('highlighted', i === _dropdownHighlight));
+            items[_dropdownHighlight]?.scrollIntoView({ block: 'nearest' });
         }
 
     </script>
