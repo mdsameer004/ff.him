@@ -184,6 +184,261 @@
             color: #999;
             font-size: 0.9rem;
         }
+
+        /* ── Coupon Popup ───────────────────────────────────────── */
+        .coupon-trigger-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.82rem;
+            color: var(--color-dark-green, #2d5016);
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 6px;
+            border: none;
+            background: none;
+            padding: 0;
+            transition: opacity 0.2s;
+        }
+        .coupon-trigger-link:hover { opacity: 0.7; }
+        .coupon-trigger-link svg { flex-shrink: 0; }
+
+        /* Overlay */
+        .coupon-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: overlayFadeIn 0.2s ease;
+        }
+        .coupon-overlay.open { display: flex; }
+        @keyframes overlayFadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        /* Popup panel */
+        .coupon-popup {
+            background: #fff;
+            border-radius: 18px;
+            width: min(480px, 96vw);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+            overflow: hidden;
+            animation: popupSlideUp 0.28s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popupSlideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .coupon-popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            background: linear-gradient(135deg, #f0fdf4 0%, #fef9ec 100%);
+        }
+        .coupon-popup-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            color: #1a3a0a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .coupon-popup-close {
+            border: none;
+            background: #f3f4f6;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #555;
+            transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+        .coupon-popup-close:hover { background: #fee2e2; color: #dc2626; }
+
+        /* Manual code row inside popup */
+        .coupon-popup-manual {
+            display: flex;
+            gap: 8px;
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fafafa;
+        }
+        .coupon-popup-manual input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-family: var(--font-body, 'Inter', sans-serif);
+            font-size: 0.92rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .coupon-popup-manual input:focus { border-color: var(--color-dark-green, #2d5016); }
+        .coupon-popup-manual button {
+            padding: 9px 18px;
+            background: var(--color-dark-green, #2d5016);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .coupon-popup-manual button:hover { opacity: 0.85; }
+
+        /* Coupon cards list */
+        .coupon-cards-container {
+            overflow-y: auto;
+            padding: 16px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: #b5cfa0 #f4f4f4;
+        }
+        .coupon-card {
+            border: 1.5px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .coupon-card.eligible {
+            border-color: #86efac;
+            background: linear-gradient(135deg, #f0fdf4 0%, #fefce8 100%);
+        }
+        .coupon-card.eligible:hover {
+            border-color: #22c55e;
+            box-shadow: 0 4px 16px rgba(34,197,94,0.12);
+        }
+        .coupon-card.ineligible {
+            opacity: 0.55;
+            background: #f9fafb;
+        }
+        .coupon-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.4rem;
+        }
+        .coupon-card.eligible   .coupon-card-icon { background: #dcfce7; }
+        .coupon-card.ineligible .coupon-card-icon { background: #f3f4f6; }
+        .coupon-card-body { flex: 1; min-width: 0; }
+        .coupon-card-code {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #14532d;
+            letter-spacing: 0.04em;
+            font-family: 'Courier New', monospace;
+        }
+        .coupon-card.ineligible .coupon-card-code { color: #6b7280; }
+        .coupon-card-desc {
+            font-size: 0.82rem;
+            color: #555;
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+        .coupon-card-min {
+            font-size: 0.75rem;
+            color: #e67e22;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .coupon-card-apply {
+            border: none;
+            background: var(--color-dark-green, #2d5016);
+            color: #fff;
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .coupon-card-apply:hover { opacity: 0.85; transform: scale(1.04); }
+        .coupon-card-applied {
+            background: #dc2626 !important;
+        }
+        .coupon-card-applied:hover { background: #b91c1c !important; transform: scale(1.04); }
+        .coupon-card.applied {
+            border: 2px solid #22c55e;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            box-shadow: 0 4px 20px rgba(34,197,94,0.18);
+        }
+        .coupon-card-action { flex-shrink: 0; }
+        .coupon-applied-badge {
+            display: inline-block;
+            background: #22c55e;
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 2px 8px;
+            margin-left: 6px;
+            font-family: var(--font-body, 'Inter', sans-serif);
+            letter-spacing: 0.02em;
+            vertical-align: middle;
+        }
+        .coupon-card-savings {
+            font-size: 0.75rem;
+            color: #16a34a;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .coupon-card-shortfall {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+        .coupon-cards-loading,
+        .coupon-cards-empty {
+            text-align: center;
+            padding: 32px 0;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        .coupon-cards-loading span {
+            display: inline-block;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .coupon-section-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
     </style>
     <link rel="stylesheet" href="css/android-fixes.css">
 
@@ -319,10 +574,15 @@
                 
                 <!-- Coupon Section -->
                 <div class="coupon-section" style="margin: 20px 0; border-top: 1px solid var(--color-border); padding-top: 20px;">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="coupon-input" placeholder="Enter Coupon Code" style="flex: 1; padding: 10px; border: 1px solid var(--color-border); border-radius: 4px; text-transform: uppercase;">
-                        <button type="button" class="btn btn-secondary" id="coupon-btn" onclick="applyCoupon()" style="padding: 10px 20px;">Apply</button>
+                    <div class="coupon-section-label">Promo / Coupon Code</div>
+                    <div style="display: flex; gap: 10px; align-items: stretch;">
+                        <input type="text" id="coupon-input" placeholder="Enter coupon code" style="flex: 1; padding: 10px 12px; border: 1.5px solid var(--color-border); border-radius: 8px; text-transform: uppercase; font-family: inherit; font-size: 0.95rem; letter-spacing: 0.05em; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--color-dark-green)'" onblur="this.style.borderColor='var(--color-border)'">
+                        <button type="button" class="btn btn-secondary" id="coupon-btn" onclick="applyCoupon()" style="padding: 10px 18px; border-radius: 8px; font-weight: 600; white-space: nowrap;">Apply</button>
                     </div>
+                    <button type="button" class="coupon-trigger-link" onclick="openCouponPopup()" id="view-coupons-btn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+                        View available coupons
+                    </button>
                     <div id="coupon-message" style="margin-top: 8px; font-size: 0.85rem;"></div>
                 </div>
                 
@@ -336,6 +596,32 @@
             </div>
         </section>
     </main>
+
+    <!-- ══ Coupon Popup Overlay ══════════════════════════════════════════ -->
+    <div class="coupon-overlay" id="coupon-overlay" onclick="handleOverlayClick(event)" role="dialog" aria-modal="true" aria-label="Available Coupons">
+        <div class="coupon-popup" id="coupon-popup">
+            <!-- Header -->
+            <div class="coupon-popup-header">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d5016" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+                    Available Coupons
+                </h3>
+                <button class="coupon-popup-close" onclick="closeCouponPopup()" aria-label="Close">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <!-- Manual code entry inside popup -->
+            <div class="coupon-popup-manual">
+                <input type="text" id="coupon-popup-input" placeholder="Have a code? Type it here" maxlength="30">
+                <button onclick="applyFromPopupInput()">Apply</button>
+            </div>
+            <!-- Cards -->
+            <div class="coupon-cards-container" id="coupon-cards-container">
+                <div class="coupon-cards-loading"><span>⟳</span>&nbsp; Loading coupons…</div>
+            </div>
+        </div>
+    </div>
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
 
     <div id="footer-container"></div>
 
@@ -521,6 +807,186 @@
             updateCheckoutTotals();
             showToast('Coupon removed', 'info', 'Coupon Removed');
         }
+
+        // ── Coupon Popup ────────────────────────────────────────────────────────
+        // Cached coupon list so we don't re-fetch on every render
+        let _cachedCoupons = null;
+
+        async function openCouponPopup() {
+            const overlay = document.getElementById('coupon-overlay');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+
+            // Sync popup manual input with main input if a coupon is already applied
+            const popupInput = document.getElementById('coupon-popup-input');
+            if (popupInput) {
+                popupInput.value = '';
+                popupInput.disabled = false;
+            }
+
+            await fetchAndRenderCoupons(/* forceRefresh */ false);
+        }
+
+        function closeCouponPopup() {
+            document.getElementById('coupon-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function handleOverlayClick(e) {
+            if (e.target === document.getElementById('coupon-overlay')) closeCouponPopup();
+        }
+
+        // Close popup on Escape
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCouponPopup(); });
+
+        // ── Fetch all coupons from backend & render cards ───────────────────────
+        // Fallback coupon list (mirrors backend DEFAULT_COUPONS seed)
+        const FALLBACK_COUPONS = [
+            { code: 'FLOWER50',  type: 'fixed',         value: 50,  minOrder: 0,    description: '₹50 off on any order' },
+            { code: 'WELCOME15', type: 'percent',       value: 15,  minOrder: 0,    description: '15% off welcome discount' },
+            { code: 'FREEDEL',   type: 'free_delivery', value: 0,   minOrder: 0,    description: 'Free delivery on any order' },
+            { code: 'SAVE10',    type: 'percent',       value: 10,  minOrder: 1000, description: '10% off on orders above ₹1000' },
+            { code: 'BIGSAVE',   type: 'fixed',         value: 150, minOrder: 2000, description: '₹150 off on orders above ₹2000' },
+        ];
+
+        async function fetchAndRenderCoupons(forceRefresh = false) {
+            const container = document.getElementById('coupon-cards-container');
+
+            // Use cache if available and not forcing refresh
+            if (_cachedCoupons && !forceRefresh) {
+                renderCouponCards();
+                return;
+            }
+
+            container.innerHTML = '<div class="coupon-cards-loading"><span>⟳</span>&nbsp; Loading coupons…</div>';
+            const API_BASE = (typeof window.API_BASE_URL !== 'undefined') ? window.API_BASE_URL : 'https://floristbackend.onrender.com/api';
+
+            try {
+                const res = await fetch(`${API_BASE}/coupons/eligible?subtotal=0`);
+
+                // If endpoint not yet deployed (404 / non-OK), fall back gracefully
+                if (!res.ok) {
+                    console.warn('[Coupons] /eligible endpoint not available, using fallback list.');
+                    _cachedCoupons = FALLBACK_COUPONS;
+                } else {
+                    const data = await res.json();
+                    _cachedCoupons = (data.success && data.data && data.data.length)
+                        ? data.data
+                        : FALLBACK_COUPONS;
+                }
+            } catch (err) {
+                // Network error – still show fallback so user sees coupons
+                console.warn('[Coupons] Network error, using fallback list:', err.message);
+                _cachedCoupons = FALLBACK_COUPONS;
+            }
+
+            renderCouponCards();
+        }
+
+        // ── Pure render: re-draws cards based on current cart + applied coupon ──
+        function renderCouponCards() {
+            const container = document.getElementById('coupon-cards-container');
+            if (!_cachedCoupons) return;
+
+            const subtotal = getCartTotal().subtotal;
+            const currentCode = appliedCoupon ? appliedCoupon.code : null;
+
+            const typeIcon  = { percent: '🏷️', fixed: '💰', free_delivery: '🚚' };
+            const typeLabel = c => {
+                if (c.type === 'percent')       return `${c.value}% off on your order`;
+                if (c.type === 'fixed')         return `₹${c.value} off on your order`;
+                if (c.type === 'free_delivery') return 'Free delivery on this order';
+                return '';
+            };
+            const savingsLabel = c => {
+                if (c.type === 'percent')       return `Save ${c.value}%`;
+                if (c.type === 'fixed')         return `Save ₹${c.value}`;
+                if (c.type === 'free_delivery') return 'Free delivery';
+                return '';
+            };
+
+            // Compute eligibility live against current subtotal
+            const cards = _cachedCoupons.map(c => ({
+                ...c,
+                eligible: subtotal >= c.minOrder,
+                applied:  c.code === currentCode,
+            }));
+
+            // Sort: applied first → eligible → ineligible
+            cards.sort((a, b) => {
+                if (a.applied !== b.applied) return b.applied - a.applied;
+                return b.eligible - a.eligible;
+            });
+
+            container.innerHTML = cards.map(c => {
+                const isApplied   = c.applied;
+                const isEligible  = c.eligible;
+                const shortfall   = c.minOrder > 0 ? (c.minOrder - subtotal) : 0;
+
+                let actionBtn = '';
+                if (isApplied) {
+                    actionBtn = `<button class="coupon-card-apply coupon-card-applied" onclick="removeCouponFromPopup()">Remove</button>`;
+                } else if (isEligible) {
+                    actionBtn = `<button class="coupon-card-apply" onclick="applyCouponFromPopup('${c.code}')" id="popup-apply-${c.code}">Apply</button>`;
+                } else {
+                    actionBtn = `<span class="coupon-card-shortfall">Add ₹${shortfall.toLocaleString('en-IN')} more</span>`;
+                }
+
+                return `
+                    <div class="coupon-card ${isApplied ? 'applied' : isEligible ? 'eligible' : 'ineligible'}">
+                        <div class="coupon-card-icon">${typeIcon[c.type] || '🎟️'}</div>
+                        <div class="coupon-card-body">
+                            <div class="coupon-card-code">
+                                ${c.code}
+                                ${isApplied ? '<span class="coupon-applied-badge">✓ Applied</span>' : ''}
+                            </div>
+                            <div class="coupon-card-desc">${c.description || typeLabel(c)}</div>
+                            ${isEligible && !isApplied
+                                ? `<div class="coupon-card-savings">${savingsLabel(c)}</div>`
+                                : ''}
+                            ${!isEligible && c.minOrder > 0
+                                ? `<div class="coupon-card-min">⚠ Min. order ₹${c.minOrder.toLocaleString('en-IN')} required</div>`
+                                : ''}
+                        </div>
+                        <div class="coupon-card-action">${actionBtn}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ── Apply a coupon chosen from popup ────────────────────────────────────
+        async function applyCouponFromPopup(code) {
+            const btn = document.getElementById(`popup-apply-${code}`);
+            if (btn) { btn.textContent = '…'; btn.disabled = true; }
+
+            document.getElementById('coupon-input').value = code;
+            await applyCoupon();
+
+            // Re-render cards to reflect new applied state (popup stays open)
+            renderCouponCards();
+        }
+
+        // ── Remove coupon from inside the popup ─────────────────────────────────
+        function removeCouponFromPopup() {
+            removeCoupon();
+            renderCouponCards(); // instantly re-draws cards
+        }
+
+        // ── Apply a manually-typed code from inside the popup ───────────────────
+        async function applyFromPopupInput() {
+            const popupInput = document.getElementById('coupon-popup-input');
+            const code = (popupInput.value || '').trim().toUpperCase();
+            if (!code) return;
+
+            document.getElementById('coupon-input').value = code;
+            await applyCoupon();
+
+            // Refresh full list (new code might not be in cache)
+            await fetchAndRenderCoupons(/* forceRefresh */ true);
+
+            if (popupInput) { popupInput.value = ''; }
+        }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             if (cart.length === 0) {
