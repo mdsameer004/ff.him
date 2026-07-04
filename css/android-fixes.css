@@ -272,6 +272,28 @@ body {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 6px;
     }
+
+    /* Instagram follow button — mobile sizing */
+    .insta-follow-btn-wrap {
+        margin: 10px 0 20px;
+        padding: 0 8px;
+    }
+
+    .insta-follow-btn {
+        font-size: 0.88rem;
+        padding: 11px 20px;
+        gap: 8px;
+        min-height: 44px;      /* Android 48dp touch-target standard */
+        border-radius: 50px;
+        width: 100%;           /* Full-width on small screens */
+        max-width: 320px;
+        justify-content: center;
+    }
+
+    .insta-icon {
+        width: 22px;
+        height: 22px;
+    }
 }
 
 /* ── 13. Scroll track — reduce height on Android to prevent clipping ── */
