@@ -273,26 +273,53 @@ body {
         gap: 6px;
     }
 
-    /* Instagram follow button — mobile sizing */
-    .insta-follow-btn-wrap {
-        margin: 10px 0 20px;
-        padding: 0 8px;
+    /* Instagram CTA — mobile sizing */
+    .insta-cta-wrap {
+        gap: 14px;
+        margin: 4px 0 24px;
+    }
+
+    .insta-petal { display: none; } /* hide floating petals on mobile */
+
+    .insta-gradient-ring {
+        width: 100%;
+        max-width: 340px;
     }
 
     .insta-follow-btn {
-        font-size: 0.88rem;
-        padding: 11px 20px;
-        gap: 8px;
-        min-height: 44px;      /* Android 48dp touch-target standard */
-        border-radius: 50px;
-        width: 100%;           /* Full-width on small screens */
-        max-width: 320px;
-        justify-content: center;
+        gap: 12px;
+        padding: 12px 18px 12px 14px;
+        min-height: 64px;
+    }
+
+    .insta-logo-wrap {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
     }
 
     .insta-icon {
         width: 22px;
         height: 22px;
+    }
+
+    .insta-cta-label {
+        font-size: 0.65rem;
+    }
+
+    .insta-handle {
+        font-size: 0.95rem;
+    }
+
+    .insta-arrow-wrap {
+        width: 30px;
+        height: 30px;
+    }
+
+    .insta-sub-text {
+        font-size: 0.8rem;
+        text-align: center;
+        padding: 0 16px;
     }
 }
 

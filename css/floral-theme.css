@@ -243,64 +243,193 @@ body::before {
     pointer-events: none;
 }
 
-/* ── Instagram Follow Button ── */
-.insta-follow-btn-wrap {
-    display: flex;
-    justify-content: center;
-    margin: 16px 0 28px;
 }
 
+/* ============================================================
+   INSTAGRAM CTA — Luxury Aesthetic Redesign
+   ============================================================ */
+
+/* ── Outer CTA container ── */
+.insta-cta-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin: 8px 0 32px;
+    position: relative;
+}
+
+/* ── Floating decorative petals ── */
+.insta-petal {
+    position: absolute;
+    font-size: 1.4rem;
+    opacity: 0.28;
+    pointer-events: none;
+    animation: insta-petal-float 6s ease-in-out infinite;
+    color: #dc2743;
+}
+.insta-petal-1 { top: -10px; left: 8%;  animation-delay: 0s;   animation-duration: 7s; }
+.insta-petal-2 { top:  14px; right: 9%; animation-delay: 1.4s; animation-duration: 5.5s; font-size: 1.1rem; }
+.insta-petal-3 { bottom: 4px; left: 18%; animation-delay: 2.8s; animation-duration: 6.5s; font-size: 1rem; color: #cc2366; }
+
+@keyframes insta-petal-float {
+    0%, 100% { transform: translateY(0) rotate(0deg);   opacity: 0.28; }
+    50%       { transform: translateY(-9px) rotate(18deg); opacity: 0.45; }
+}
+
+/* ── Gradient border ring (animated) ── */
+.insta-gradient-ring {
+    position: relative;
+    border-radius: 60px;
+    padding: 2.5px;
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888, #f09433);
+    background-size: 300% 300%;
+    animation: insta-ring-flow 3.5s ease infinite;
+    box-shadow:
+        0 0 0 0 rgba(188,24,136,0),
+        0 6px 24px rgba(188,24,136,0.22),
+        0 2px 8px  rgba(240,148,51,0.18);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+@keyframes insta-ring-flow {
+    0%   { background-position: 0% 50%;   }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%;   }
+}
+
+.insta-gradient-ring:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 0 32px rgba(188,24,136,0.38),
+        0 12px 36px rgba(220,39,67,0.28),
+        0 2px 8px rgba(240,148,51,0.20);
+}
+
+/* ── Inner glass button ── */
 .insta-follow-btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 28px;
-    border-radius: 50px;
-    background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-    color: #fff;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    gap: 16px;
+    padding: 14px 26px 14px 18px;
+    border-radius: 57px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     text-decoration: none;
-    box-shadow: 0 4px 18px rgba(188, 24, 136, 0.30);
-    transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+    color: #1a1a1a;
     position: relative;
     overflow: hidden;
-}
-
-.insta-follow-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.08);
-    opacity: 0;
-    transition: opacity 0.22s ease;
-    border-radius: inherit;
-}
-
-.insta-follow-btn:hover::before {
-    opacity: 1;
+    transition: background 0.25s ease;
 }
 
 .insta-follow-btn:hover {
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 8px 28px rgba(188, 24, 136, 0.45);
-    filter: brightness(1.08);
+    background: rgba(255, 255, 255, 0.98);
     text-decoration: none;
-    color: #fff;
+    color: #1a1a1a;
 }
 
-.insta-follow-btn:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 2px 10px rgba(188, 24, 136, 0.30);
+/* ── Shimmer sweep ── */
+.insta-shimmer {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.55) 50%,
+        transparent 70%
+    );
+    pointer-events: none;
+    transition: left 0.55s ease;
+}
+
+.insta-gradient-ring:hover .insta-shimmer {
+    left: 160%;
+}
+
+/* ── Instagram logo wrap ── */
+.insta-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f09433, #dc2743, #bc1888);
+    box-shadow: 0 3px 12px rgba(188,24,136,0.30);
+    flex-shrink: 0;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.insta-gradient-ring:hover .insta-logo-wrap {
+    transform: rotate(-6deg) scale(1.08);
+    box-shadow: 0 6px 20px rgba(188,24,136,0.40);
 }
 
 .insta-icon {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
+    display: block;
+}
+
+/* ── Text group ── */
+.insta-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.insta-cta-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+    line-height: 1;
+}
+
+.insta-handle {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #e6683c, #dc2743, #bc1888);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+/* ── Arrow circle ── */
+.insta-arrow-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f09433, #dc2743, #bc1888);
+    color: #fff;
     flex-shrink: 0;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+    transition: transform 0.25s ease;
+}
+
+.insta-gradient-ring:hover .insta-arrow-wrap {
+    transform: translateX(4px);
+}
+
+/* ── Sub text below button ── */
+.insta-sub-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #a0748a;
+    letter-spacing: 0.04em;
+    margin: 0;
+    opacity: 0.85;
 }
 
 /* ============================================================
