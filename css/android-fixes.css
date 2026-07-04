@@ -177,16 +177,16 @@ body {
 /* ── 6. Section spacing — reduce padding on Android ── */
 @media screen and (max-width: 480px) {
     .home-section {
-        padding: 50px 0; /* Reduced from 80px */
+        padding: 36px 0; /* Reduced from 50px */
     }
 
     .section-title {
-        font-size: 1.7rem !important; /* Reduced from 2.5rem */
-        margin-bottom: 1.5rem;
+        font-size: 1.6rem !important;
+        margin-bottom: 1rem;
     }
 
     .container {
-        padding: 0 14px; /* Slightly tighter than 20px */
+        padding: 0 14px;
     }
 }
 
