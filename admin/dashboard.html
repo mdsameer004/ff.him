@@ -802,24 +802,83 @@
             }, 3500);
         }
 
-        // Toggle maintenance status
-        function toggleWebsiteStatus() {
-            const statusBtn = document.getElementById('website-status-btn');
-            const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
-
-            if (confirm(`Are you sure you want to switch the website status to ${!isMaintenance ? 'Maintenance Mode' : 'Online Mode'}?`)) {
-                localStorage.setItem('ff_maintenance_mode', (!isMaintenance).toString());
-                if (!isMaintenance) {
-                    statusBtn.textContent = 'Maintenance';
-                    statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
-                    showToast("Website shifted to Maintenance Mode.", "success");
-                } else {
-                    statusBtn.textContent = 'Online';
-                    statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors';
-                    showToast("Website shifted to Online Mode.", "success");
+        // ── Load real maintenance state from backend on dashboard init ─────────
+        async function loadWebsiteStatus() {
+            try {
+                const token = localStorage.getItem('ff_jwt_token') || sessionStorage.getItem('ff_jwt_token');
+                const res = await fetch(`${window.API_BASE_URL}/admin/site-settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const isMaintenance = data.data.maintenanceMode;
+                    localStorage.setItem('ff_maintenance_mode', isMaintenance.toString());
+                    applyWebsiteStatusUI(isMaintenance);
                 }
+            } catch (e) {
+                console.warn('[Maintenance] Could not load site settings from backend:', e);
+                // Fall back to localStorage value
+                const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
+                applyWebsiteStatusUI(isMaintenance);
             }
         }
+
+        // Apply button UI based on current state
+        function applyWebsiteStatusUI(isMaintenance) {
+            const statusBtn = document.getElementById('website-status-btn');
+            if (!statusBtn) return;
+            if (isMaintenance) {
+                statusBtn.textContent = 'Maintenance';
+                statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors cursor-pointer';
+            } else {
+                statusBtn.textContent = 'Online';
+                statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors cursor-pointer';
+            }
+        }
+
+        // ── Toggle maintenance mode — calls the real backend API ────────────────
+        async function toggleWebsiteStatus() {
+            const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
+            const newState = !isMaintenance;
+
+            if (!confirm(`Switch website to ${newState ? 'Maintenance Mode 🔧' : 'Online Mode ✅'}?`)) return;
+
+            const statusBtn = document.getElementById('website-status-btn');
+            if (statusBtn) { statusBtn.textContent = '...'; statusBtn.disabled = true; }
+
+            try {
+                const token = localStorage.getItem('ff_jwt_token') || sessionStorage.getItem('ff_jwt_token');
+                const res = await fetch(`${window.API_BASE_URL}/admin/site-settings/maintenance`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ maintenanceMode: newState })
+                });
+
+                if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+                const data = await res.json();
+                const confirmed = data.data.maintenanceMode;
+
+                localStorage.setItem('ff_maintenance_mode', confirmed.toString());
+                applyWebsiteStatusUI(confirmed);
+                showToast(
+                    confirmed ? '🔧 Website is now in Maintenance Mode.' : '✅ Website is back Online.',
+                    'success'
+                );
+            } catch (err) {
+                console.error('[Maintenance] Toggle failed:', err);
+                showToast('❌ Failed to update maintenance mode. Check your connection.', 'error');
+                applyWebsiteStatusUI(isMaintenance); // revert UI
+            } finally {
+                if (statusBtn) statusBtn.disabled = false;
+            }
+        }
+
+        // Kick off the real status load after admin-common.js has finished injecting layout
+        window.addEventListener('load', loadWebsiteStatus);
     </script>
 </body>
 
