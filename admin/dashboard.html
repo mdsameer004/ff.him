@@ -188,13 +188,30 @@
                 <div
                     class="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center text-2xl">
                     🌐</div>
-                <div>
-                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Website
-                        Status</span>
-                    <button onclick="toggleWebsiteStatus()" id="website-status-btn"
-                        class="mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors">
-                        Online
-                    </button>
+                <div class="flex-1">
+                    <span class="block text-3xs font-semibold text-gray-450 uppercase tracking-wider">Website Status</span>
+                    <!-- Toggle Switch -->
+                    <div class="flex items-center gap-2 mt-2">
+                        <label class="relative inline-block" style="width:44px;height:24px;cursor:pointer;" title="Toggle Maintenance Mode">
+                            <input type="checkbox" id="website-status-toggle" onchange="toggleWebsiteStatus()" style="opacity:0;width:0;height:0;position:absolute;">
+                            <span id="website-status-track" style="
+                                position:absolute;inset:0;
+                                background:#2E8B57;
+                                border-radius:999px;
+                                transition:background 0.3s ease;
+                            "></span>
+                            <span id="website-status-thumb" style="
+                                position:absolute;
+                                top:3px;left:3px;
+                                width:18px;height:18px;
+                                background:#fff;
+                                border-radius:50%;
+                                box-shadow:0 1px 4px rgba(0,0,0,0.25);
+                                transition:transform 0.3s ease;
+                            "></span>
+                        </label>
+                        <span id="website-status-label" style="font-size:0.7rem;font-weight:700;color:#2E8B57;">ONLINE</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -419,13 +436,9 @@
                 // 3. Render Orders Table
                 renderOrdersTable();
 
-                // 4. Load Maintenance status
+                // 4. Load Maintenance status (real state loaded later via loadWebsiteStatus())
                 const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
-                const statusBtn = document.getElementById('website-status-btn');
-                if (isMaintenance) {
-                    statusBtn.textContent = 'Maintenance';
-                    statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors';
-                }
+                applyWebsiteStatusUI(isMaintenance);
 
                 // 5. Populate Recent Activity logs
                 const activityLog = document.getElementById('activity-log');
@@ -824,27 +837,45 @@
         }
 
         // Apply button UI based on current state
+        // Drives the toggle switch UI
         function applyWebsiteStatusUI(isMaintenance) {
-            const statusBtn = document.getElementById('website-status-btn');
-            if (!statusBtn) return;
+            const toggle = document.getElementById('website-status-toggle');
+            const track  = document.getElementById('website-status-track');
+            const thumb  = document.getElementById('website-status-thumb');
+            const label  = document.getElementById('website-status-label');
+            if (!toggle) return;
+
+            toggle.checked = isMaintenance;
+
             if (isMaintenance) {
-                statusBtn.textContent = 'Maintenance';
-                statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40 transition-colors cursor-pointer';
+                // Switched OFF (maintenance = site is DOWN) — red track, thumb slides right
+                track.style.background = '#dc2626';
+                thumb.style.transform  = 'translateX(20px)';
+                label.textContent      = 'MAINTENANCE';
+                label.style.color      = '#dc2626';
             } else {
-                statusBtn.textContent = 'Online';
-                statusBtn.className = 'mt-1 px-3 py-0.5 text-2xs font-bold rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 transition-colors cursor-pointer';
+                // Switched ON (online) — green track, thumb left
+                track.style.background = '#2E8B57';
+                thumb.style.transform  = 'translateX(0px)';
+                label.textContent      = 'ONLINE';
+                label.style.color      = '#2E8B57';
             }
         }
 
         // ── Toggle maintenance mode — calls the real backend API ────────────────
         async function toggleWebsiteStatus() {
+            const toggle = document.getElementById('website-status-toggle');
             const isMaintenance = localStorage.getItem('ff_maintenance_mode') === 'true';
-            const newState = !isMaintenance;
+            // newState: the value the toggle is NOW at after user clicked
+            const newState = toggle ? toggle.checked : !isMaintenance;
 
-            if (!confirm(`Switch website to ${newState ? 'Maintenance Mode 🔧' : 'Online Mode ✅'}?`)) return;
+            if (!confirm(`Switch website to ${newState ? 'Maintenance Mode 🔧' : 'Online Mode ✅'}?`)) {
+                // User cancelled — revert toggle visual back
+                applyWebsiteStatusUI(isMaintenance);
+                return;
+            }
 
-            const statusBtn = document.getElementById('website-status-btn');
-            if (statusBtn) { statusBtn.textContent = '...'; statusBtn.disabled = true; }
+            if (toggle) toggle.disabled = true;
 
             try {
                 const token = localStorage.getItem('ff_jwt_token') || sessionStorage.getItem('ff_jwt_token');
@@ -873,7 +904,7 @@
                 showToast('❌ Failed to update maintenance mode. Check your connection.', 'error');
                 applyWebsiteStatusUI(isMaintenance); // revert UI
             } finally {
-                if (statusBtn) statusBtn.disabled = false;
+                if (toggle) toggle.disabled = false;
             }
         }
 
